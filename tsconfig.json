@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "commonjs"
+  },
+  "compilerOptions": {
+    "target": "ES5",
+    "types": ["node", "mocha", "es6-promise"]
+  }
+}
