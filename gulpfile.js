@@ -1,17 +1,16 @@
 const gulp    = require('gulp');
 const mocha   = require('gulp-mocha');
-const clean   = require('gulp-clean');
 const webpack = require('webpack-stream');
 const ts      = require('gulp-typescript');
+const del     = require('del');
 
 var tsProject = ts.createProject('tsconfig.json');
 
-gulp.task('test_clean', function () {
-  //return gulp.src('./tmp/test/**/*', { read: false })
-    //.pipe(clean());
+gulp.task('clean:test', function () {
+  return del(['tmp/test']);
 });
 
-gulp.task('test', ['test_clean'], () =>
+gulp.task('test', ['clean:test'], () =>
   gulp
     .src(['./index.d.ts.', './src/**/*.ts', './test/test-helper.ts', './test/**/*-test.ts'], { base: '.' })
     .pipe(tsProject())
@@ -19,9 +18,10 @@ gulp.task('test', ['test_clean'], () =>
     .pipe(mocha())
 );
 
-// Use webpack, not tsProject, for browserification
 gulp.task('build', function () {
-  return gulp.src("src/main.ts")
+  gulp
+    .src(['./index.d.ts', './src/main.ts'])
+    .pipe(tsProject())
     .pipe(webpack(require('./webpack.config.js') ))
     .pipe(gulp.dest('dist/'))
 });

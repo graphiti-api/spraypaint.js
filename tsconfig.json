@@ -1,9 +1,23 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "module": "commonjs"
+    "declaration": false,
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "noEmitHelpers": true,
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5"
   },
-  "compilerOptions": {
-    "target": "ES5",
-    "types": ["node", "mocha", "es6-promise"]
-  }
+  "filesGlob": [
+    "./src/**/*.ts",
+    "./index.d.ts"
+  ],
+  "types": ["node", "mocha", "es6-promise"],
+  "exclude": [
+    "node_modules",
+    "test"
+  ]
 }
+

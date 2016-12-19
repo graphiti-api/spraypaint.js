@@ -27,3 +27,5 @@ global['asyncAssert'] = function(done, callback) {
     done(e);
   }
 }
+
+export { sinon };

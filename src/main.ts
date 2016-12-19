@@ -1,9 +1,14 @@
 /// <reference path="../index.d.ts" />
 
-import * as es6Promise from 'es6-promise';
-import 'isomorphic-fetch';
-es6Promise.polyfill();
+// https://github.com/Microsoft/TypeScript/issues/6425
+global.__extends = (this && this.__extends) || function (d, b) {
+  for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+  function __() { this.constructor = d; }
+  d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  if (b.inherited) b.inherited(d);
+};
 
-import Model from "./model";
+import Config from './configuration';
+import Model from './model';
 
-export { Model };
+export { Config, Model };

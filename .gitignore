@@ -49,5 +49,7 @@ jspm_packages
 *.swn
 *.swo
 
+dist/*
 tmp/*
 !tmp/.keepme
+!.keepme
