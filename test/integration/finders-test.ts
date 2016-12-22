@@ -1,17 +1,7 @@
 import '../../test/test-helper';
-import { Model } from '../../src/main';
+//import { Model, Config } from '../../src/main';
 
-class Person extends Model {
-  static baseUrl = 'http://example.com';
-  static apiNamespace = '/api';
-  static endpoint = '/v1/people';
-
-  static jsonapiType = 'people';
-}
-
-class Author extends Person {
-  static jsonapiType = 'authors';
-}
+import { Person, Author } from '../fixtures';
 
 let fetchMock = require('fetch-mock');
 
@@ -38,6 +28,7 @@ describe('Model finders', function() {
 
     describe('when API response returns a different type than the caller', function() {
       before(function() {
+        fetchMock.restore();
         fetchMock.get('http://example.com/api/v1/people/1', {
           data: {
             id: '1',

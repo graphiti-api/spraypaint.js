@@ -2,6 +2,9 @@
 
 import Scope from './scope';
 import Config from './configuration';
+import Attribute from './attribute';
+import deserialize from './util/deserialize';
+import _extend from './util/extend';
 
 export default class Model implements IModel {
   static baseUrl = process.env.BROWSER? '': 'http://localhost:9999'
@@ -10,13 +13,22 @@ export default class Model implements IModel {
   static jsonapiType = 'define-in-subclass';
 
   id: string;
-  // attributes
-  [key: string]: any;
+  attributes: Object = {};
+  __meta__: Object | void = null;
+  parentClass: typeof Model;
+  klass: typeof Model;
 
+  static attributeList = [];
   private static _scope: Scope;
 
-  static inherited(subclass : typeof Model) {
-    Config.models[subclass.jsonapiType] = subclass;
+  static extend(obj : any) : any {
+    return _extend(this, obj);
+  }
+
+  static inherited(subclass : any) {
+    Config.models.push(subclass)
+    subclass.parentClass = this;
+    subclass.prototype.klass = subclass;
   }
 
   static scope(): Scope {
@@ -24,9 +36,7 @@ export default class Model implements IModel {
   }
 
   constructor(attributes?: anyObject) {
-    for(var key in attributes) {
-      this[key] = attributes[key];
-    }
+    this._assignAttributes(attributes);
   }
 
   static all() : Promise<Array<Model>> {
@@ -73,5 +83,17 @@ export default class Model implements IModel {
     }
 
     return base;
+  }
+
+  static fromJsonapi(resource: japiResource) : any {
+    return deserialize(resource);
+  }
+
+  private _assignAttributes(attrs: Object) : void {
+    for(var key in attrs) {
+      if (key == 'id' || this.klass.attributeList.indexOf(key) >= 0) {
+        this[key] = attrs[key];
+      }
+    }
   }
 }

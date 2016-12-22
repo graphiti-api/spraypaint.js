@@ -32,7 +32,14 @@ interface japiDoc {
   data: japiResource;
 }
 
-interface japiResource {
+interface japiResourceIdentifier {
   id: string;
   type: string;
+}
+
+interface japiResource extends japiResourceIdentifier {
+  attributes?: Object;
+  relationships?: Object;
+  meta?: Object;
+  links?: Object;
 }

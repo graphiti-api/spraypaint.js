@@ -1,6 +1,5 @@
 import Model from './model';
 import Config from './configuration';
-import deserialize from './util/deserialize';
 import parameterize from './util/parameterize';
 import IncludeDirective from './util/include-directive';
 
@@ -19,14 +18,14 @@ export default class Scope {
   all() : Promise<Array<Model>> {
     return this._fetch(this.model.url()).then((json : japiDocArray) => {
       return json.data.map((datum : japiResource) => {
-        return deserialize(datum);
+        return Model.fromJsonapi(datum);
       });
     });
   }
 
   find(id : string | number) : Promise<Model> {
     return this._fetch(this.model.url(id)).then((json : japiDoc) => {
-      return deserialize(json.data);
+      return Model.fromJsonapi(json.data);
     });
   }
 

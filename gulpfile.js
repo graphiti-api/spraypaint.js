@@ -12,7 +12,7 @@ gulp.task('clean:test', function () {
 
 gulp.task('test', ['clean:test'], () =>
   gulp
-    .src(['./index.d.ts.', './src/**/*.ts', './test/test-helper.ts', './test/**/*-test.ts'], { base: '.' })
+    .src(['./index.d.ts.', './src/**/*.ts', './test/fixtures.ts', './test/test-helper.ts', './test/**/*-test.ts'], { base: '.' })
     .pipe(tsProject())
     .pipe(gulp.dest('tmp/test'))
     .pipe(mocha())

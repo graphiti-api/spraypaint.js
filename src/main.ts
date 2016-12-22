@@ -10,5 +10,10 @@ global.__extends = (this && this.__extends) || function (d, b) {
 
 import Config from './configuration';
 import Model from './model';
+import Attribute from './attribute';
 
-export { Config, Model };
+const attr = function() : any {
+  return new Attribute();
+}
+
+export { Config, Model, attr };
