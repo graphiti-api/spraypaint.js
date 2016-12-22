@@ -10,6 +10,9 @@ export default class Config {
   static bootstrap() : void {
     for (let model of this.models) {
       this.typeMapping[model.jsonapiType] = model;
+    }
+
+    for (let model of this.models) {
       Attribute.applyAll(model);
     }
   }

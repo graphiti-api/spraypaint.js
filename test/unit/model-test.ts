@@ -2,7 +2,7 @@
 
 import { sinon } from '../../test/test-helper';
 import { Model } from '../../src/main';
-import { Person, Author, Book, Genre } from '../fixtures';
+import { Person, Author, Book, Genre, Bio } from '../fixtures';
 
 let instance;
 
@@ -27,6 +27,12 @@ describe('Model', function() {
               id: '1',
               type: 'books'
             }]
+          },
+          bio: {
+            data: {
+              id: '1',
+              type: 'bios'
+            }
           }
         },
         meta: {
@@ -61,6 +67,13 @@ describe('Model', function() {
           id: '2',
           attributes: {
             name: 'Maurice Sendak'
+          }
+        },
+        {
+          type: 'bios',
+          id: '1',
+          attributes: {
+            description: 'Some Dude.'
           }
         }
       ]
@@ -104,6 +117,13 @@ describe('Model', function() {
       let genre = instance.genre;
       expect(genre).to.be.instanceof(Genre);
       expect(genre.name).to.eq("Children's");
+    });
+
+    it('assigns hasOne relationships correctly', function() {
+      let instance = Model.fromJsonapi(doc.data, doc);
+      let bio = instance.bio;
+      expect(bio).to.be.instanceof(Bio);
+      //expect(bio.description).to.eq("Some Dude.");
     });
 
     it('assigns nested relationships correctly', function() {

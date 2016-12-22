@@ -1,6 +1,4 @@
 import '../../test/test-helper';
-//import { Model, Config } from '../../src/main';
-
 import { Person, Author } from '../fixtures';
 
 let fetchMock = require('fetch-mock');
@@ -15,7 +13,10 @@ describe('Model finders', function() {
       fetchMock.get('http://example.com/api/v1/people/1', {
         data: {
           id: '1',
-          type: 'people'
+          type: 'people',
+          attributes: {
+            name: 'John'
+          }
         }
       });
     });
@@ -24,6 +25,11 @@ describe('Model finders', function() {
       return expect(Person.find(1)).to.eventually
         .be.instanceof(Person).and
         .have.property('id', '1');
+    });
+
+    it('assigns attributes correctly', function() {
+      return expect(Person.find(1)).to.eventually
+        .have.property('name', 'John')
     });
 
     describe('when API response returns a different type than the caller', function() {

@@ -1,4 +1,4 @@
-import { Model, Config, attr, hasMany, belongsTo } from '../src/main';
+import { Model, Config, attr, hasMany, belongsTo, hasOne } from '../src/main';
 
 // typescript class
 class Person extends Model {
@@ -18,7 +18,8 @@ let Author = Person.extend({
   },
 
   books: hasMany(),
-  genre: belongsTo()
+  genre: belongsTo('genres'),
+  bio:   hasOne('bios')
 });
 
 class Book extends Model {
@@ -30,11 +31,17 @@ class Book extends Model {
 class Genre extends Model {
   static jsonapiType = 'genres';
 
-  authors: any = hasMany()
+  authors: any = hasMany('authors')
 
   name: string = attr();
 }
 
+class Bio extends Model {
+  static jsonapiType = 'bios';
+
+  description: string = attr()
+}
+
 Config.bootstrap();
 
-export { Author, Person, Book, Genre };
+export { Author, Person, Book, Genre, Bio };

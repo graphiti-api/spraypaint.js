@@ -2,6 +2,7 @@
 // transforms, default values, etc.
 
 import Model from './model';
+import Config from './configuration';
 
 export default class Attribute {
   name: string;
@@ -23,6 +24,11 @@ export default class Attribute {
 
         let attrInstance = instance[propName];
         attrInstance.name = propName;
+
+        if (attrInstance.isRelationship) {
+          attrInstance.klass = Config.modelForType(attrInstance.jsonapiType || attrInstance.name);
+        }
+
         callback(attrInstance);
       }
     }
