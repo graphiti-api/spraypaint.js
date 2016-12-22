@@ -11,25 +11,9 @@ declare module NodeJS  {
   }
 }
 
-interface IModel {
-  id: string;
-  [propName: string]: any;
-}
-
-interface anyObject {
-  [propName: string]: any;
-}
-
-interface modelsConfig {
-  [key: string]: any;
-}
-
-interface japiDocArray {
-  data: Array<japiResource>;
-}
-
 interface japiDoc {
-  data: japiResource;
+  data: any; // can't do Array | japiResource
+  included: Array<japiResource>;
 }
 
 interface japiResourceIdentifier {

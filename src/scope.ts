@@ -16,16 +16,16 @@ export default class Scope {
   }
 
   all() : Promise<Array<Model>> {
-    return this._fetch(this.model.url()).then((json : japiDocArray) => {
+    return this._fetch(this.model.url()).then((json : japiDoc) => {
       return json.data.map((datum : japiResource) => {
-        return Model.fromJsonapi(datum);
+        return Model.fromJsonapi(datum, json);
       });
     });
   }
 
   find(id : string | number) : Promise<Model> {
     return this._fetch(this.model.url(id)).then((json : japiDoc) => {
-      return Model.fromJsonapi(json.data);
+      return Model.fromJsonapi(json.data, json);
     });
   }
 

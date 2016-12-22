@@ -6,7 +6,7 @@ import Attribute from './attribute';
 import deserialize from './util/deserialize';
 import _extend from './util/extend';
 
-export default class Model implements IModel {
+export default class Model {
   static baseUrl = process.env.BROWSER? '': 'http://localhost:9999'
   static endpoint = 'define-in-subclass';
   static apiNamespace = '/';
@@ -14,6 +14,7 @@ export default class Model implements IModel {
 
   id: string;
   attributes: Object = {};
+  relationships: Object = {};
   __meta__: Object | void = null;
   parentClass: typeof Model;
   klass: typeof Model;
@@ -35,7 +36,7 @@ export default class Model implements IModel {
     return this._scope || new Scope(this);
   }
 
-  constructor(attributes?: anyObject) {
+  constructor(attributes?: Object) {
     this._assignAttributes(attributes);
   }
 
@@ -85,8 +86,8 @@ export default class Model implements IModel {
     return base;
   }
 
-  static fromJsonapi(resource: japiResource) : any {
-    return deserialize(resource);
+  static fromJsonapi(resource: japiResource, payload: japiDoc) : any {
+    return deserialize(resource, payload);
   }
 
   private _assignAttributes(attrs: Object) : void {

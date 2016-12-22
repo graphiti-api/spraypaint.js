@@ -5,7 +5,6 @@ import Model from './model';
 
 export default class Attribute {
   name: string;
-  private _value: any;
 
   isAttr: boolean = true;
 
@@ -13,15 +12,7 @@ export default class Attribute {
     this._eachAttribute(klass, (attr) => {
       klass.attributeList.push(attr.name);
 
-      Object.defineProperty(klass.prototype, attr.name, {
-        get() : any {
-          return attr.getter(this);
-        },
-
-        set(value) : void {
-          attr.setter(this, value);
-        }
-      });
+      Object.defineProperty(klass.prototype, attr.name, attr.getSet());
     });
   }
 
@@ -29,6 +20,7 @@ export default class Attribute {
     let instance = new klass();
     for (let propName in instance) {
       if (instance[propName] && instance[propName].hasOwnProperty('isAttr')) {
+
         let attrInstance = instance[propName];
         attrInstance.name = propName;
         callback(attrInstance);
@@ -36,12 +28,29 @@ export default class Attribute {
     }
   }
 
-  setter(context: Model, val: any) : void {
-    if (!val.hasOwnProperty('isAttr')) {
-      context.attributes[this.name] = val;
+  // This returns the getters/setters for use on the *model*
+  getSet() {
+    let attr = this;
+
+    return {
+      get() : any {
+        return attr.getter(this);
+      },
+
+      set(value) : void {
+        if (!value.hasOwnProperty('isAttr')) {
+          attr.setter(this, value);
+        }
+      }
     }
   }
 
+  // The model calls this setter
+  setter(context: Model, val: any) : void {
+    context.attributes[this.name] = val;
+  }
+
+  // The model calls this getter
   getter(context: Model) : any {
     return context.attributes[this.name];
   }
