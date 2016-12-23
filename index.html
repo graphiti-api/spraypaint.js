@@ -17,12 +17,16 @@
         baseUrl: 'http://localhost:3000/api'
       },
 
-      first_name: attr()
+      firstName: attr(),
+      lastName: attr(),
+      fullName() {
+        return this.firstName + ' ' + this.lastName;
+      }
     });
 
     Staffer.find(1297466).then((s) => {
       console.log(s);
-      console.log(s.marital_status);
+      console.log(s.fullName());
     });
 
     Config.bootstrap();
