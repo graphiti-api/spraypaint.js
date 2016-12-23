@@ -13,9 +13,11 @@ describe('Model', function() {
         id: '1',
         type: 'authors',
         attributes: {
-          name: 'Donald Budge'
+          firstName: 'Donald Budge',
+          unknown: 'adsf'
         },
         relationships: {
+          tags: {},
           genre: {
             data: {
               id: '1',
@@ -66,7 +68,7 @@ describe('Model', function() {
           type: 'authors',
           id: '2',
           attributes: {
-            name: 'Maurice Sendak'
+            firstName: 'Maurice Sendak'
           }
         },
         {
@@ -91,10 +93,15 @@ describe('Model', function() {
 
     it('assigns attributes correctly', function() {
       let instance = Model.fromJsonapi(doc.data, doc);
-      expect(instance.name).to.eq('Donald Budge');
+      expect(instance.firstName).to.eq('Donald Budge');
       expect(instance.attributes).to.eql({
-        name: 'Donald Budge'
+        firstName: 'Donald Budge'
       })
+    });
+
+    it('does not assign unknown attributes', function() {
+      let instance = Model.fromJsonapi(doc.data, doc);
+      expect(instance).to.not.have.property('unknown');
     });
 
     it('assigns metadata correctly', function() {
@@ -123,7 +130,7 @@ describe('Model', function() {
       let instance = Model.fromJsonapi(doc.data, doc);
       let bio = instance.bio;
       expect(bio).to.be.instanceof(Bio);
-      //expect(bio.description).to.eq("Some Dude.");
+      expect(bio.description).to.eq("Some Dude.");
     });
 
     it('assigns nested relationships correctly', function() {
@@ -132,8 +139,13 @@ describe('Model', function() {
       expect(authors.length).to.eq(2);
       expect(authors[0]).to.be.instanceof(Author);
       expect(authors[1]).to.be.instanceof(Author);
-      expect(authors[0].name).to.eq('Donald Budge');
-      expect(authors[1].name).to.eq('Maurice Sendak');
+      expect(authors[0].firstName).to.eq('Donald Budge');
+      expect(authors[1].firstName).to.eq('Maurice Sendak');
+    });
+
+    it('skips relationships without data', function() {
+      let instance = Model.fromJsonapi(doc.data, doc);
+      expect(instance.tags).to.eql([]);
     });
   });
 });

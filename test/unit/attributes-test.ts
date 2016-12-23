@@ -6,24 +6,29 @@ import { Person } from '../fixtures';
 describe('Model attributes', function() {
   it('supports direct assignment', function() {
     let person = new Person();
-    expect(person.name).to.eq(undefined);
-    person.name = 'John';
-    expect(person.name).to.eq('John');
+    expect(person.firstName).to.eq(undefined);
+    person.firstName = 'John';
+    expect(person.firstName).to.eq('John');
   });
 
   it('supports constructor assignment', function() {
-    let person = new Person({ name: 'Joe' });
-    expect(person.name).to.eq('Joe');
-    expect(person.attributes['name']).to.eq('Joe');
+    let person = new Person({ firstName: 'Joe' });
+    expect(person.firstName).to.eq('Joe');
+    expect(person.attributes['firstName']).to.eq('Joe');
+  });
+
+  it('camelizes underscored strings', function() {
+    let person = new Person({ first_name: 'Joe' });
+    expect(person.firstName).to.eq('Joe');
   });
 
   it('syncs with #attributes', function() {
     let person = new Person();
     expect(person.attributes).to.eql({});
-    person.name = 'John';
-    expect(person.attributes).to.eql({ name: 'John' });
-    person.attributes['name'] = 'Jane';
-    expect(person.name).to.eq('Jane');
+    person.firstName = 'John';
+    expect(person.attributes).to.eql({ firstName: 'John' });
+    person.attributes['firstName'] = 'Jane';
+    expect(person.firstName).to.eq('Jane');
   });
 
   // Without this behavior, the API could add a backwards-compatible field,

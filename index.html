@@ -1,0 +1,31 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test</title>
+</head>
+<body>
+  <script src="dist/jsorm.js"></script>
+  <script>
+    var Model = jsorm.Model;
+    var attr = jsorm.attr;
+    var Config = jsorm.Config;
+
+    const Staffer = Model.extend({
+      static: {
+        jsonapiType: 'staffers',
+        apiNamespace: '/v1/',
+        baseUrl: 'http://localhost:3000/api'
+      },
+
+      first_name: attr()
+    });
+
+    Staffer.find(1297466).then((s) => {
+      console.log(s);
+      console.log(s.marital_status);
+    });
+
+    Config.bootstrap();
+  </script>
+</body>
+</html>

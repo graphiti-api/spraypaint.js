@@ -8,7 +8,8 @@ class Person extends Model {
 
   static jsonapiType = 'people';
 
-  name: string = attr();
+  firstName: string = attr();
+  lastName: string = attr();
 }
 
 // plain js class
@@ -18,6 +19,7 @@ let Author = Person.extend({
   },
 
   books: hasMany(),
+  tags:  hasMany(),
   genre: belongsTo('genres'),
   bio:   hasOne('bios')
 });
@@ -42,6 +44,12 @@ class Bio extends Model {
   description: string = attr()
 }
 
+class Tag extends Model {
+  static jsonapiType = 'tags';
+
+  name: string = attr()
+}
+
 Config.bootstrap();
 
-export { Author, Person, Book, Genre, Bio };
+export { Author, Person, Book, Genre, Bio, Tag };

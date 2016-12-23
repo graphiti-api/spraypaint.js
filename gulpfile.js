@@ -18,6 +18,14 @@ gulp.task('test', ['clean:test'], () =>
     .pipe(mocha())
 );
 
+gulp.task('test-browser', function () {
+  gulp
+    .src(['./index.d.ts.', './src/main.ts', './src/**/*.ts', './test/fixtures.ts', './test/test-helper.ts', './test/**/*-test.ts'], { base: '.' })
+    .pipe(tsProject())
+    .pipe(webpack(require('./webpack.config.js') ))
+    .pipe(gulp.dest('tmp/browser'))
+});
+
 gulp.task('build', function () {
   gulp
     .src(['./index.d.ts', './src/main.ts'])

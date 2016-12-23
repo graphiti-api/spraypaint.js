@@ -5,15 +5,16 @@ import Config from './configuration';
 import Attribute from './attribute';
 import deserialize from './util/deserialize';
 import _extend from './util/extend';
+import { camelize } from './util/string';
 
 export default class Model {
   static baseUrl = process.env.BROWSER? '': 'http://localhost:9999'
-  static endpoint = 'define-in-subclass';
   static apiNamespace = '/';
   static jsonapiType = 'define-in-subclass';
+  static endpoint: string;
 
   id: string;
-  attributes: Object = {};
+  _attributes: Object = {};
   relationships: Object = {};
   __meta__: Object | void = null;
   parentClass: typeof Model;
@@ -37,7 +38,7 @@ export default class Model {
   }
 
   constructor(attributes?: Object) {
-    this._assignAttributes(attributes);
+    this.attributes = attributes;
   }
 
   static all() : Promise<Array<Model>> {
@@ -77,7 +78,8 @@ export default class Model {
   }
 
   static url(id?: string | number) : string {
-    let base = `${this.baseUrl}${this.apiNamespace}${this.endpoint}`;
+    let endpoint = this.endpoint || this.jsonapiType;
+    let base = `${this.baseUrl}${this.apiNamespace}${endpoint}`;
 
     if (id) {
       base = `${base}/${id}`;
@@ -90,10 +92,15 @@ export default class Model {
     return deserialize(resource, payload);
   }
 
-  private _assignAttributes(attrs: Object) : void {
+  get attributes() : Object {
+    return this._attributes;
+  }
+
+  set attributes(attrs : Object) {
     for(var key in attrs) {
-      if (key == 'id' || this.klass.attributeList.indexOf(key) >= 0) {
-        this[key] = attrs[key];
+      let attributeName = camelize(key);
+      if (key == 'id' || this.klass.attributeList.indexOf(attributeName) >= 0) {
+        this[attributeName] = attrs[key];
       }
     }
   }

@@ -46,9 +46,7 @@ class Deserializer {
     let instance = new klass({ id: resource.id });
     this._models.push(instance);
 
-    for (let key in resource.attributes) {
-      instance[key] = resource.attributes[key];
-    }
+    instance.attributes = resource.attributes;
     this._processRelationships(instance, resource.relationships);
     instance.__meta__ = resource.meta;
     return instance;
@@ -57,6 +55,7 @@ class Deserializer {
   _processRelationships(instance, relationships) {
     for (let key in relationships) {
       let relationData = relationships[key].data;
+      if(!relationData) continue; // only links, empty, etc
 
       if (Array.isArray(relationData)) {
         for (let datum of relationData) {

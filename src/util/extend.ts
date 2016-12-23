@@ -1,8 +1,8 @@
 /// <reference path="../../index.d.ts" />
 
 export default function(superclass, classObj) {
-  global.__extends(Subclass, superclass);
-  function Subclass() {
+  global.__extends(Model, superclass);
+  function Model() {
     var _this = superclass.apply(this, arguments) || this;
 
     for (let prop in classObj) {
@@ -15,9 +15,9 @@ export default function(superclass, classObj) {
   }
 
   for (let classProp in classObj.static) {
-    Subclass[classProp] = classObj.static[classProp];
+    Model[classProp] = classObj.static[classProp];
   }
 
-  superclass.inherited(Subclass);
-  return Subclass;
+  superclass.inherited(Model);
+  return Model;
 }
