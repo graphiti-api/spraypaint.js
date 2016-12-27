@@ -2,6 +2,8 @@ import Model from './model';
 import Config from './configuration';
 import parameterize from './util/parameterize';
 import IncludeDirective from './util/include-directive';
+import Request from './request';
+import colorize from './util/colorize';
 
 export default class Scope {
   model: typeof Model;
@@ -125,15 +127,9 @@ export default class Scope {
   private _fetch(url : string) : Promise<Object> {
     let qp = this.toQueryParams();
     if (qp) {
-      url = `${url}?${qp}`
+      url = `${url}?${qp}`;
     }
-
-    return new Promise((resolve, reject) => {
-      fetch(url).then((response) => {
-        response.json().then((json) => {
-          resolve(json);
-        });
-      });
-    });
+    let request = new Request();
+    return request.get(url);
   }
 }
