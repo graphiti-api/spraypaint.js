@@ -8,6 +8,7 @@ Written in [Typescript](https://www.typescriptlang.org) and distributed in ES5, 
 
 ### Roadmap
 
+* Attribute transforms (type coercion)
 * Writes
 * Error / Validation handling
 * Nested Writes
