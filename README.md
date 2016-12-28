@@ -8,6 +8,7 @@ Written in [Typescript](https://www.typescriptlang.org) and distributed in ES5, 
 
 ### Roadmap
 
+* Find to throw error when record not found
 * Attribute transforms (type coercion)
 * Writes
 * Error / Validation handling
