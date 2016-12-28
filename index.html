@@ -4,7 +4,7 @@
   <title>Test</title>
 </head>
 <body>
-  <script src="dist/jsorm.js"></script>
+  <script src="dist/jsorm.js?v=asfasfdsf"></script>
   <script>
     var Model = jsorm.Model;
     var attr = jsorm.attr;
@@ -13,8 +13,8 @@
     const Staffer = Model.extend({
       static: {
         jsonapiType: 'staffers',
-        apiNamespace: '/v1',
-        baseUrl: 'http://localhost:3000/api'
+        apiNamespace: '/api/v1',
+        baseUrl: ''
       },
 
       firstName: attr(),
@@ -29,7 +29,7 @@
       console.log(s.fullName());
     });
 
-    Config.bootstrap();
+    Config.setup();
   </script>
 </body>
 </html>

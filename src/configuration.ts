@@ -9,7 +9,7 @@ export default class Config {
   static typeMapping: Object = {};
   static logger: Logger = new Logger();
 
-  static bootstrap() : void {
+  static setup() : void {
     for (let model of this.models) {
       this.typeMapping[model.jsonapiType] = model;
     }

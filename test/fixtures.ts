@@ -50,6 +50,6 @@ class Tag extends Model {
   name: string = attr()
 }
 
-Config.bootstrap();
+Config.setup();
 
 export { Author, Person, Book, Genre, Bio, Tag };
