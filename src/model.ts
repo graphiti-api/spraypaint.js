@@ -78,7 +78,7 @@ export default class Model {
   }
 
   static url(id?: string | number) : string {
-    let endpoint = this.endpoint || this.jsonapiType;
+    let endpoint = this.endpoint || `/${this.jsonapiType}`;
     let base = `${this.baseUrl}${this.apiNamespace}${endpoint}`;
 
     if (id) {
