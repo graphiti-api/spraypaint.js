@@ -166,6 +166,22 @@ describe('Model finders', function() {
     });
   });
 
+  describe('#select_extra', function() {
+    before(function () {
+      fetchMock.get('http://example.com/api/v1/people?extra_fields[people]=net_worth,best_friend', {
+        data: [
+          { id: '2', type: 'people' }
+        ]
+      });
+    });
+
+    it('queries correctly', function() {
+      return expect(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all()).to.eventually
+        .all.be.instanceof(Person)
+        .all.have.property('id', '2')
+    });
+  });
+
   describe('#includes', function() {
     before(function () {
       fetchMock.get('http://example.com/api/v1/people?include=a.b,a.c.d', {

@@ -73,6 +73,10 @@ export default class Model {
     return this.scope().select(clause);
   }
 
+  static selectExtra(clause: Object) : Scope {
+    return this.scope().selectExtra(clause);
+  }
+
   static includes(clause: string | Object | Array<any>) : Scope {
     return this.scope().includes(clause);
   }

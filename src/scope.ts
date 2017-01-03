@@ -11,6 +11,7 @@ export default class Scope {
   _filter: Object = {};
   _sort: Object = {};
   _fields: Object = {};
+  _extra_fields: Object = {};
   _include: Object = {};
 
   constructor(model : typeof Model) {
@@ -75,6 +76,14 @@ export default class Scope {
     return this;
   }
 
+  selectExtra(clause: Object) {
+    for (let key in clause) {
+      this._extra_fields[key] = clause[key];
+    }
+
+    return this;
+  }
+
   includes(clause: Object | string | Array<any>) : Scope {
     let directive = new IncludeDirective(clause);
     let directiveObject = directive.toObject();
@@ -89,11 +98,12 @@ export default class Scope {
   asQueryParams() : Object {
     let qp = {};
 
-    qp['page']    = this._pagination;
-    qp['filter']  = this._filter;
-    qp['sort']    = this._sortParam(this._sort);
-    qp['fields']  = this._fields;
-    qp['include'] = new IncludeDirective(this._include).toString();
+    qp['page']          = this._pagination;
+    qp['filter']        = this._filter;
+    qp['sort']          = this._sortParam(this._sort);
+    qp['fields']        = this._fields;
+    qp['extra_fields']  = this._extra_fields;
+    qp['include']       = new IncludeDirective(this._include).toString();
 
     return qp;
   }

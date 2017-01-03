@@ -129,6 +129,7 @@ describe('Scope', function() {
         .order({ bar: 'desc' })
         .select({ people: ['name', 'age'] })
         .select({ pets: ['type'] })
+        .selectExtra({ people: ['net_worth'] })
         .includes({ a: ['b', { c: 'd' }] })
       let qp = scope.asQueryParams();
 
@@ -146,6 +147,9 @@ describe('Scope', function() {
           people: ['name', 'age'],
           pets: ['type']
         },
+        extra_fields: {
+          people: ['net_worth']
+        },
         include: 'a.b,a.c.d'
       });
     });
@@ -162,6 +166,11 @@ describe('Scope', function() {
         .select({ people: ['name', 'age'] })
         .includes({ a: ['b', { c: 'd' }] })
       expect(scope.toQueryParams()).to.eq('page[number]=2&page[size]=10&filter[foo]=bar&sort=foo,-bar&fields[people]=name,age&include=a.b,a.c.d');
+    });
+
+    it('does not include empty objects', function() {
+      scope.page(2);
+      expect(scope.toQueryParams().match(/field/) === null).to.eq(true);
     });
 
     describe('when no scoping criteria present', function() {
