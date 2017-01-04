@@ -14,7 +14,8 @@ describe('Model', function() {
         type: 'authors',
         attributes: {
           firstName: 'Donald Budge',
-          unknown: 'adsf'
+          unknown: 'adsf',
+          nilly: null
         },
         relationships: {
           unknownrelationship: {
@@ -107,7 +108,8 @@ describe('Model', function() {
       let instance = Model.fromJsonapi(doc.data, doc);
       expect(instance.firstName).to.eq('Donald Budge');
       expect(instance.attributes).to.eql({
-        firstName: 'Donald Budge'
+        firstName: 'Donald Budge',
+        nilly: null
       })
     });
 
@@ -124,6 +126,11 @@ describe('Model', function() {
     it('does not assign unknown relationships', function() {
       let instance = Model.fromJsonapi(doc.data, doc);
       expect(instance).to.not.have.property('unknownrelationship');
+    });
+
+    it('does not blow up on null attributes', function() {
+      let instance = Model.fromJsonapi(doc.data, doc);
+      expect(instance.nilly).to.eq(null);
     });
 
     it('assigns metadata correctly', function() {

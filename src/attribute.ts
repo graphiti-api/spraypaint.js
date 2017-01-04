@@ -44,7 +44,7 @@ export default class Attribute {
       },
 
       set(value) : void {
-        if (!value.hasOwnProperty('isAttr')) {
+        if (!value || !value.hasOwnProperty('isAttr')) {
           attr.setter(this, value);
         }
       }

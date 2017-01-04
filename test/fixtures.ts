@@ -18,6 +18,8 @@ let Author = Person.extend({
     jsonapiType: 'authors'
   },
 
+  nilly:      attr(),
+
   multiWords: hasMany('multi_words'),
   books:      hasMany(),
   tags:       hasMany(),
