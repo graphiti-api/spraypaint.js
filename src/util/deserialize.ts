@@ -53,18 +53,25 @@ class Deserializer {
   }
 
   _processRelationships(instance, relationships) {
-    for (let key in relationships) {
-      let relationData = relationships[key].data;
-      if(!relationData) continue; // only links, empty, etc
-
+    this._iterateValidRelationships(instance, relationships, (relationName, relationData) => {
       if (Array.isArray(relationData)) {
         for (let datum of relationData) {
           let relatedRecord = this.deserialize(datum, true);
-          instance[key].push(relatedRecord);
+          instance[relationName].push(relatedRecord);
         }
       } else {
         let relatedRecord = this.deserialize(relationData, true);
-        instance[key] = relatedRecord;
+        instance[relationName] = relatedRecord;
+      }
+    });
+  }
+
+  _iterateValidRelationships(instance, relationships, callback) {
+    for (let key in relationships) {
+      if (instance.klass.attributeList.indexOf(key) >= 0) {
+        let relationData = relationships[key].data;
+        if(!relationData) continue; // only links, empty, etc
+        callback(key, relationData);
       }
     }
   }
