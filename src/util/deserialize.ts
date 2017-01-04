@@ -2,6 +2,7 @@
 
 import Config from '../configuration';
 import Model from '../model';
+import { camelize } from './string';
 
 export default function deserialize(resource : japiResource, payload: japiDoc) : Model {
   let deserializer = new Deserializer(payload);
@@ -33,7 +34,8 @@ class Deserializer {
     let record = this.findModel(resource);
     if (!record) {
       if (isRelation) {
-        resource = this.findResource(resource);
+        let hydrated = this.findResource(resource);
+        if (hydrated) resource = hydrated;
       }
       record = this._deserialize(resource);
     }
@@ -68,10 +70,11 @@ class Deserializer {
 
   _iterateValidRelationships(instance, relationships, callback) {
     for (let key in relationships) {
-      if (instance.klass.attributeList.indexOf(key) >= 0) {
+      let relationName = camelize(key);
+      if (instance.klass.attributeList.indexOf(relationName) >= 0) {
         let relationData = relationships[key].data;
         if(!relationData) continue; // only links, empty, etc
-        callback(key, relationData);
+        callback(relationName, relationData);
       }
     }
   }

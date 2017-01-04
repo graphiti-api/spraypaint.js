@@ -18,10 +18,11 @@ let Author = Person.extend({
     jsonapiType: 'authors'
   },
 
-  books: hasMany(),
-  tags:  hasMany(),
-  genre: belongsTo('genres'),
-  bio:   hasOne('bios')
+  multiWords: hasMany('multi_words'),
+  books:      hasMany(),
+  tags:       hasMany(),
+  genre:      belongsTo('genres'),
+  bio:        hasOne('bios')
 });
 
 class Book extends Model {
@@ -48,6 +49,10 @@ class Tag extends Model {
   static jsonapiType = 'tags';
 
   name: string = attr()
+}
+
+class MultiWord extends Model {
+  static jsonapiType = 'multi_words';
 }
 
 Config.setup();

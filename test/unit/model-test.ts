@@ -23,6 +23,12 @@ describe('Model', function() {
               type: 'unknowns'
             }
           },
+          multi_words: {
+            data: [{
+              id: '1',
+              type: 'multi_words'
+            }]
+          },
           tags: {},
           genre: {
             data: {
@@ -103,6 +109,11 @@ describe('Model', function() {
       expect(instance.attributes).to.eql({
         firstName: 'Donald Budge'
       })
+    });
+
+    it('camelizes relationship names', function() {
+      let instance = Model.fromJsonapi(doc.data, doc);
+      expect(instance.multiWords.length).to.eq(1);
     });
 
     it('does not assign unknown attributes', function() {
