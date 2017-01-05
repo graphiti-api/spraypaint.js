@@ -2,11 +2,11 @@
   "name": "jsorm",
   "version": "1.0.0",
   "description": "Javascript ORM",
-  "main": "./dist/main.js",
-  "types": "./main.d.ts",
+  "main": "./dist/jsorm.js",
+  "types": "./index.d.ts",
   "scripts": {
     "test": "gulp test",
-    "main": "dist/jsorm.min.js",
+    "main": "dist/jsorm.js",
     "scripts": {
       "prepublish": "webpack --debug; webpack -p"
     }
