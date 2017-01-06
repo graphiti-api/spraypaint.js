@@ -115,7 +115,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.models = [];
 	    };
 	    Config.modelForType = function (type) {
-	        return this.typeMapping[type];
+	        var klass = this.typeMapping[type];
+	        if (klass) {
+	            return klass;
+	        }
+	        else {
+	            throw ("Could not find class for jsonapi type \"" + type + "\"");
+	        }
 	    };
 	    return Config;
 	}());

@@ -1,35 +1,332 @@
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Test</title>
-</head>
-<body>
-  <script src="dist/jsorm.js?v=asfasfdsf"></script>
-  <script>
-    var Model = jsorm.Model;
-    var attr = jsorm.attr;
-    var Config = jsorm.Config;
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+  </head>
+  <body>
+    <script src="dist/jsorm.js"></script>
+    <script data-require="jquery@*" data-semver="3.0.0" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
+    <script>
+      var Model     = jsorm.Model;
+      var attr      = jsorm.attr;
+      var Config    = jsorm.Config;
+      var hasOne    = jsorm.hasOne;
+      var hasMany   = jsorm.hasMany;
+      var belongsTo = jsorm.belongsTo;
 
-    const Staffer = Model.extend({
-      static: {
-        jsonapiType: 'staffers',
-        apiNamespace: '/api/v1',
-        baseUrl: ''
-      },
+      const ApplicationRecord = Model.extend({
+        static: {
+          baseUrl: '',
+          apiNamespace: '/api/v1'
+        }
+      });
 
-      firstName: attr(),
-      lastName: attr(),
-      fullName() {
-        return this.firstName + ' ' + this.lastName;
-      }
-    });
+      const Staffer = ApplicationRecord.extend({
+        static: {
+          jsonapiType: 'staffers',
+        },
 
-    Staffer.find(1297466).then((s) => {
-      console.log(s);
-      console.log(s.fullName());
-    });
+        positions: hasMany('positions'),
+        currentPosition: hasOne('positions'),
+        socialMediaAccounts: hasMany('social_media_accounts'),
+        educationalExperiences: hasMany('educational_experiences'),
+        issues: hasMany(),
+        hobbies: hasMany(),
+        traits: hasMany(),
 
-    Config.setup();
-  </script>
-</body>
+        firstName: attr(),
+        lastName: attr(),
+        title: attr(),
+        email: attr(),
+        fullName() {
+          return this.firstName + ' ' + this.lastName;
+        },
+        // todo memoize/computed
+        position() {
+          if (this.currentPosition) return this.currentPosition;
+          return this.positions.sort(function(a, b) {
+            return parseFloat(a.historicalIndex) - parseFloat(b.historicalIndex);
+          })[0];
+        },
+
+        _issues() {
+          if (this.issues.length > 0) return this.issues;
+          return this.traits.filter(function(t) {
+            return t.klass.jsonapiType === 'issues';
+          });
+        },
+
+        issueList() {
+          return this._issues().map(function(issue) {
+            return issue.name;
+          }).join(', ');
+        }
+      });
+
+      const Position = ApplicationRecord.extend({
+        static: {
+          jsonapiType: 'positions'
+        },
+
+        office: hasOne('offices'),
+        historicalIndex: attr(),
+        organizationName: attr()
+      });
+
+      const LegislativePosition = Position.extend({
+        static: {
+          jsonapiType: 'legislative_positions'
+        },
+
+        legislatorId: attr(),
+        officeLink() {
+          return 'https://beta.bgov.com/us_legislators/BB' + this.legislatorId;
+        }
+      });
+
+      const CommitteePosition = Position.extend({
+        static: {
+          jsonapiType: 'committee_positions'
+        },
+
+        committeeId: attr(),
+        officeLink() {
+          return 'https://beta.bgov.com/us_committees/BB' + this.committeeId;
+        }
+      });
+
+      const Office = ApplicationRecord.extend({
+        static: {
+          jsonapiType: 'offices'
+        },
+
+        name: attr(),
+        building: attr(),
+        city: attr(),
+        state: attr(),
+        zipCode: attr(),
+        phone: attr(),
+
+        address() {
+          return `${this.city}, ${this.state} ${this.zipCode}`;
+        }
+      });
+
+      const SocialMediaAccount = ApplicationRecord.extend({
+        static: {
+          jsonapiType: 'social_media_accounts'
+        },
+
+        path: attr()
+      });
+
+      const LegislativeDetail = ApplicationRecord.extend({
+        static: {
+          jsonapiType: 'legislative_details'
+        },
+
+        titleLink: attr()
+      });
+
+      const EducationalExperience = ApplicationRecord.extend({
+        static: {
+          jsonapiType: 'educational_experiences'
+        },
+
+        degree: attr(),
+        schoolName: attr(),
+        endedAt: attr()
+      });
+
+      const Trait = ApplicationRecord.extend({
+        static: {
+          jsonapiType: 'traits'
+        },
+
+        name: attr()
+      });
+
+      const Issue = Trait.extend({
+        static: {
+          jsonapiType: 'issues'
+        }
+      });
+
+      const Hobby = Trait.extend({
+        static: {
+          jsonapiType: 'hobbies'
+        }
+      })
+
+      Config.setup();
+
+      scope = Staffer
+        .includes(['traits', 'educational_experiences', 'social_media_accounts', { positions: { office: 'legislative_detail' } }])
+        .selectExtra({ staffers: ['email'] });
+
+      // Sample IDs
+      // Basic - 1312133
+      // Committee - 1303678
+      // Issues, Hobbies - 1297114
+      var id = window.location.href.split('?id=')[1];
+      scope.find(id).then((s) => {
+        $('.main-name').text(s.fullName());
+
+        window.s = s;
+        var position = s.position();
+        $('.main-title').text(position.title);
+        $('.office .building').text(position.office.building);
+        $('.office .address').text(position.office.address());
+        $('.office .phone').text(position.office.phone);
+        $('.email').text(s.email);
+        console.log(s.issueList());
+        $('.main-issues').text(s.issueList());
+
+        let positions = s.positions;
+        for (var i = 0; i < positions.length; i++) {
+          var position = positions[i];
+          $($('.position .title').get(i)).text(position.title);
+
+          if (position.office) {
+            $($('.position .office-link').get(i)).text(position.organizationName);
+            $($('.position .office-link').get(i)).attr('href', position.officeLink());
+          }
+        }
+
+        let accounts = s.socialMediaAccounts;
+        for (var i = 0; i < accounts.length; i++) {
+          var account = accounts[i];
+          $($('.social-media-account').get(i)).text(account.path);
+        }
+
+        $('.office .link').text(position.organizationName);
+        $ ('.office .link').attr('href', position.officeLink());
+
+        for (var i = 0; i < s.educationalExperiences.length; i++) {
+          var exp = s.educationalExperiences[i];
+          $($('.educational-experience .degree').get(i)).text(exp.degree);
+          $($('.educational-experience .school-name').get(i)).text(exp.schoolName);
+          $($('.educational-experience .ended-at').get(i)).text(exp.endedAt);
+        }
+
+        for (var i = 0; i < s.hobbies.length; i++) {
+          var hobby = s.hobbies[i];
+          $($('.hobbies .hobby').get(i)).text(hobby.name);
+        }
+      });
+
+//      Staffer.includes(['issues', 'current_position']).selectExtra({ staffers: ['email'] }).where({ colleague_of: id }).all().then((staffers) => {
+//        for (var i = 0; i < staffers.length; i++) {
+//          var staffer = staffers[i];
+//          $($('.colleague .colleague-name').get(i)).text(staffer.fullName());
+//          $($('.colleague .colleague-email').get(i)).text(staffer.email);
+//          $($('.colleague .colleague-title').get(i)).text(staffer.position().title);
+//          $($('.colleague .colleague-issues').get(i)).text(staffer.issueList());
+//        }
+//      });
+    </script>
+
+    <div class='main'>
+      <div class='main-name'></div>
+      <div class='main-title'></div>
+      <div class='main-issues'></div>
+      <div class='office'>
+        <div class='building'></div>
+        <div class='address'></div>
+        <div class='phone'></div>
+      </div>
+      <div class='email'></div>
+
+      <br />
+      <br />
+      <br />
+      <div class='positions'>
+        <div class='position'>
+          <div class='title'></div>
+          <a class='office-link' href=''></a>
+        </div>
+        <div class='position'>
+          <div class='title'></div>
+          <a class='office-link' href=''></a>
+        </div>
+        <div class='position'>
+          <div class='title'></div>
+          <a class='office-link' href=''></a>
+        </div>
+        <div class='position'>
+          <div class='title'></div>
+          <a class='office-link' href=''></a>
+        </div>
+        <div class='position'>
+          <div class='title'></div>
+          <a class='office-link' href=''></a>
+        </div>
+        <div class='position'>
+          <div class='title'></div>
+          <a class='office-link' href=''></a>
+        </div>
+        <div class='position'>
+          <div class='title'></div>
+          <a class='office-link' href=''></a>
+        </div>
+      </div>
+      <br />
+      <br />
+      <br />
+
+      <div class='colleagues'>
+        <h3>Colleagues</h3>
+        <div class='colleague'>
+          <div class='colleague-name'></div>
+          <div class='colleague-title'></div>
+          <div class='colleague-email'></div>
+          <a href='' class='colleague-office'></a>
+          <div class='colleague-issues'></div>
+        </div>
+      </div>
+
+      <br />
+      <br />
+      <br />
+
+      <ul class='social-media-accounts'>
+        <li class='social-media-account'></li>
+        <li class='social-media-account'></li>
+        <li class='social-media-account'></li>
+      </ul>
+
+      <div class='office'>
+        <div>Office:</div>
+        <a class='link' href=''></a>
+      </div>
+
+      <div class='hobbies'>
+        <h3>Hobbies</h3>
+        <div class='hobby'>
+          <div class='name'></div>
+        </div>
+      </div>
+
+      <div class='educational-experiences'>
+        <h3>Education</h3>
+        <div class='educational-experience'>
+          <div class='degree'></div>
+          <div class='school-name'></div>
+          <div class='ended-at'></div>
+        </div>
+
+        <div class='educational-experience'>
+          <div class='degree'></div>
+          <div class='school-name'></div>
+          <div class='ended-at'></div>
+        </div>
+
+        <div class='educational-experience'>
+          <div class='degree'></div>
+          <div class='school-name'></div>
+          <div class='ended-at'></div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

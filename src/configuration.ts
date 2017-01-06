@@ -25,6 +25,11 @@ export default class Config {
   }
 
   static modelForType(type: string) : typeof Model {
-    return this.typeMapping[type];
+    let klass = this.typeMapping[type];
+    if (klass) {
+      return klass;
+    } else {
+      throw(`Could not find class for jsonapi type "${type}"`)
+    }
   }
 }
