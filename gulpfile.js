@@ -3,6 +3,7 @@ const mocha   = require('gulp-mocha');
 const webpack = require('webpack-stream');
 const ts      = require('gulp-typescript');
 const del     = require('del');
+const watch   = require('gulp-watch');
 
 var tsProject = ts.createProject('tsconfig.json');
 
@@ -17,6 +18,12 @@ gulp.task('test', ['clean:test'], () =>
     .pipe(gulp.dest('tmp/test'))
     .pipe(mocha())
 );
+
+gulp.task('watch', function () {
+  return watch(['src/**/*', 'test/**/*'], function () {
+    gulp.start('test')
+  })
+});
 
 gulp.task('test-browser', function () {
   gulp
