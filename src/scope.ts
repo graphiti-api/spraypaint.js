@@ -95,6 +95,10 @@ export default class Scope {
     return this;
   }
 
+  scope() : Scope {
+    return this;
+  }
+
   asQueryParams() : Object {
     let qp = {};
 

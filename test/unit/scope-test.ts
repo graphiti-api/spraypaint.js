@@ -118,6 +118,12 @@ describe('Scope', function() {
     });
   });
 
+  describe('#scope()', function() {
+    it('returns itself', function() {
+      expect(scope.scope()).to.equal(scope)
+    })
+  })
+
   describe('#asQueryParams()', function() {
     it('transforms all scoping criteria into a jsonapi-compatible query param object', function() {
       scope
