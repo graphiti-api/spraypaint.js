@@ -13,6 +13,7 @@ export default class Scope {
   _fields: Object = {};
   _extra_fields: Object = {};
   _include: Object = {};
+  _stats: Object = {};
 
   constructor(model : typeof Model) {
     this.model = model;
@@ -52,6 +53,13 @@ export default class Scope {
   where(clause: Object) : Scope {
     for (let key in clause) {
       this._filter[key] = clause[key];
+    }
+    return this;
+  }
+
+  stats(clause: Object) : Scope {
+    for (let key in clause) {
+      this._stats[key] = clause[key];
     }
     return this;
   }
@@ -107,6 +115,7 @@ export default class Scope {
     qp['sort']          = this._sortParam(this._sort);
     qp['fields']        = this._fields;
     qp['extra_fields']  = this._extra_fields;
+    qp['stats']         = this._stats;
     qp['include']       = new IncludeDirective(this._include).toString();
 
     return qp;

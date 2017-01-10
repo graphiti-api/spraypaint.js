@@ -49,6 +49,22 @@ describe('Scope', function() {
     });
   });
 
+  describe('#stats()', function() {
+    it('updates stats request', function() {
+      scope.stats({ total: 'count' });
+      scope.stats({ average: 'cost' });
+
+      expect(scope._stats).to.eql({
+        total: 'count',
+        average: 'cost'
+      });
+    });
+
+    it('returns the scope', function() {
+      expect(scope.stats({ total: 'count' })).to.be.instanceof(Scope)
+    });
+  });
+
   describe('#order()', function() {
     it('updates sort criteria', function() {
       scope.order('foo');
@@ -136,6 +152,7 @@ describe('Scope', function() {
         .select({ people: ['name', 'age'] })
         .select({ pets: ['type'] })
         .selectExtra({ people: ['net_worth'] })
+        .stats({ total: 'count' })
         .includes({ a: ['b', { c: 'd' }] })
       let qp = scope.asQueryParams();
 
@@ -156,6 +173,9 @@ describe('Scope', function() {
         extra_fields: {
           people: ['net_worth']
         },
+        stats: {
+          total: 'count'
+        },
         include: 'a.b,a.c.d'
       });
     });
@@ -170,8 +190,9 @@ describe('Scope', function() {
         .order('foo')
         .order({ bar: 'desc' })
         .select({ people: ['name', 'age'] })
+        .stats({ total: 'count' })
         .includes({ a: ['b', { c: 'd' }] })
-      expect(scope.toQueryParams()).to.eq('page[number]=2&page[size]=10&filter[foo]=bar&sort=foo,-bar&fields[people]=name,age&include=a.b,a.c.d');
+      expect(scope.toQueryParams()).to.eq('page[number]=2&page[size]=10&filter[foo]=bar&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b,a.c.d');
     });
 
     it('does not include empty objects', function() {
