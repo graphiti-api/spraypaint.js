@@ -1,5 +1,6 @@
 import Attribute from './attribute';
 import Model from './model';
+import CollectionProxy from './collection-proxy';
 
 class Base extends Attribute {
   klass: typeof Model;

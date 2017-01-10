@@ -4,6 +4,7 @@ import Scope from './scope';
 import Config from './configuration';
 import Attribute from './attribute';
 import deserialize from './util/deserialize';
+import CollectionProxy from './collection-proxy';
 import _extend from './util/extend';
 import { camelize } from './util/string';
 
@@ -41,7 +42,7 @@ export default class Model {
     this.attributes = attributes;
   }
 
-  static all() : Promise<Array<Model>> {
+  static all() : Promise<CollectionProxy<Model>> {
     return this.scope().all();
   }
 

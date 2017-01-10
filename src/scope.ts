@@ -2,6 +2,7 @@ import Model from './model';
 import Config from './configuration';
 import parameterize from './util/parameterize';
 import IncludeDirective from './util/include-directive';
+import CollectionProxy from './collection-proxy';
 import Request from './request';
 import colorize from './util/colorize';
 
@@ -19,11 +20,11 @@ export default class Scope {
     this.model = model;
   }
 
-  all() : Promise<Array<Model>> {
+  all() : Promise<CollectionProxy<Model>> {
     return this._fetch(this.model.url()).then((json : japiDoc) => {
-      return json.data.map((datum : japiResource) => {
-        return Model.fromJsonapi(datum, json);
-      });
+      let collection = new CollectionProxy(json)
+
+      return  collection
     });
   }
 
@@ -35,8 +36,8 @@ export default class Scope {
 
   // TODO: paginate 1
   first() : Promise<Model> {
-    return this.per(1).all().then((models : Array<Model>) => {
-      return models[0];
+    return this.per(1).all().then((models : CollectionProxy<Model>) => {
+      return models.data[0];
     });
   }
 

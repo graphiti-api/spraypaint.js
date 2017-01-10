@@ -14,6 +14,7 @@ declare module NodeJS  {
 interface japiDoc {
   data: any; // can't do Array | japiResource
   included: Array<japiResource>;
+  meta?: any;
 }
 
 interface japiResourceIdentifier {
