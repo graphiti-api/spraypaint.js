@@ -2,8 +2,7 @@ import Model from './model';
 import Config from './configuration';
 import parameterize from './util/parameterize';
 import IncludeDirective from './util/include-directive';
-import CollectionProxy from './collection-proxy';
-import RecordProxy from './record-proxy';
+import { CollectionProxy, RecordProxy } from './proxies';
 import Request from './request';
 import colorize from './util/colorize';
 

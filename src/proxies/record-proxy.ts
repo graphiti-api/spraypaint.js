@@ -1,6 +1,6 @@
-import Model from './model';
+import Model from '../model';
 
-class RecordProxy<T> {
+class RecordProxy<T> implements IResultProxy<T> {
   private _raw_json : japiDoc;
   private _model : T;
 
@@ -23,9 +23,10 @@ class RecordProxy<T> {
   private setRaw = (json_payload : japiDoc) => {
     this._raw_json = json_payload;
 
-
     if (this.raw.data) {
       this._model = Model.fromJsonapi(this.raw.data, this.raw);
+    } else {
+      this._model = null
     }
   }
 }

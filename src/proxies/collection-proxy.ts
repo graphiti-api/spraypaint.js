@@ -1,6 +1,6 @@
-import Model from './model';
+import Model from '../model';
 
-class CollectionProxy<T> {
+class CollectionProxy<T> implements IResultProxy<T> {
   private _raw_json : japiDoc;
   private _array : Array<T>;
 
@@ -25,11 +25,9 @@ class CollectionProxy<T> {
 
     this._array = [];
 
-    if (this.raw.data) {
-      this.raw.data.map((datum : japiResource) => {
-        this._array.push(Model.fromJsonapi(datum, this.raw));
-      });
-    }
+    this.raw.data.map((datum : japiResource) => {
+      this._array.push(Model.fromJsonapi(datum, this.raw));
+    });
   }
 }
 

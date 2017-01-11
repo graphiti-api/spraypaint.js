@@ -1,6 +1,6 @@
 import { Person } from '../fixtures';
 
-import RecordProxy from '../../src/record-proxy'
+import RecordProxy from '../../src/proxies/record-proxy'
 
 describe('RecordProxy', function() {
   let personData = {
@@ -30,9 +30,20 @@ describe('RecordProxy', function() {
       expect(record.raw).to.deep.equal(personData)
     })
 
-    it('should assign the correct models to the data array', function() {
+    it('should assign the correct model to the data field', function() {
       let record = new RecordProxy(personData)
       expect(record.data).to.be.instanceof(Person)
+    })
+
+    context('data is null', function() {
+      let personData = {
+        data: null
+      }
+
+      it('should assign data to null', function() {
+        let record = new RecordProxy(personData)
+        expect(record.data).to.eq(null)
+      })
     })
   })
 

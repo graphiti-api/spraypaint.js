@@ -1,6 +1,6 @@
 import { Person } from '../fixtures';
 
-import CollectionProxy from '../../src/collection-proxy'
+import CollectionProxy from '../../src/proxies/collection-proxy'
 
 describe('CollectionProxy', function() {
   let personData = {

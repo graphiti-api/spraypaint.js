@@ -28,3 +28,9 @@ interface japiResource extends japiResourceIdentifier {
   meta?: Object;
   links?: Object;
 }
+
+interface IResultProxy<T> {
+  data: any
+  meta: Object
+  raw: japiDoc
+}

@@ -4,8 +4,7 @@ import Scope from './scope';
 import Config from './configuration';
 import Attribute from './attribute';
 import deserialize from './util/deserialize';
-import CollectionProxy from './collection-proxy';
-import RecordProxy from './record-proxy';
+import { CollectionProxy, RecordProxy } from './proxies';
 import _extend from './util/extend';
 import { camelize } from './util/string';
 

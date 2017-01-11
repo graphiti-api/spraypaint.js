@@ -3,8 +3,6 @@
 import { sinon } from '../../test/test-helper';
 import { Author, Genre } from '../fixtures';
 
-import CollectionProxy from '../../src/collection-proxy';
-
 describe('Model relationships', function() {
   it('supports direct assignment of models', function() {
     let author = new Author();
