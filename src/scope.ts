@@ -2,6 +2,7 @@ import Model from './model';
 import Config from './configuration';
 import parameterize from './util/parameterize';
 import IncludeDirective from './util/include-directive';
+import { CollectionProxy, RecordProxy } from './proxies';
 import Request from './request';
 import colorize from './util/colorize';
 
@@ -13,29 +14,30 @@ export default class Scope {
   _fields: Object = {};
   _extra_fields: Object = {};
   _include: Object = {};
+  _stats: Object = {};
 
   constructor(model : typeof Model) {
     this.model = model;
   }
 
-  all() : Promise<Array<Model>> {
+  all() : Promise<CollectionProxy<Model>> {
     return this._fetch(this.model.url()).then((json : japiDoc) => {
-      return json.data.map((datum : japiResource) => {
-        return Model.fromJsonapi(datum, json);
-      });
+      let collection = new CollectionProxy(json);
+
+      return  collection;
     });
   }
 
-  find(id : string | number) : Promise<Model> {
+  find(id : string | number) : Promise<RecordProxy<Model>> {
     return this._fetch(this.model.url(id)).then((json : japiDoc) => {
-      return Model.fromJsonapi(json.data, json);
+      return new RecordProxy(json)
     });
   }
 
   // TODO: paginate 1
   first() : Promise<Model> {
-    return this.per(1).all().then((models : Array<Model>) => {
-      return models[0];
+    return this.per(1).all().then((models : CollectionProxy<Model>) => {
+      return models.data[0];
     });
   }
 
@@ -52,6 +54,13 @@ export default class Scope {
   where(clause: Object) : Scope {
     for (let key in clause) {
       this._filter[key] = clause[key];
+    }
+    return this;
+  }
+
+  stats(clause: Object) : Scope {
+    for (let key in clause) {
+      this._stats[key] = clause[key];
     }
     return this;
   }
@@ -95,6 +104,13 @@ export default class Scope {
     return this;
   }
 
+  // The `Model` class has a `scope()` method to return the scope for it.
+  // This method makes it possible for methods to expect either a model or
+  // a scope and reliably cast them to a scope for use via `scope()`
+  scope() : Scope {
+    return this;
+  }
+
   asQueryParams() : Object {
     let qp = {};
 
@@ -103,6 +119,7 @@ export default class Scope {
     qp['sort']          = this._sortParam(this._sort);
     qp['fields']        = this._fields;
     qp['extra_fields']  = this._extra_fields;
+    qp['stats']         = this._stats;
     qp['include']       = new IncludeDirective(this._include).toString();
 
     return qp;

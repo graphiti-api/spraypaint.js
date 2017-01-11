@@ -31,8 +31,8 @@ describe('Model relationships', function() {
     expect(author.genre.name).to.eq('Horror');
   });
 
-  it('defaults hasMany to empty array', function() {
+  it('defaults hasMany to empty collection', function() {
     let genre = new Genre();
-    expect(genre.authors).to.eql([]);
+    expect(genre.authors.length).to.eql(0);
   });
 });

@@ -7,6 +7,12 @@ after(function () {
   fetchMock.restore();
 });
 
+let resultData = function(promise) {
+  return promise.then(function(proxyObject) {
+    return proxyObject.data
+  })
+}
+
 describe('Model finders', function() {
   describe('#find()', function() {
     before(function () {
@@ -22,13 +28,13 @@ describe('Model finders', function() {
     });
 
     it('returns a promise that resolves the correct instance', function() {
-      return expect(Person.find(1)).to.eventually
+      return expect(resultData(Person.find(1))).to.eventually
         .be.instanceof(Person).and
         .have.property('id', '1');
     });
 
     it('assigns attributes correctly', function() {
-      return expect(Person.find(1)).to.eventually
+      return expect(resultData(Person.find(1))).to.eventually
         .have.property('name', 'John')
     });
 
@@ -44,7 +50,7 @@ describe('Model finders', function() {
       });
 
       it('resolves to the correct class', function() {
-        return expect(Person.find(1)).to.eventually
+        return expect(resultData(Person.find(1))).to.eventually
           .be.instanceof(Author);
       });
     });
@@ -71,7 +77,8 @@ describe('Model finders', function() {
   });
 
   describe('#all()', function() {
-    before(function () {
+    beforeEach(function () {
+      fetchMock.restore();
       fetchMock.get('http://example.com/api/v1/people', {
         data: [
           { id: '1', type: 'people' }
@@ -80,9 +87,32 @@ describe('Model finders', function() {
     });
 
     it('returns a promise that resolves the correct instances', function() {
-      return expect(Person.all()).to.eventually
+      return expect(resultData(Person.all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '1')
+    });
+
+    describe('response includes a meta payload', function() {
+      beforeEach(function () {
+        fetchMock.restore();
+        fetchMock.get('http://example.com/api/v1/people', {
+          data: [
+            { id: '1', type: 'people' }
+          ],
+          meta: {
+            stats: {
+              total: {
+                count: 45
+              },
+            }
+          }
+        });
+      });
+
+      it('includes meta payload in the resulting collection', function() {
+        return expect(Person.all()).to.eventually
+          .have.deep.property('meta.stats.total.count', 45)
+      });
     });
   });
 
@@ -96,7 +126,7 @@ describe('Model finders', function() {
     });
 
     it('queries correctly', function() {
-      return expect(Person.page(2).all()).to.eventually
+      return expect(resultData(Person.page(2).all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });
@@ -104,17 +134,16 @@ describe('Model finders', function() {
 
   describe('#per', function() {
     before(function () {
-      fetchMock.get('http://example.com/api/v1/people?page[size]=10', {
+      fetchMock.get('http://example.com/api/v1/people?page[size]=2', {
         data: [
-          { id: '2', type: 'people' }
+          { id: '1', type: 'people' }
         ]
       });
     });
 
     it('queries correctly', function() {
-      return expect(Person.page(2).all()).to.eventually
+      return expect(resultData(Person.per(2).all())).to.eventually
         .all.be.instanceof(Person)
-        .all.have.property('id', '2')
     });
   });
 
@@ -128,7 +157,7 @@ describe('Model finders', function() {
     });
 
     it('queries correctly', function() {
-      return expect(Person.order('foo').order({ bar: 'desc' }).all()).to.eventually
+      return expect(resultData(Person.order('foo').order({ bar: 'desc' }).all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });
@@ -144,7 +173,7 @@ describe('Model finders', function() {
     });
 
     it('queries correctly', function() {
-      return expect(Person.where({ id: 2 }).where({ a: 'b' }).all()).to.eventually
+      return expect(resultData(Person.where({ id: 2 }).where({ a: 'b' }).all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });
@@ -160,7 +189,7 @@ describe('Model finders', function() {
     });
 
     it('queries correctly', function() {
-      return expect(Person.select({ people: ['name', 'age'] }).all()).to.eventually
+      return expect(resultData(Person.select({ people: ['name', 'age'] }).all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });
@@ -176,7 +205,7 @@ describe('Model finders', function() {
     });
 
     it('queries correctly', function() {
-      return expect(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all()).to.eventually
+      return expect(resultData(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });
@@ -195,7 +224,7 @@ describe('Model finders', function() {
     });
 
     it('queries correctly', function() {
-      return expect(Person.includes({ a: ['b', { c: 'd' }] }).all()).to.eventually
+      return expect(resultData(Person.includes({ a: ['b', { c: 'd' }] }).all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });

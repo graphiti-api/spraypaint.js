@@ -13,7 +13,8 @@ declare module NodeJS  {
 
 interface japiDoc {
   data: any; // can't do Array | japiResource
-  included: Array<japiResource>;
+  included?: Array<japiResource>;
+  meta?: any;
 }
 
 interface japiResourceIdentifier {
@@ -26,4 +27,10 @@ interface japiResource extends japiResourceIdentifier {
   relationships?: Object;
   meta?: Object;
   links?: Object;
+}
+
+interface IResultProxy<T> {
+  data: any
+  meta: Object
+  raw: japiDoc
 }
