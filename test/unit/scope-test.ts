@@ -13,7 +13,7 @@ beforeEach(function() {
 describe('Scope', function() {
   describe('#page()', function() {
     it('sets correct pagination information', function() {
-      scope.page(2);
+      scope = scope.page(2);
       expect(scope._pagination).to.eql({ number: 2 });
     });
 
@@ -24,7 +24,7 @@ describe('Scope', function() {
 
   describe('#per()', function() {
     it('sets correct pagination information', function() {
-      scope.per(10);
+      scope = scope.per(10);
       expect(scope._pagination).to.eql({ size: 10 });
     });
 
@@ -35,9 +35,9 @@ describe('Scope', function() {
 
   describe('#where()', function() {
     it('updates filter criteria', function() {
-      scope.where({ foo: 'bar' })
-      scope.where({ bar: 'baz' })
-      scope.where({ foo: 'bar2' })
+      scope = scope.where({ foo: 'bar' })
+         .where({ bar: 'baz' })
+         .where({ foo: 'bar2' })
       expect(scope._filter).to.eql({
         foo: 'bar2',
         bar: 'baz'
@@ -51,8 +51,8 @@ describe('Scope', function() {
 
   describe('#stats()', function() {
     it('updates stats request', function() {
-      scope.stats({ total: 'count' });
-      scope.stats({ average: 'cost' });
+      scope = scope.stats({ total: 'count' })
+        .stats({ average: 'cost' });
 
       expect(scope._stats).to.eql({
         total: 'count',
@@ -67,8 +67,8 @@ describe('Scope', function() {
 
   describe('#order()', function() {
     it('updates sort criteria', function() {
-      scope.order('foo');
-      scope.order({ bar: 'desc' });
+      scope = scope.order('foo')
+        .order({ bar: 'desc' });
       expect(scope._sort).to.eql({
         foo: 'asc',
         bar: 'desc'
@@ -82,8 +82,8 @@ describe('Scope', function() {
 
   describe('#select()', function() {
     it('updates fields criteria', function() {
-      scope.select({ people: ['foo', 'bar'] });
-      scope.select({ things: ['baz'] })
+      scope = scope.select({ people: ['foo', 'bar'] })
+        .select({ things: ['baz'] })
       expect(scope._fields).to.eql({
         people: ['foo', 'bar'],
         things: ['baz']
@@ -98,7 +98,7 @@ describe('Scope', function() {
   describe('#includes()', function() {
     describe('when passed a string', function() {
       it('updates include criteria', function() {
-        scope.includes('foo')
+        scope = scope.includes('foo')
         expect(scope._include).to.eql({
           foo: {}
         });
@@ -107,7 +107,7 @@ describe('Scope', function() {
 
     describe('when passed an array', function() {
       it('updates include criteria', function() {
-        scope.includes(['foo', 'bar']);
+        scope = scope.includes(['foo', 'bar']);
         expect(scope._include).to.eql({
           foo: {},
           bar: {}
@@ -117,7 +117,7 @@ describe('Scope', function() {
 
     describe('when passed a nested object', function() {
       it('updates include criteria', function() {
-        scope.includes({ a: ['b', { c: 'd' }] });
+        scope = scope.includes({ a: ['b', { c: 'd' }] });
         expect(scope._include).to.eql({
           a: {
             b: {},
@@ -142,7 +142,7 @@ describe('Scope', function() {
 
   describe('#asQueryParams()', function() {
     it('transforms all scoping criteria into a jsonapi-compatible query param object', function() {
-      scope
+      scope = scope
         .page(2)
         .per(10)
         .where({ foo: 'bar' })
@@ -183,7 +183,7 @@ describe('Scope', function() {
 
   describe('#toQueryParams', function() {
     it('transforms nested query parameter object to query string', function() {
-      scope
+      scope = scope
         .page(2)
         .per(10)
         .where({ foo: 'bar' })
@@ -196,7 +196,7 @@ describe('Scope', function() {
     });
 
     it('does not include empty objects', function() {
-      scope.page(2);
+      scope = scope.page(2);
       expect(scope.toQueryParams().match(/field/) === null).to.eq(true);
     });
 
@@ -206,4 +206,22 @@ describe('Scope', function() {
       })
     });
   });
+
+  describe('#copy', function() {
+    it('should make a copy of the scope', function() {
+      expect(scope.copy()).not.to.eq(scope)
+    })
+
+    it('should make a copy of scope attributes', function() {
+      let original = scope.order({foo: 'asc'}).page(1).per(20)
+
+      let copy = original.copy()
+
+      expect(original._pagination).not.to.eq(copy._pagination)
+      expect(original._pagination).to.deep.eq(copy._pagination)
+
+      expect(original._sort).not.to.eq(copy._sort)
+      expect(original._sort).to.deep.eq(copy._sort)
+    })
+  })
 });

@@ -5,6 +5,7 @@ import IncludeDirective from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies';
 import Request from './request';
 import colorize from './util/colorize';
+import * as cloneDeep from 'lodash.clonedeep';
 
 export default class Scope {
   model: typeof Model;
@@ -42,66 +43,82 @@ export default class Scope {
   }
 
   page(pageNumber : number) : Scope {
-    this._pagination.number = pageNumber;
-    return this;
+    let copy = this.copy()
+
+    copy._pagination.number = pageNumber;
+    return copy;
   }
 
   per(size : number) : Scope {
-    this._pagination.size = size;
-    return this;
+    let copy = this.copy()
+
+    copy._pagination.size = size;
+    return copy;
   }
 
   where(clause: Object) : Scope {
+    let copy = this.copy()
+
     for (let key in clause) {
-      this._filter[key] = clause[key];
+      copy._filter[key] = clause[key];
     }
-    return this;
+    return copy;
   }
 
   stats(clause: Object) : Scope {
+    let copy = this.copy()
+
     for (let key in clause) {
-      this._stats[key] = clause[key];
+      copy._stats[key] = clause[key];
     }
-    return this;
+    return copy;
   }
 
   order(clause: Object | string) : Scope {
+    let copy = this.copy()
+
     if (typeof clause == "object") {
       for (let key in clause) {
-        this._sort[key] = clause[key];
+        copy._sort[key] = clause[key];
       }
     } else {
-      this._sort[clause] = 'asc';
+      copy._sort[clause] = 'asc';
     }
 
-    return this;
+    return copy;
   }
 
   select(clause: Object) {
+    let copy = this.copy()
+
     for (let key in clause) {
-      this._fields[key] = clause[key];
+      copy._fields[key] = clause[key];
     }
 
-    return this;
+    return copy;
   }
 
   selectExtra(clause: Object) {
+    let copy = this.copy()
+
     for (let key in clause) {
-      this._extra_fields[key] = clause[key];
+      copy._extra_fields[key] = clause[key];
     }
 
-    return this;
+    return copy;
   }
 
   includes(clause: Object | string | Array<any>) : Scope {
+    let copy = this.copy()
+
     let directive = new IncludeDirective(clause);
     let directiveObject = directive.toObject();
 
     for (let key in directiveObject) {
-      this._include[key] = directiveObject[key];
+      copy._include[key] = directiveObject[key];
     }
 
-    return this;
+    return copy;
   }
 
   // The `Model` class has a `scope()` method to return the scope for it.
@@ -131,6 +148,12 @@ export default class Scope {
     if (paramString !== '') {
       return paramString;
     }
+  }
+
+  copy() : Scope {
+    let newScope = cloneDeep(this);
+
+    return newScope;
   }
 
   // private
