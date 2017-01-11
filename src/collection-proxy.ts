@@ -4,38 +4,26 @@ class CollectionProxy<T> {
   private _raw_json : japiDoc;
   private _array : Array<T>;
 
-  constructor (raw_json : japiDoc = { data: [], included: [] }) {
-    this.setRaw(raw_json)
+  constructor (raw_json : japiDoc = { data: [] }) {
+    this.setRaw(raw_json);
   }
 
   get raw () : japiDoc {
-    return this._raw_json
+    return this._raw_json;
   }
 
   get data () : Array<T> {
-    return this._array
-  }
-
-  get collection () : Array<T> {
-    return this._array
+    return this._array;
   }
 
   get meta () : Object {
-    if (this.raw) {
-      return this.raw.meta || {}
-    }
-
-    return {}
-  }
-
-  map (fn) {
-    return this.data.map(fn)
+    return this.raw.meta || {};
   }
 
   private setRaw = (json_payload : japiDoc) => {
-    this._raw_json = json_payload
+    this._raw_json = json_payload;
 
-    this._array = []
+    this._array = [];
 
     if (this.raw.data) {
       this.raw.data.map((datum : japiResource) => {
@@ -45,4 +33,4 @@ class CollectionProxy<T> {
   }
 }
 
-export default CollectionProxy
+export default CollectionProxy;

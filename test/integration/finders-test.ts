@@ -109,7 +109,7 @@ describe('Model finders', function() {
         });
       });
 
-      it('promise collection includes meta payload', function() {
+      it('includes meta payload in the resulting collection', function() {
         return expect(Person.all()).to.eventually
           .have.deep.property('meta.stats.total.count', 45)
       });

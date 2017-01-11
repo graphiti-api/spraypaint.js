@@ -174,7 +174,7 @@ describe('Model', function() {
 
     it('skips relationships without data', function() {
       let instance = Model.fromJsonapi(doc.data, doc);
-      expect(instance.tags.length).to.eql(0);
+      expect(instance.tags).to.eql([]);
     });
   });
 });

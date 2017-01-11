@@ -22,9 +22,9 @@ export default class Scope {
 
   all() : Promise<CollectionProxy<Model>> {
     return this._fetch(this.model.url()).then((json : japiDoc) => {
-      let collection = new CollectionProxy(json)
+      let collection = new CollectionProxy(json);
 
-      return  collection
+      return  collection;
     });
   }
 
@@ -104,6 +104,9 @@ export default class Scope {
     return this;
   }
 
+  // The `Model` class has a `scope()` method to return the scope for it.
+  // This method makes it possible for methods to expect either a model or
+  // a scope and reliably cast them to a scope for use via `scope()`
   scope() : Scope {
     return this;
   }

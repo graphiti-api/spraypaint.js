@@ -3,9 +3,6 @@ import { Person } from '../fixtures';
 
 import CollectionProxy from '../../src/collection-proxy'
 
-beforeEach(function() {
-});
-
 describe('CollectionProxy', function() {
   let personData = {
     data: [
@@ -48,12 +45,16 @@ describe('CollectionProxy', function() {
       let collection = new CollectionProxy(personData)
       expect(collection.meta).to.eq(personData.meta)
     })
-  })
 
-  describe('#collection', function() {
-    it('should alias the data field', function() {
-      let collection = new CollectionProxy(personData)
-      expect(collection.collection).to.eq(collection.data)
+    describe('meta is null', function() {
+      let personData = {
+        data: [],
+      }
+
+      it('should return an empty object', function() {
+        let collection = new CollectionProxy(personData)
+        expect(collection.meta).to.deep.eq({})
+      })
     })
   })
 })
