@@ -3,6 +3,7 @@ import Config from './configuration';
 import parameterize from './util/parameterize';
 import IncludeDirective from './util/include-directive';
 import CollectionProxy from './collection-proxy';
+import RecordProxy from './record-proxy';
 import Request from './request';
 import colorize from './util/colorize';
 
@@ -28,9 +29,9 @@ export default class Scope {
     });
   }
 
-  find(id : string | number) : Promise<Model> {
+  find(id : string | number) : Promise<RecordProxy<Model>> {
     return this._fetch(this.model.url(id)).then((json : japiDoc) => {
-      return Model.fromJsonapi(json.data, json);
+      return new RecordProxy(json)
     });
   }
 

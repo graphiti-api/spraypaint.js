@@ -8,8 +8,8 @@ after(function () {
 });
 
 let resultData = function(promise) {
-  return promise.then(function(collection) {
-    return collection.data
+  return promise.then(function(proxyObject) {
+    return proxyObject.data
   })
 }
 
@@ -28,13 +28,13 @@ describe('Model finders', function() {
     });
 
     it('returns a promise that resolves the correct instance', function() {
-      return expect(Person.find(1)).to.eventually
+      return expect(resultData(Person.find(1))).to.eventually
         .be.instanceof(Person).and
         .have.property('id', '1');
     });
 
     it('assigns attributes correctly', function() {
-      return expect(Person.find(1)).to.eventually
+      return expect(resultData(Person.find(1))).to.eventually
         .have.property('name', 'John')
     });
 
@@ -50,7 +50,7 @@ describe('Model finders', function() {
       });
 
       it('resolves to the correct class', function() {
-        return expect(Person.find(1)).to.eventually
+        return expect(resultData(Person.find(1))).to.eventually
           .be.instanceof(Author);
       });
     });

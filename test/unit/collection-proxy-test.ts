@@ -1,4 +1,3 @@
-import { sinon } from '../../test/test-helper';
 import { Person } from '../fixtures';
 
 import CollectionProxy from '../../src/collection-proxy'
@@ -15,7 +14,6 @@ describe('CollectionProxy', function() {
         },
       }
     ],
-    included: [],
     meta: {
       stats: {
         total: {
@@ -43,7 +41,7 @@ describe('CollectionProxy', function() {
   describe('#meta', function() {
     it('should get meta field from raw response', function() {
       let collection = new CollectionProxy(personData)
-      expect(collection.meta).to.eq(personData.meta)
+      expect(collection.meta).to.deep.eq(personData.meta)
     })
 
     describe('meta is null', function() {

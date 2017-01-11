@@ -5,6 +5,7 @@ import Config from './configuration';
 import Attribute from './attribute';
 import deserialize from './util/deserialize';
 import CollectionProxy from './collection-proxy';
+import RecordProxy from './record-proxy';
 import _extend from './util/extend';
 import { camelize } from './util/string';
 
@@ -46,7 +47,7 @@ export default class Model {
     return this.scope().all();
   }
 
-  static find(id : string | number) : Promise<Model> {
+  static find(id : string | number) : Promise<RecordProxy<Model>> {
     return this.scope().find(id);
   }
 
