@@ -343,6 +343,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        enumerable: true,
 	        configurable: true
 	    });
+	    Model.prototype.isType = function (jsonapiType) {
+	        return this.klass.jsonapiType === jsonapiType;
+	    };
 	    return Model;
 	}());
 	Model.baseUrl = process.env.BROWSER ? '' : 'http://localhost:9999';

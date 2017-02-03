@@ -109,6 +109,10 @@ export default class Model {
     return this._attributes;
   }
 
+  isType(jsonapiType : string) {
+    return this.klass.jsonapiType === jsonapiType;
+  }
+
   set attributes(attrs : Object) {
     for(var key in attrs) {
       let attributeName = camelize(key);

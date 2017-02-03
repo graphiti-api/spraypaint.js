@@ -7,6 +7,14 @@ import { Person, Author, Book, Genre, Bio } from '../fixtures';
 let instance;
 
 describe('Model', function() {
+  describe('#isType', function() {
+    it('checks the jsonapiType of class', function() {
+      instance = new Author()
+      expect(instance.isType('authors')).to.eq(true)
+      expect(instance.isType('people')).to.eq(false)
+    });
+  });
+
   describe('#fromJsonapi', function() {
     let doc = {
       data: {
