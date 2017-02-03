@@ -9,6 +9,7 @@ import * as cloneDeep from 'lodash.clonedeep';
 
 export default class Scope {
   model: typeof Model;
+  _associations: Object = {};
   _pagination: { number?: number, size?: number } = {};
   _filter: Object = {};
   _sort: Object = {};
@@ -42,22 +43,32 @@ export default class Scope {
     });
   }
 
+  merge(obj : Object) : Scope {
+    let copy = this.copy();
+
+    Object.keys(obj).forEach((k) => {
+      copy._associations[k] = obj[k];
+    })
+
+    return copy;
+  }
+
   page(pageNumber : number) : Scope {
-    let copy = this.copy()
+    let copy = this.copy();
 
     copy._pagination.number = pageNumber;
     return copy;
   }
 
   per(size : number) : Scope {
-    let copy = this.copy()
+    let copy = this.copy();
 
     copy._pagination.size = size;
     return copy;
   }
 
   where(clause: Object) : Scope {
-    let copy = this.copy()
+    let copy = this.copy();
 
     for (let key in clause) {
       copy._filter[key] = clause[key];
@@ -66,7 +77,7 @@ export default class Scope {
   }
 
   stats(clause: Object) : Scope {
-    let copy = this.copy()
+    let copy = this.copy();
 
     for (let key in clause) {
       copy._stats[key] = clause[key];
@@ -75,7 +86,7 @@ export default class Scope {
   }
 
   order(clause: Object | string) : Scope {
-    let copy = this.copy()
+    let copy = this.copy();
 
     if (typeof clause == "object") {
       for (let key in clause) {
@@ -89,7 +100,7 @@ export default class Scope {
   }
 
   select(clause: Object) {
-    let copy = this.copy()
+    let copy = this.copy();
 
     for (let key in clause) {
       copy._fields[key] = clause[key];
@@ -99,7 +110,7 @@ export default class Scope {
   }
 
   selectExtra(clause: Object) {
-    let copy = this.copy()
+    let copy = this.copy();
 
     for (let key in clause) {
       copy._extra_fields[key] = clause[key];
@@ -109,7 +120,7 @@ export default class Scope {
   }
 
   includes(clause: Object | string | Array<any>) : Scope {
-    let copy = this.copy()
+    let copy = this.copy();
 
     let directive = new IncludeDirective(clause);
     let directiveObject = directive.toObject();
@@ -133,11 +144,13 @@ export default class Scope {
 
     qp['page']          = this._pagination;
     qp['filter']        = this._filter;
-    qp['sort']          = this._sortParam(this._sort);
+    qp['sort']          = this._sortParam(this._sort) || [];
     qp['fields']        = this._fields;
     qp['extra_fields']  = this._extra_fields;
     qp['stats']         = this._stats;
     qp['include']       = new IncludeDirective(this._include).toString();
+
+    this._mergeAssociationQueryParams(qp, this._associations);
 
     return qp;
   }
@@ -157,6 +170,30 @@ export default class Scope {
   }
 
   // private
+
+  private _mergeAssociationQueryParams(queryParams, associations) {
+    for (let key in associations) {
+      let associationScope = associations[key];
+      let associationQueryParams = associationScope.asQueryParams();
+
+      queryParams['page'][key]   = associationQueryParams['page'];
+      queryParams['filter'][key] = associationQueryParams['filter'];
+      queryParams['stats'][key]  = associationQueryParams['stats'];
+
+      associationQueryParams['sort'].forEach((s) => {
+        let transformed = this._transformAssociationSortParam(key, s);
+        queryParams['sort'].push(transformed);
+      });
+    }
+  }
+
+  private _transformAssociationSortParam(associationName: string, param : string) : string {
+    if (param.indexOf('-') !== -1) {
+      param = param.replace('-', '');
+      associationName = `-${associationName}`;
+    }
+    return `${associationName}.${param}`;
+  }
 
   private _sortParam(clause: Object | void) {
     if (clause && Object.keys(clause).length > 0) {

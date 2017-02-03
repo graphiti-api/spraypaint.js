@@ -1,5 +1,5 @@
 import '../../test/test-helper';
-import { Person, Author } from '../fixtures';
+import { Person, Author, Book } from '../fixtures';
 
 let fetchMock = require('fetch-mock');
 
@@ -130,11 +130,29 @@ describe('Model finders', function() {
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });
+
+    describe('when merging association #page', function() {
+      before(function () {
+        fetchMock.reset();
+        fetchMock.get('http://example.com/api/v1/people?page[number]=5&page[books][number]=10', {
+          data: [
+            { id: '1', type: 'people' }
+          ]
+        });
+      });
+
+      it('queries correctly', function() {
+        let bookScope = Book.page(10);
+        let personScope = Person.page(5).merge({ books: bookScope });
+        return expect(resultData(personScope.all())).to.eventually
+          .all.be.instanceof(Person)
+      });
+    });
   });
 
   describe('#per', function() {
     before(function () {
-      fetchMock.get('http://example.com/api/v1/people?page[size]=2', {
+      fetchMock.get('http://example.com/api/v1/people?page[size]=5', {
         data: [
           { id: '1', type: 'people' }
         ]
@@ -142,8 +160,26 @@ describe('Model finders', function() {
     });
 
     it('queries correctly', function() {
-      return expect(resultData(Person.per(2).all())).to.eventually
+      return expect(resultData(Author.per(5).all())).to.eventually
         .all.be.instanceof(Person)
+    });
+
+    describe('when merging association #per', function() {
+      before(function () {
+        fetchMock.reset();
+        fetchMock.get('http://example.com/api/v1/people?page[size]=5&page[books][size]=2', {
+          data: [
+            { id: '1', type: 'people' }
+          ]
+        });
+      });
+
+      it('queries correctly', function() {
+        let bookScope = Book.per(2);
+        let personScope = Person.per(5).merge({ books: bookScope });
+        return expect(resultData(personScope.all())).to.eventually
+          .all.be.instanceof(Person)
+      });
     });
   });
 
@@ -161,6 +197,26 @@ describe('Model finders', function() {
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
     });
+
+    describe('when merging association #order', function() {
+      before(function () {
+        fetchMock.reset();
+        fetchMock.get('http://example.com/api/v1/people?sort=foo,books.title,-books.pages', {
+          data: [
+            { id: '2', type: 'people' }
+          ]
+        });
+      });
+
+      it('queries correctly', function() {
+        let bookScope = Book.order('title').order({ pages: 'desc' });
+        let scope = Person.order('foo');
+        scope = scope.merge({ books: bookScope })
+        return expect(resultData(scope.all())).to.eventually
+          .all.be.instanceof(Person)
+          .all.have.property('id', '2')
+      });
+    });
   });
 
   describe('#where', function() {
@@ -176,6 +232,60 @@ describe('Model finders', function() {
       return expect(resultData(Person.where({ id: 2 }).where({ a: 'b' }).all())).to.eventually
         .all.be.instanceof(Person)
         .all.have.property('id', '2')
+    });
+
+    describe('when merging association #where', function() {
+      before(function () {
+        fetchMock.reset();
+        fetchMock.get('http://example.com/api/v1/people?filter[id]=1&filter[books][title]=It', {
+          data: [
+            { id: '1', type: 'people' }
+          ]
+        });
+      });
+
+      it('queries correctly', function() {
+        let bookScope = Book.where({ title: 'It' });
+        let personScope = Person.where({id : 1 }).merge({ books: bookScope });
+        return expect(resultData(personScope.all())).to.eventually
+          .all.be.instanceof(Person)
+      });
+    });
+  });
+
+  describe('#stats', function() {
+    before(function () {
+      fetchMock.get('http://example.com/api/v1/people?stats[total]=count,sum', {
+        data: [
+          { id: '1', type: 'people' }
+        ]
+      });
+    });
+
+    it('queries correctly', function() {
+      let scope = Person.stats({ total: ['count', 'sum'] });
+      return expect(resultData(scope.all())).to.eventually
+        .all.be.instanceof(Person)
+    });
+
+    describe('when merging association #stats', function() {
+      before(function() {
+        fetchMock.reset();
+        fetchMock.get('http://example.com/api/v1/people?stats[total]=count,sum&stats[books][pages]=average', {
+          data: [
+            { id: '1', type: 'people' }
+          ]
+        });
+      });
+
+      it('queries correctly', function() {
+        let bookScope = Book.stats({ pages: ['average'] });
+        let scope     = Person.stats({ total: ['count', 'sum'] });
+        scope         = scope.merge({ books: bookScope });
+
+        return expect(resultData(scope.all())).to.eventually
+          .all.be.instanceof(Person)
+      });
     });
   });
 

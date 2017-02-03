@@ -78,8 +78,16 @@ export default class Model {
     return this.scope().selectExtra(clause);
   }
 
+  static stats(clause: Object) : Scope {
+    return this.scope().stats(clause);
+  }
+
   static includes(clause: string | Object | Array<any>) : Scope {
     return this.scope().includes(clause);
+  }
+
+  static merge(obj : Object) : Scope {
+    return this.scope().merge(obj);
   }
 
   static url(id?: string | number) : string {
