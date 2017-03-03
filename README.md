@@ -18,7 +18,7 @@ const Person = Model.extend({
     baseUrl: 'http://localhost:3000',
     jsonapiType: 'people'
   },
-  
+
   firstName: attr(),
   lastName: attr(),
   fullName() {
@@ -32,12 +32,50 @@ Person.where({ name: 'Joe' }).page(2).per(10).sort('name').then((people) => {
 });
 ```
 
+### JSON Web Tokens
+
+jsorm supports setting a JWT and using it for all requests. Set it
+during `Config.setup` and all subsequents will pass it using the
+`Authorization` header:
+
+```es6
+const ApplicationRecord = Model.extend({
+  // code
+});
+
+const Person = ApplicationRecord.extend({
+  // code
+});
+
+const Author = ApplicationRecord.extend({
+  // code
+});
+
+Config.setup({ jwtOwners: [ApplicationRecord] });
+
+ApplicationRecord.jwt = 's0m3t0k3n';
+Author.all(); // sends JWT in Authorization header
+Author.getJWT(); // grabs from ApplicationRecord
+Author.setJWT('t0k3n'); // sets on ApplicationRecord
+```
+
+This means you could define `OtherApplicationRecord`, whose
+subclasses could use an alternate JWT for an alternate website.
+
+The token is sent in the following format:
+
+```
+Authorization: Token token="s0m3t0k3n"
+```
+
+If your application responds with `X-JWT` in the headers, jsorm will
+use this JWT for all subsequent requests (helpful when
+implementing token expiry).
+
 ### Roadmap
 
 * Find to throw error when record not found
-* Authentication from Node
 * Attribute transforms (type coercion)
 * Writes
 * Error / Validation handling
 * Nested Writes
-* Statistics
