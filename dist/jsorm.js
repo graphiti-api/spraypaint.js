@@ -100,10 +100,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Config = (function () {
 	    function Config() {
 	    }
-	    Config.setup = function () {
+	    Config.setup = function (options) {
 	        for (var _i = 0, _a = this.models; _i < _a.length; _i++) {
 	            var model = _a[_i];
 	            this.typeMapping[model.jsonapiType] = model;
+	            if (options['jwtOwners'] && options['jwtOwners'].indexOf(model) !== -1) {
+	                model.isJWTOwner = true;
+	            }
 	        }
 	        for (var _b = 0, _c = this.models; _b < _c.length; _b++) {
 	            var model = _c[_b];
@@ -281,6 +284,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    Model.scope = function () {
 	        return this._scope || new scope_1.default(this);
 	    };
+	    Model.setJWT = function (token) {
+	        this.getJWTOwner().jwt = token;
+	    };
+	    Model.getJWT = function () {
+	        return this.getJWTOwner().jwt;
+	    };
+	    Model.getJWTOwner = function () {
+	        if (this.isJWTOwner) {
+	            return this;
+	        }
+	        else {
+	            return this.parentClass.getJWTOwner();
+	        }
+	    };
 	    Model.all = function () {
 	        return this.scope().all();
 	    };
@@ -351,6 +368,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	Model.baseUrl = process.env.BROWSER ? '' : 'http://localhost:9999';
 	Model.apiNamespace = '/';
 	Model.jsonapiType = 'define-in-subclass';
+	Model.isJWTOwner = false;
+	Model.jwt = null;
 	Model.attributeList = [];
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Model;
@@ -714,12 +733,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 	    Scope.prototype._fetch = function (url) {
+	        var _this = this;
 	        var qp = this.toQueryParams();
 	        if (qp) {
 	            url = url + "?" + qp;
 	        }
 	        var request = new request_1.default();
-	        return request.get(url);
+	        var jwt = this.model.getJWT();
+	        return request.get(url, { jwt: jwt }).then(function (response) {
+	            var jwtHeader = response.headers.get('X-JWT');
+	            if (jwtHeader) {
+	                _this.model.setJWT(jwtHeader);
+	            }
+	            return response.json;
+	        });
 	    };
 	    return Scope;
 	}());
@@ -958,16 +985,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Request = (function () {
 	    function Request() {
 	    }
-	    Request.prototype.get = function (url) {
+	    Request.prototype.get = function (url, options) {
+	        var _this = this;
 	        configuration_1.default.logger.info(colorize_1.default('cyan', 'GET: ') + colorize_1.default('magenta', url));
 	        return new Promise(function (resolve, reject) {
-	            fetch(url).then(function (response) {
+	            var headers = _this.buildHeaders(options);
+	            fetch(url, { headers: headers }).then(function (response) {
 	                response.json().then(function (json) {
 	                    configuration_1.default.logger.debug(colorize_1.default('bold', JSON.stringify(json, null, 4)));
-	                    resolve(json);
+	                    resolve({ json: json, headers: response.headers });
 	                });
 	            });
 	        });
+	    };
+	    Request.prototype.buildHeaders = function (options) {
+	        var headers = {};
+	        if (options['jwt']) {
+	            headers['Authorization'] = "Token token=\"" + options['jwt'] + "\"";
+	        }
+	        return headers;
 	    };
 	    return Request;
 	}());
