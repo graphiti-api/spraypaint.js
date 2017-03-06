@@ -25,8 +25,7 @@ export default class Scope {
   all() : Promise<CollectionProxy<Model>> {
     return this._fetch(this.model.url()).then((json : japiDoc) => {
       let collection = new CollectionProxy(json);
-
-      return  collection;
+      return collection;
     });
   }
 
@@ -217,6 +216,14 @@ export default class Scope {
       url = `${url}?${qp}`;
     }
     let request = new Request();
-    return request.get(url);
+    let jwt = this.model.getJWT();
+
+    return request.get(url, { jwt }).then((response) => {
+      let jwtHeader = response.headers.get('X-JWT');
+      if (jwtHeader) {
+        this.model.setJWT(jwtHeader);
+      }
+      return response.json;
+    });
   }
 }

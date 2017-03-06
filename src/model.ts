@@ -13,12 +13,14 @@ export default class Model {
   static apiNamespace = '/';
   static jsonapiType = 'define-in-subclass';
   static endpoint: string;
+  static isJWTOwner: boolean = false;
+  static jwt: string = null;
+  static parentClass: typeof Model;
 
   id: string;
   _attributes: Object = {};
   relationships: Object = {};
   __meta__: Object | void = null;
-  parentClass: typeof Model;
   klass: typeof Model;
 
   static attributeList = [];
@@ -38,8 +40,20 @@ export default class Model {
     return this._scope || new Scope(this);
   }
 
-  constructor(attributes?: Object) {
-    this.attributes = attributes;
+  static setJWT(token: string) : void {
+    this.getJWTOwner().jwt = token;
+  }
+
+  static getJWT() : string {
+    return this.getJWTOwner().jwt;
+  }
+
+  static getJWTOwner() : typeof Model {
+    if (this.isJWTOwner) {
+      return this;
+    } else {
+      return this.parentClass.getJWTOwner();
+    }
   }
 
   static all() : Promise<CollectionProxy<Model>> {
@@ -103,6 +117,10 @@ export default class Model {
 
   static fromJsonapi(resource: japiResource, payload: japiDoc) : any {
     return deserialize(resource, payload);
+  }
+
+  constructor(attributes?: Object) {
+    this.attributes = attributes;
   }
 
   get attributes() : Object {

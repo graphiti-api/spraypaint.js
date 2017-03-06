@@ -1,11 +1,13 @@
 import { Model, Config, attr, hasMany, belongsTo, hasOne } from '../src/main';
 
-// typescript class
-class Person extends Model {
+class ApplicationRecord extends Model {
   static baseUrl = 'http://example.com';
   static apiNamespace = '/api';
-  static endpoint = '/v1/people';
+}
 
+// typescript class
+class Person extends ApplicationRecord {
+  static endpoint = '/v1/people';
   static jsonapiType = 'people';
 
   firstName: string = attr();
@@ -27,13 +29,13 @@ let Author = Person.extend({
   bio:        hasOne('bios')
 });
 
-class Book extends Model {
+class Book extends ApplicationRecord {
   static jsonapiType = 'books';
 
   title: string = attr();
 }
 
-class Genre extends Model {
+class Genre extends ApplicationRecord {
   static jsonapiType = 'genres';
 
   authors: any = hasMany('authors')
@@ -41,22 +43,25 @@ class Genre extends Model {
   name: string = attr();
 }
 
-class Bio extends Model {
+class Bio extends ApplicationRecord {
   static jsonapiType = 'bios';
 
   description: string = attr()
 }
 
-class Tag extends Model {
+class Tag extends ApplicationRecord {
   static jsonapiType = 'tags';
 
   name: string = attr()
 }
 
-class MultiWord extends Model {
+class MultiWord extends ApplicationRecord {
   static jsonapiType = 'multi_words';
 }
 
-Config.setup();
+const TestJWTSubclass = ApplicationRecord.extend({
+});
 
-export { Author, Person, Book, Genre, Bio, Tag };
+Config.setup({ jwtOwners: [ApplicationRecord, TestJWTSubclass] });
+
+export { ApplicationRecord, TestJWTSubclass, Author, Person, Book, Genre, Bio, Tag };

@@ -2,11 +2,45 @@
 
 import { sinon } from '../../test/test-helper';
 import { Model } from '../../src/main';
-import { Person, Author, Book, Genre, Bio } from '../fixtures';
+import { ApplicationRecord, TestJWTSubclass, Person, Author, Book, Genre, Bio } from '../fixtures';
 
 let instance;
 
 describe('Model', function() {
+  describe('.getJWTOwner', function() {
+    it('it finds the furthest ancestor where isJWTOwner', function() {
+      expect(Author.getJWTOwner()).to.eq(ApplicationRecord);
+      expect(Person.getJWTOwner()).to.eq(ApplicationRecord);
+      expect(ApplicationRecord.getJWTOwner()).to.eq(ApplicationRecord);
+      expect(TestJWTSubclass.getJWTOwner()).to.eq(TestJWTSubclass);
+    });
+  });
+
+  describe('#getJWT', function() {
+    beforeEach(function() {
+      ApplicationRecord.jwt = 'g3tm3';
+    });
+
+    afterEach(function() {
+      ApplicationRecord.jwt = null;
+    });
+
+    it('it grabs jwt from top-most parent', function() {
+      expect(Author.getJWT()).to.eq('g3tm3');
+    });
+  });
+
+  describe('#setJWT', function() {
+    afterEach(function() {
+      ApplicationRecord.jwt = null;
+    });
+
+    it('it sets jwt on the top-most parent', function() {
+      Author.setJWT('n3wt0k3n');
+      expect(ApplicationRecord.jwt).to.eq('n3wt0k3n');
+    });
+  });
+
   describe('#isType', function() {
     it('checks the jsonapiType of class', function() {
       instance = new Author()

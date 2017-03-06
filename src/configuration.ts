@@ -9,9 +9,13 @@ export default class Config {
   static typeMapping: Object = {};
   static logger: Logger = new Logger();
 
-  static setup() : void {
+  static setup(options : Object) : void {
     for (let model of this.models) {
       this.typeMapping[model.jsonapiType] = model;
+
+      if (options['jwtOwners'] && options['jwtOwners'].indexOf(model) !== -1) {
+        model.isJWTOwner = true;
+      }
     }
 
     for (let model of this.models) {
