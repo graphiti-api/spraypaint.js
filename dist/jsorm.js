@@ -595,10 +595,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return new proxies_1.RecordProxy(json);
 	        });
 	    };
-	    // TODO: paginate 1
 	    Scope.prototype.first = function () {
-	        return this.per(1).all().then(function (models) {
-	            return models.data[0];
+	        var newScope = this.per(1);
+	        return newScope._fetch(newScope.model.url()).then(function (json) {
+	            json.data = json.data[0];
+	            return new proxies_1.RecordProxy(json);
 	        });
 	    };
 	    Scope.prototype.merge = function (obj) {
@@ -890,19 +891,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var CollectionProxy = (function () {
 	    function CollectionProxy(raw_json) {
 	        if (raw_json === void 0) { raw_json = { data: [] }; }
-	        var _this = this;
-	        this.setRaw = function (json_payload) {
-	            _this._raw_json = json_payload;
-	            _this._array = [];
-	            _this.raw.data.map(function (datum) {
-	                _this._array.push(model_1.default.fromJsonapi(datum, _this.raw));
-	            });
-	        };
 	        this.setRaw(raw_json);
 	    }
 	    Object.defineProperty(CollectionProxy.prototype, "raw", {
 	        get: function () {
-	            return this._raw_json;
+	            return this._rawJson;
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -921,6 +914,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        enumerable: true,
 	        configurable: true
 	    });
+	    CollectionProxy.prototype.setRaw = function (json_payload) {
+	        var _this = this;
+	        this._rawJson = json_payload;
+	        this._array = [];
+	        this.raw.data.map(function (datum) {
+	            _this._array.push(model_1.default.fromJsonapi(datum, _this.raw));
+	        });
+	    };
 	    return CollectionProxy;
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });

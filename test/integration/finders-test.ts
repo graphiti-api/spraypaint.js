@@ -70,7 +70,7 @@ describe('Model finders', function() {
     });
 
     it('returns a promise that resolves the correct instances', function() {
-      return expect(Person.first()).to.eventually
+      return expect(resultData(Person.first())).to.eventually
         .be.instanceof(Person)
         .have.property('id', '1')
     });
