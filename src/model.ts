@@ -64,7 +64,7 @@ export default class Model {
     return this.scope().find(id);
   }
 
-  static first() : Promise<Model> {
+  static first() : Promise<RecordProxy<Model>> {
     return this.scope().first();
   }
 

@@ -35,10 +35,11 @@ export default class Scope {
     });
   }
 
-  // TODO: paginate 1
-  first() : Promise<Model> {
-    return this.per(1).all().then((models : CollectionProxy<Model>) => {
-      return models.data[0];
+  first() : Promise<RecordProxy<Model>> {
+    let newScope = this.per(1);
+    return newScope._fetch(newScope.model.url()).then((json : japiDoc) => {
+      json.data = json.data[0];
+      return new RecordProxy(json);
     });
   }
 
