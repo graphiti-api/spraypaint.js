@@ -1,5 +1,5 @@
+import { expect } from '../test-helper';
 import { Person } from '../fixtures';
-
 import RecordProxy from '../../src/proxies/record-proxy'
 
 describe('RecordProxy', function() {

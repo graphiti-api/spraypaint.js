@@ -1,7 +1,15 @@
-/// <reference path="../../index.d.ts" />
+/// <reference path="../index.d.ts" />
+// use for non-typescript extends
+
+let globalObj;
+if (typeof window === 'undefined') {
+  globalObj = global;
+} else {
+  globalObj = window;
+}
 
 export default function(superclass, classObj) {
-  global.__extends(Model, superclass);
+  globalObj['__extends'](Model, superclass);
   function Model() {
     var _this = superclass.apply(this, arguments) || this;
 

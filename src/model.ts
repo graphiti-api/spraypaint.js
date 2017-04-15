@@ -1,15 +1,17 @@
-/// <reference path="../index.d.ts" />
+/// <reference path="./index.d.ts" />
 
 import Scope from './scope';
 import Config from './configuration';
 import Attribute from './attribute';
-import deserialize from './util/deserialize';
+import { deserialize, deserializeInstance } from './util/deserialize';
 import { CollectionProxy, RecordProxy } from './proxies';
 import _extend from './util/extend';
 import { camelize } from './util/string';
+import WritePayload from './util/write-payload';
+import Request from './request';
 
 export default class Model {
-  static baseUrl = process.env.BROWSER? '': 'http://localhost:9999'
+  static baseUrl = 'http://please-set-a-base-url.com';
   static apiNamespace = '/';
   static jsonapiType = 'define-in-subclass';
   static endpoint: string;
@@ -21,6 +23,7 @@ export default class Model {
   _attributes: Object = {};
   relationships: Object = {};
   __meta__: Object | void = null;
+  _persisted: boolean = false;
   klass: typeof Model;
 
   static attributeList = [];
@@ -123,12 +126,12 @@ export default class Model {
     this.attributes = attributes;
   }
 
-  get attributes() : Object {
-    return this._attributes;
-  }
-
   isType(jsonapiType : string) {
     return this.klass.jsonapiType === jsonapiType;
+  }
+
+  get attributes() : Object {
+    return this._attributes;
   }
 
   set attributes(attrs : Object) {
@@ -137,6 +140,71 @@ export default class Model {
       if (key == 'id' || this.klass.attributeList.indexOf(attributeName) >= 0) {
         this[attributeName] = attrs[key];
       }
+    }
+  }
+
+  isPersisted(val? : boolean) : boolean {
+    if (val != undefined) {
+      this._persisted = val;
+      return val;
+    } else {
+      return this._persisted;
+    }
+  }
+
+  fromJsonapi(resource: japiResource, payload: japiDoc) : any {
+    return deserializeInstance(this, resource, payload);
+  }
+
+  destroy() : Promise<any> {
+    let url     = this.klass.url(this.id);
+    let verb    = 'delete';
+    let request = new Request();
+    let jwt     = this.klass.getJWT();
+
+    let requestPromise = request.delete(url, { jwt });
+    return this._writeRequest(requestPromise, () => {
+      this.isPersisted(false);
+    });
+  }
+
+  save() : Promise<any> {
+    let url     = this.klass.url();
+    let verb    = 'post';
+    let request = new Request();
+    let payload = new WritePayload(this);
+    let jwt     = this.klass.getJWT();
+
+    if (this.isPersisted()) {
+      url  = this.klass.url(this.id);
+      verb = 'put';
+    }
+
+    let requestPromise = request[verb](url, payload.asJSON(), { jwt });
+    return this._writeRequest(requestPromise, () => {
+      this.isPersisted(true);
+    });
+  }
+
+  private
+
+  _writeRequest(requestPromise : Promise<any>, callback: Function) : Promise<any> {
+    return new Promise((resolve, reject) => {
+      return requestPromise.then((response) => {
+        this._handleResponse(response, resolve, reject, callback);
+      });
+    });
+  }
+
+  _handleResponse(response: any, resolve: Function, reject: Function, callback: Function) : void {
+    if (response.status == 422) {
+      resolve(false);
+    } else if (response.status >= 500) {
+      reject('Server Error');
+    } else {
+      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload']);
+      callback(response);
+      resolve(true);
     }
   }
 }

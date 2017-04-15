@@ -5,7 +5,9 @@ import IncludeDirective from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies';
 import Request from './request';
 import colorize from './util/colorize';
-import * as cloneDeep from 'lodash.clonedeep';
+import * as _cloneDeep from 'lodash-es/clonedeep';
+
+let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
 
 export default class Scope {
   model: typeof Model;
@@ -224,7 +226,7 @@ export default class Scope {
       if (jwtHeader) {
         this.model.setJWT(jwtHeader);
       }
-      return response.json;
+      return response['jsonPayload'];
     });
   }
 }

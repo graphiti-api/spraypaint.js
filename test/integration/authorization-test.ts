@@ -1,7 +1,5 @@
-import '../../test/test-helper';
+import { expect, fetchMock } from '../test-helper';
 import { ApplicationRecord, Author } from '../fixtures';
-
-let fetchMock = require('fetch-mock');
 
 after(function () {
   fetchMock.restore();

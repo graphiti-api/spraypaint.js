@@ -1,6 +1,4 @@
-/// <reference path="../../index.d.ts" />
-
-import { sinon } from '../../test/test-helper';
+import { expect, sinon } from '../test-helper';
 import { Author, Genre } from '../fixtures';
 
 describe('Model relationships', function() {

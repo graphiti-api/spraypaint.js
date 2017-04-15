@@ -1,7 +1,5 @@
-/// <reference path="../../index.d.ts" />
-
-import { sinon } from '../../test/test-helper';
-import { Model } from '../../src/main';
+import { expect, sinon } from '../test-helper';
+import { Model } from '../../src/index';
 import { ApplicationRecord, TestJWTSubclass, Person, Author, Book, Genre, Bio } from '../fixtures';
 
 let instance;

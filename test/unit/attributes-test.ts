@@ -1,6 +1,4 @@
-/// <reference path="../../index.d.ts" />
-
-import { sinon } from '../../test/test-helper';
+import { sinon, expect } from '../test-helper';
 import { Person } from '../fixtures';
 
 describe('Model attributes', function() {

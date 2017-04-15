@@ -15,11 +15,13 @@ export default function colorize(color : string, text: string) : string {
 }
 
 function supportsColor() : boolean {
-  if (/^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM)) {
-    return true;
+  if (typeof window === undefined) {
+    if (/^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM)) {
+      return true;
+    } else {
+      return false
+    }
   } else {
-    return false
+    return false;
   }
 }
-
-

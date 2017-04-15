@@ -1,13 +1,8 @@
-declare var expect: any;
-declare var asyncAssert: any;
-
 // todo deglobalize?, split test
 
 declare module NodeJS  {
   interface Global {
     __extends: Function;
-    sinon: any;
-    JSORM: any;
   }
 }
 

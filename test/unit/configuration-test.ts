@@ -1,7 +1,5 @@
-/// <reference path="../../index.d.ts" />
-
-import { sinon } from '../../test/test-helper';
-import { Config } from '../../src/main';
+import { expect, sinon } from '../test-helper';
+import { Config } from '../../src/index';
 import { Author } from '../fixtures';
 
 describe('#modelForType', function() {

@@ -1,12 +1,17 @@
-/// <reference path="../../index.d.ts" />
+/// <reference path="../index.d.ts" />
 
 import Config from '../configuration';
 import Model from '../model';
 import { camelize } from './string';
 
-export default function deserialize(resource : japiResource, payload: japiDoc) : Model {
+function deserialize(resource : japiResource, payload: japiDoc) : Model {
   let deserializer = new Deserializer(payload);
   return deserializer.deserialize(resource);
+}
+
+function deserializeInstance(instance: Model, resource : japiResource, payload: japiDoc) : Model {
+  let deserializer = new Deserializer(payload);
+  return deserializer.deserializeInstance(instance, resource);
 }
 
 class Deserializer {
@@ -37,15 +42,16 @@ class Deserializer {
         let hydrated = this.findResource(resource);
         if (hydrated) resource = hydrated;
       }
-      record = this._deserialize(resource);
+      let klass = Config.modelForType(resource.type);
+      let instance = new klass();
+      record = this.deserializeInstance(instance, resource);
     }
 
     return record;
   }
 
-  _deserialize(resource: japiResource) : Model {
-    let klass = Config.modelForType(resource.type);
-    let instance = new klass({ id: resource.id });
+  deserializeInstance(instance: Model, resource: japiResource) : Model {
+    instance.id = resource.id;
     this._models.push(instance);
 
     instance.attributes = resource.attributes;
@@ -91,3 +97,5 @@ class Deserializer {
     })[0];
   }
 }
+
+export { deserialize, deserializeInstance };

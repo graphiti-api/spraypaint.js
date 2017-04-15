@@ -1,4 +1,4 @@
-import { Model, Config, attr, hasMany, belongsTo, hasOne } from '../src/main';
+import { Model, Config, attr, hasMany, belongsTo, hasOne } from '../src/index';
 
 class ApplicationRecord extends Model {
   static baseUrl = 'http://example.com';

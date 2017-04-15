@@ -1,22 +1,21 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
-    "declaration": false,
-    "module": "commonjs",
-    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "module": "es6",
+    "target": "es5",
+    "lib": [ "es2015", "dom" ],
+    "outDir": "lib",
     "noEmitHelpers": true,
-    "preserveConstEnums": true,
-    "removeComments": false,
+    "allowSyntheticDefaultImports": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "target": "es5"
+    "declaration": true,
+    "jsx": "react"
   },
-  "filesGlob": [
-    "./src/**/*.ts",
-    "./index.d.ts"
+  "files": [
+    "./src/index.ts"
   ],
-  "types": ["node", "mocha", "es6-promise"],
-  "exclude": [
-    "node_modules",
-    "test"
-  ]
+  "compileOnSave": false,
+  "buildOnSave": false
 }

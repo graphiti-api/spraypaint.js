@@ -1,7 +1,10 @@
 import Attribute from './attribute';
 import Model from './model';
+// Not sure why this is needed, already patching in main..
+import patchExtends from './custom-extend';
+patchExtends();
 
-class Base extends Attribute {
+export class Base extends Attribute {
   klass: typeof Model;
   isRelationship = true;
   jsonapiType: string;
@@ -25,7 +28,7 @@ class Base extends Attribute {
   }
 }
 
-class HasMany extends Base {
+export class HasMany extends Base {
   getter(context: Model) {
     let gotten = super.getter(context);
     if (!gotten) {
@@ -37,10 +40,10 @@ class HasMany extends Base {
   }
 }
 
-class HasOne extends Base {
+export class HasOne extends Base {
 }
 
-class BelongsTo extends Base {
+export class BelongsTo extends Base {
 }
 
 const hasMany = function(...args) : HasMany {
