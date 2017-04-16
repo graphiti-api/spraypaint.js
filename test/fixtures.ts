@@ -14,6 +14,10 @@ class Person extends ApplicationRecord {
   lastName: string = attr();
 }
 
+// Ensure setup() can be run multiple times with no problems
+// putting this here, otherwise relations wont be available.
+Config.setup();
+
 // plain js class
 let Author = Person.extend({
   static: {
