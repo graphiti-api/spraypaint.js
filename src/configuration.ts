@@ -4,12 +4,16 @@ import Model from './model';
 import Attribute from './attribute';
 import Logger from './logger';
 
+let ctx = this;
+
 export default class Config {
   static models: Array<typeof Model> = [];
   static typeMapping: Object = {};
   static logger: Logger = new Logger();
 
-  static setup(options : Object) : void {
+  static setup(options? : Object) : void {
+    if (!options) options = {};
+
     for (let model of this.models) {
       this.typeMapping[model.jsonapiType] = model;
 
