@@ -25,16 +25,20 @@ describe('Model finders', function() {
       });
     });
 
-    //it('returns a promise that resolves the correct instance', function() {
-      //return expect(resultData(Person.find(1))).to.eventually
-        //.be.instanceof(Person).and
-        //.have.property('id', '1');
-    //});
+    it('returns a promise that resolves the correct instance', function(done) {
+      resultData(Person.find(1)).then((data) => {
+        expect(data).to.be.instanceof(Person).and
+          .have.property('id', '1');
+        done();
+      });
+    });
 
-    //it('assigns attributes correctly', function() {
-      //return expect(resultData(Person.find(1))).to.eventually
-        //.have.property('name', 'John')
-    //});
+    it('assigns attributes correctly', function(done) {
+      resultData(Person.find(1)).then((data) => {
+        expect(data).to.have.property('name', 'John');
+        done();
+      });
+    });
 
     describe('when API response returns a different type than the caller', function() {
       before(function() {
@@ -70,7 +74,7 @@ describe('Model finders', function() {
     it('returns a promise that resolves the correct instances', function() {
       return expect(resultData(Person.first())).to.eventually
         .be.instanceof(Person)
-        .have.property('id', '1')
+        .have.property('id', '1');
     });
   });
 
@@ -84,11 +88,14 @@ describe('Model finders', function() {
       });
     });
 
-    //it('returns a promise that resolves the correct instances', function() {
-      //return expect(resultData(Person.all())).to.eventually
-        //.all.be.instanceof(Person)
-        //.all.have.property('id', '1')
-    //});
+    it('returns a promise that resolves the correct instances', function(done) {
+      resultData(Person.all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '1');
+        done();
+      });
+    });
 
     describe('response includes a meta payload', function() {
       beforeEach(function () {
@@ -123,11 +130,14 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //return expect(resultData(Person.page(2).all())).to.eventually
-        //.all.be.instanceof(Person)
-        //.all.have.property('id', '2')
-    //});
+    it('queries correctly', function(done) {
+      resultData(Person.page(2).all()).then((data) => {
+        expect(data.length).to.eq(1)
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
+        done();
+      });
+    });
 
     describe('when merging association #page', function() {
       before(function () {
@@ -139,12 +149,15 @@ describe('Model finders', function() {
         });
       });
 
-      //it('queries correctly', function() {
-        //let bookScope = Book.page(10);
-        //let personScope = Person.page(5).merge({ books: bookScope });
-        //return expect(resultData(personScope.all())).to.eventually
-          //.all.be.instanceof(Person)
-      //});
+      it('queries correctly', function(done) {
+        let bookScope = Book.page(10);
+        let personScope = Person.page(5).merge({ books: bookScope });
+        resultData(personScope.all()).then((data) => {
+          expect(data.length).to.eq(1);
+          expect(data[0]).to.be.instanceof(Person);
+          done();
+        });
+      });
     });
   });
 
@@ -157,10 +170,13 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //return expect(resultData(Author.per(5).all())).to.eventually
-        //.all.be.instanceof(Person)
-    //});
+    it('queries correctly', function(done) {
+      resultData(Author.per(5).all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        done();
+      });
+    });
 
     describe('when merging association #per', function() {
       before(function () {
@@ -172,12 +188,15 @@ describe('Model finders', function() {
         });
       });
 
-      //it('queries correctly', function() {
-        //let bookScope = Book.per(2);
-        //let personScope = Person.per(5).merge({ books: bookScope });
-        //return expect(resultData(personScope.all())).to.eventually
-          //.all.be.instanceof(Person)
-      //});
+      it('queries correctly', function(done) {
+        let bookScope = Book.per(2);
+        let personScope = Person.per(5).merge({ books: bookScope });
+        resultData(personScope.all()).then((data) => {
+          expect(data.length).to.eq(1);
+          expect(data[0]).to.be.instanceof(Person);
+          done();
+        });
+      });
     });
   });
 
@@ -190,11 +209,14 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //return expect(resultData(Person.order('foo').order({ bar: 'desc' }).all())).to.eventually
-        //.all.be.instanceof(Person)
-        //.all.have.property('id', '2')
-    //});
+    it('queries correctly', function(done) {
+      resultData(Person.order('foo').order({ bar: 'desc' }).all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
+        done();
+      });
+    });
 
     describe('when merging association #order', function() {
       before(function () {
@@ -206,14 +228,17 @@ describe('Model finders', function() {
         });
       });
 
-      //it('queries correctly', function() {
-        //let bookScope = Book.order('title').order({ pages: 'desc' });
-        //let scope = Person.order('foo');
-        //scope = scope.merge({ books: bookScope })
-        //return expect(resultData(scope.all())).to.eventually
-          //.all.be.instanceof(Person)
-          //.all.have.property('id', '2')
-      //});
+      it('queries correctly', function(done) {
+        let bookScope = Book.order('title').order({ pages: 'desc' });
+        let scope = Person.order('foo');
+        scope = scope.merge({ books: bookScope })
+        resultData(scope.all()).then((data) => {
+          expect(data.length).to.eq(1);
+          expect(data[0]).to.be.instanceof(Person);
+          expect(data[0]).to.have.property('id', '2');
+          done();
+        });
+      });
     });
   });
 
@@ -226,11 +251,14 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //return expect(resultData(Person.where({ id: 2 }).where({ a: 'b' }).all())).to.eventually
-        //.all.be.instanceof(Person)
-        //.all.have.property('id', '2')
-    //});
+    it('queries correctly', function(done) {
+      resultData(Person.where({ id: 2 }).where({ a: 'b' }).all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
+        done();
+      });
+    });
 
     describe('when merging association #where', function() {
       before(function () {
@@ -242,12 +270,16 @@ describe('Model finders', function() {
         });
       });
 
-      //it('queries correctly', function() {
-        //let bookScope = Book.where({ title: 'It' });
-        //let personScope = Person.where({id : 1 }).merge({ books: bookScope });
-        //return expect(resultData(personScope.all())).to.eventually
-          //.all.be.instanceof(Person)
-      //});
+      it('queries correctly', function(done) {
+        let bookScope = Book.where({ title: 'It' });
+        let personScope = Person.where({id : 1 }).merge({ books: bookScope });
+
+        resultData(personScope.all()).then((data) => {
+          expect(data.length).to.eq(1);
+          expect(data[0]).to.be.instanceof(Person);
+          done();
+        });
+      });
     });
   });
 
@@ -260,11 +292,15 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //let scope = Person.stats({ total: ['count', 'sum'] });
-      //return expect(resultData(scope.all())).to.eventually
-        //.all.be.instanceof(Person)
-    //});
+    it('queries correctly', function(done) {
+      let scope = Person.stats({ total: ['count', 'sum'] });
+
+      resultData(scope.all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        done();
+      });
+    });
 
     describe('when merging association #stats', function() {
       before(function() {
@@ -276,14 +312,17 @@ describe('Model finders', function() {
         });
       });
 
-      //it('queries correctly', function() {
-        //let bookScope = Book.stats({ pages: ['average'] });
-        //let scope     = Person.stats({ total: ['count', 'sum'] });
-        //scope         = scope.merge({ books: bookScope });
+      it('queries correctly', function(done) {
+        let bookScope = Book.stats({ pages: ['average'] });
+        let scope     = Person.stats({ total: ['count', 'sum'] });
+        scope         = scope.merge({ books: bookScope });
 
-        //return expect(resultData(scope.all())).to.eventually
-          //.all.be.instanceof(Person)
-      //});
+        resultData(scope.all()).then((data) => {
+          expect(data.length).to.eq(1);
+          expect(data[0]).to.be.instanceof(Person);
+          done();
+        });
+      });
     });
   });
 
@@ -296,11 +335,14 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //return expect(resultData(Person.select({ people: ['name', 'age'] }).all())).to.eventually
-        //.all.be.instanceof(Person)
-        //.all.have.property('id', '2')
-    //});
+    it('queries correctly', function(done) {
+      resultData(Person.select({ people: ['name', 'age'] }).all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
+        done();
+      });
+    });
   });
 
   describe('#select_extra', function() {
@@ -312,11 +354,14 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //return expect(resultData(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all())).to.eventually
-        //.all.be.instanceof(Person)
-        //.all.have.property('id', '2')
-    //});
+    it('queries correctly', function(done) {
+      resultData(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
+        done();
+      });
+    });
   });
 
   describe('#includes', function() {
@@ -331,10 +376,12 @@ describe('Model finders', function() {
       });
     });
 
-    //it('queries correctly', function() {
-      //return expect(resultData(Person.includes({ a: ['b', { c: 'd' }] }).all())).to.eventually
-        //.all.be.instanceof(Person)
-        //.all.have.property('id', '2')
-    //});
+    it('queries correctly', function() {
+      resultData(Person.includes({ a: ['b', { c: 'd' }] }).all()).then((data) => {
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
+      });
+    });
   });
 });

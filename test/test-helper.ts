@@ -8,15 +8,15 @@ es6Promise.polyfill();
 
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-//import * as chaiThings from 'chai-things';
-//import Config from '../src/configuration';
-//import Logger from '../src/logger';
+import chaiThings = require('chai-things');
+
+import Config from '../src/configuration';
 
 winston.level = 'warn';
-//Config.logger = winston;
+Config.logger = winston;
 
 // MUST be in this order
-//chai.use(chaiThings);
+chai.use(chaiThings);
 chai.use(chaiAsPromised);
 
 let expect = chai.expect;
