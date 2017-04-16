@@ -5,8 +5,7 @@ import IncludeDirective from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies';
 import Request from './request';
 import colorize from './util/colorize';
-import * as _cloneDeep from 'lodash-es/clonedeep';
-
+import * as _cloneDeep from './util/clonedeep';
 let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
 
 export default class Scope {

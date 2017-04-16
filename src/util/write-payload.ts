@@ -1,5 +1,5 @@
 import Model from '../model';
-import * as _snakeCase from 'lodash-es/snakecase';
+import * as _snakeCase from './snakecase';
 let snakeCase: any = (<any>_snakeCase).default || _snakeCase;
 
 export default class WritePayload {

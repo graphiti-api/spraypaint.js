@@ -7,9 +7,9 @@
   "author": "Lee Richmond",
   "license": "MIT",
   "scripts": {
-    "clean": "./node_modules/shx/lib/cli.js rm -rf _bundles lib lib-esm",
-    "build": "./node_modules/typescript/bin/tsc && ./node_modules/typescript/bin/tsc -m es6 --outDir lib-esm && webpack",
-    "test": "mocha -r ts-node/register test/**/*-test.ts || true"
+    "clean": "shx rm -rf _bundles lib lib-esm",
+    "build": "shx cp es-shims/* src/util/ && npm run clean && tsc && tsc -m es6 --outDir lib-esm && webpack && shx cp node-shims/* src/util/ ",
+    "test": "mocha -r test/tshook.js test/**/*.ts || true"
   },
   "devDependencies": {
     "@types/chai": "^3.5.0",
