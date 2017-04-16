@@ -62,6 +62,24 @@ class MultiWord extends ApplicationRecord {
 const TestJWTSubclass = ApplicationRecord.extend({
 });
 
-Config.setup({ jwtOwners: [ApplicationRecord, TestJWTSubclass] });
+const NonJWTOwner = Model.extend({
+});
 
-export { ApplicationRecord, TestJWTSubclass, Author, Person, Book, Genre, Bio, Tag };
+Config.setup({
+  jwtOwners: [
+    ApplicationRecord,
+    TestJWTSubclass
+  ]
+});
+
+export {
+  ApplicationRecord,
+  TestJWTSubclass,
+  NonJWTOwner,
+  Author,
+  Person,
+  Book,
+  Genre,
+  Bio,
+  Tag
+};

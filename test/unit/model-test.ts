@@ -1,6 +1,15 @@
 import { expect, sinon } from '../test-helper';
 import { Model } from '../../src/index';
-import { ApplicationRecord, TestJWTSubclass, Person, Author, Book, Genre, Bio } from '../fixtures';
+import {
+  ApplicationRecord,
+  TestJWTSubclass,
+  NonJWTOwner,
+  Person,
+  Author,
+  Book,
+  Genre,
+  Bio
+} from '../fixtures';
 
 let instance;
 
@@ -11,6 +20,12 @@ describe('Model', function() {
       expect(Person.getJWTOwner()).to.eq(ApplicationRecord);
       expect(ApplicationRecord.getJWTOwner()).to.eq(ApplicationRecord);
       expect(TestJWTSubclass.getJWTOwner()).to.eq(TestJWTSubclass);
+    });
+
+    describe('when no owner', function() {
+      it('returns null', function() {
+        expect(NonJWTOwner.getJWTOwner()).to.eq(undefined)
+      });
     });
   });
 
@@ -25,6 +40,12 @@ describe('Model', function() {
 
     it('it grabs jwt from top-most parent', function() {
       expect(Author.getJWT()).to.eq('g3tm3');
+    });
+
+    describe('when no JWT owner', function() {
+      it('returns null', function() {
+        expect(NonJWTOwner.getJWT()).to.eq(undefined);
+      });
     });
   });
 

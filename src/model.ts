@@ -48,14 +48,22 @@ export default class Model {
   }
 
   static getJWT() : string {
-    return this.getJWTOwner().jwt;
+    let owner = this.getJWTOwner();
+
+    if (owner) {
+      return owner.jwt;
+    }
   }
 
   static getJWTOwner() : typeof Model {
     if (this.isJWTOwner) {
       return this;
     } else {
-      return this.parentClass.getJWTOwner();
+      if (this.parentClass) {
+        return this.parentClass.getJWTOwner();
+      } else {
+        return;
+      }
     }
   }
 
