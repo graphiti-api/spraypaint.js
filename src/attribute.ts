@@ -12,8 +12,16 @@ export default class Attribute {
   static applyAll(klass: typeof Model) : void {
     this._eachAttribute(klass, (attr) => {
       klass.attributeList.push(attr.name);
+      let instance = new klass();
+      let descriptor = attr.descriptor();
+      Object.defineProperty(klass.prototype, attr.name, descriptor);
 
-      Object.defineProperty(klass.prototype, attr.name, attr.getSet());
+      let decorators = instance['__attrDecorators'] || [];
+      decorators.forEach((d) => {
+        if (d['attrName'] === attr.name) {
+          d['decorator'](klass.prototype, attr.name, descriptor);
+        }
+      });
     });
   }
 
@@ -35,10 +43,11 @@ export default class Attribute {
   }
 
   // This returns the getters/setters for use on the *model*
-  getSet() {
+  descriptor() {
     let attr = this;
 
     return {
+      writeable: true,
       get() : any {
         return attr.getter(this);
       },

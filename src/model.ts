@@ -8,7 +8,13 @@ import { CollectionProxy, RecordProxy } from './proxies';
 import _extend from './util/extend';
 import { camelize } from './util/string';
 import WritePayload from './util/write-payload';
+import IncludeDirective from './util/include-directive';
 import Request from './request';
+import * as _cloneDeep from './util/clonedeep';
+let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
+if (cloneDeep.default) {
+  cloneDeep = cloneDeep.default;
+}
 
 export default class Model {
   static baseUrl = 'http://please-set-a-base-url.com';
