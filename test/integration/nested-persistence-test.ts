@@ -144,7 +144,6 @@ describe('nested persistence', function() {
         relationships: {
           books: {
             data: [{
-              ['temp-id']: 'abc1',
               id: '10',
               type: 'books'
             }]
@@ -160,7 +159,6 @@ describe('nested persistence', function() {
           relationships: {
             genre: {
               data: {
-                ['temp-id']: 'abc2',
                 id: '20',
                 type: 'genres'
               }

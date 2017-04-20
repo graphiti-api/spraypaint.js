@@ -55,6 +55,7 @@ class Deserializer {
 
   deserializeInstance(instance: Model, resource: japiResource) : Model {
     instance.id = resource.id;
+    instance.temp_id = resource['temp-id'];
     this._models.push(instance);
 
     instance.attributes = resource.attributes;
@@ -94,7 +95,6 @@ class Deserializer {
       if (Array.isArray(relationData)) {
         for (let datum of relationData) {
           let relatedRecord = this.deserialize(datum, true);
-          relatedRecord.temp_id = datum['temp-id'];
           this._pushRelationship(instance, relationName, relatedRecord)
           relatedRecord.temp_id = null;
         }
