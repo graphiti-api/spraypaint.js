@@ -26,6 +26,8 @@ class Deserializer {
   }
 
   addResources(data) {
+    if (!data) return;
+
     if (Array.isArray(data)) {
       for (let datum of data) {
         this._resources.push(datum);
@@ -45,6 +47,7 @@ class Deserializer {
       let klass = Config.modelForType(resource.type);
       let instance = new klass();
       record = this.deserializeInstance(instance, resource);
+      record.isPersisted(true);
     }
 
     return record;
@@ -57,7 +60,33 @@ class Deserializer {
     instance.attributes = resource.attributes;
     this._processRelationships(instance, resource.relationships);
     instance.__meta__ = resource.meta;
+    instance.isPersisted(true);
     return instance;
+  }
+
+  _pushRelationship(instance: Model, associationName: string, relatedRecord: Model) {
+    let records = instance[associationName];
+    let existingIndex = this._existingRecordIndex(records, relatedRecord);
+    if (existingIndex > -1) {
+      if (records[existingIndex].isMarkedForDestruction()) {
+        records.splice(existingIndex, 1);
+      } else {
+        records[existingIndex] = relatedRecord;
+      }
+    } else {
+      records.push(relatedRecord);
+    }
+    instance[associationName] = records;
+  }
+
+  _existingRecordIndex(records: Array<Model>, record: Model) : number {
+    let index = -1;
+    records.forEach((r, i) => {
+      if ((r.temp_id && r.temp_id === record.temp_id) || (r.id && r.id === record.id)) {
+        index = i;
+      }
+    });
+    return index;
   }
 
   _processRelationships(instance, relationships) {
@@ -65,11 +94,19 @@ class Deserializer {
       if (Array.isArray(relationData)) {
         for (let datum of relationData) {
           let relatedRecord = this.deserialize(datum, true);
-          instance[relationName].push(relatedRecord);
+          relatedRecord.temp_id = datum['temp-id'];
+          this._pushRelationship(instance, relationName, relatedRecord)
+          relatedRecord.temp_id = null;
         }
       } else {
-        let relatedRecord = this.deserialize(relationData, true);
-        instance[relationName] = relatedRecord;
+        if (instance[relationName] && instance[relationName].isMarkedForDestruction()) {
+          instance[relationName] = null;
+        } else {
+          // todo belongsto destruction test removes relation
+          let relatedRecord = this.deserialize(relationData, true);
+          relatedRecord.temp_id = null;
+          instance[relationName] = relatedRecord;
+        }
       }
     });
   }

@@ -21,6 +21,7 @@ Config.setup();
 // plain js class
 let Author = Person.extend({
   static: {
+    endpoint: '/v1/authors',
     jsonapiType: 'authors'
   },
 
@@ -37,6 +38,8 @@ class Book extends ApplicationRecord {
   static jsonapiType = 'books';
 
   title: string = attr();
+
+  genre = belongsTo('genres');
 }
 
 class Genre extends ApplicationRecord {

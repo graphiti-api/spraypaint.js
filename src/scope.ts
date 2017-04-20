@@ -7,6 +7,7 @@ import Request from './request';
 import colorize from './util/colorize';
 import * as _cloneDeep from './util/clonedeep';
 let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
+cloneDeep = cloneDeep.default || cloneDeep;
 
 export default class Scope {
   model: typeof Model;

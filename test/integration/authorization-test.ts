@@ -28,7 +28,7 @@ describe('authorization headers', function() {
 
   describe('when header is NOT returned in response', function() {
     beforeEach(function() {
-      fetchMock.get('http://example.com/api/v1/people', {
+      fetchMock.get('http://example.com/api/v1/authors', {
         data: [
           {
             id: '1',

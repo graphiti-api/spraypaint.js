@@ -163,9 +163,9 @@ describe('Model finders', function() {
 
   describe('#per', function() {
     before(function () {
-      fetchMock.get('http://example.com/api/v1/people?page[size]=5', {
+      fetchMock.get('http://example.com/api/v1/authors?page[size]=5', {
         data: [
-          { id: '1', type: 'people' }
+          { id: '1', type: 'authors' }
         ]
       });
     });

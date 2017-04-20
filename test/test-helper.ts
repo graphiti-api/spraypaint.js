@@ -10,7 +10,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import chaiThings = require('chai-things');
 
-import Config from '../src/configuration';
+import { Config } from '../src/index';
 
 winston.level = 'warn';
 Config.logger = winston;

@@ -8,13 +8,14 @@ export default class Attribute {
   name: string;
 
   isAttr: boolean = true;
+  isRelationship: boolean = false;
 
   static applyAll(klass: typeof Model) : void {
     this._eachAttribute(klass, (attr) => {
       klass.attributeList.push(attr.name);
-      let instance = new klass();
       let descriptor = attr.descriptor();
       Object.defineProperty(klass.prototype, attr.name, descriptor);
+      let instance = new klass();
 
       let decorators = instance['__attrDecorators'] || [];
       decorators.forEach((d) => {
