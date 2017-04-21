@@ -10,6 +10,7 @@ import { camelize } from './util/string';
 import WritePayload from './util/write-payload';
 import IncludeDirective from './util/include-directive';
 import DirtyChecker from './util/dirty-check';
+import ValidationErrors from './util/validation-errors';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
 import Request from './request';
 import * as _cloneDeep from './util/clonedeep';
@@ -33,6 +34,7 @@ export default class Model {
   _originalAttributes: Object = {};
   _originalRelationships: Object = {};
   relationships: Object = {};
+  errors: Object = {};
   __meta__: Object | void = null;
   _persisted: boolean = false;
   _markedForDestruction: boolean = false;
@@ -149,6 +151,10 @@ export default class Model {
     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
   }
 
+  clearErrors() {
+    this.errors = {};
+  }
+
   // Todo:
   // * needs to recurse the directive
   // * remove the corresponding code from isPersisted and handle here (likely
@@ -207,6 +213,10 @@ export default class Model {
     return deserializeInstance(this, resource, payload);
   }
 
+  get hasError() {
+    return Object.keys(this.errors).length > 1;
+  }
+
   isDirty(relationships?: Object | Array<any> | string) : boolean {
     let dc = new DirtyChecker(this);
     return dc.check(relationships);
@@ -243,7 +253,9 @@ export default class Model {
 
     let json = payload.asJSON();
     let requestPromise = request[verb](url, json, { jwt });
+    console.log('b4 req')
     return this._writeRequest(requestPromise, () => {
+      console.log('HERE PRERS')
       this.isPersisted(true);
       payload.postProcess();
     });
@@ -251,6 +263,7 @@ export default class Model {
 
   private _writeRequest(requestPromise : Promise<any>, callback: Function) : Promise<any> {
     return new Promise((resolve, reject) => {
+      requestPromise.catch((e) => { throw(e) });
       return requestPromise.then((response) => {
         this._handleResponse(response, resolve, reject, callback);
       });
@@ -259,6 +272,7 @@ export default class Model {
 
   private _handleResponse(response: any, resolve: Function, reject: Function, callback: Function) : void {
     if (response.status == 422) {
+      ValidationErrors.apply(this, response['jsonPayload']);
       resolve(false);
     } else if (response.status >= 500) {
       reject('Server Error');

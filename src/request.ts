@@ -55,7 +55,7 @@ export default class Request {
         response.json().then((json) => {
           response['jsonPayload'] = json;
           resolve(response);
-        });
+        }).catch((e) => { throw(e); });
       });
       fetchPromise.catch(reject);
     });

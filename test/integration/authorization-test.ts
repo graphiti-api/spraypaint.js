@@ -59,7 +59,6 @@ describe('authorization headers', function() {
   describe('when header is returned in response', function() {
     beforeEach(function() {
       fetchMock.mock({
-        name: 'route',
         matcher: '*',
         response: {
           status: 200,

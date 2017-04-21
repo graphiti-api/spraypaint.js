@@ -95,6 +95,8 @@ export default class WritePayload {
   asJSON() : Object {
     let data = {}
 
+    this.model.clearErrors();
+
     if (this.model.id) {
       data['id'] = this.model.id;
     }
@@ -120,12 +122,15 @@ export default class WritePayload {
       json['included'] = this.included
     }
 
+    console.log(json)
     return json;
   }
 
   // private
 
   private _processRelatedModel(model: Model, nested: Object) {
+    model.clearErrors();
+
     if (!model.isPersisted()) {
       model.temp_id = uuid.generate();
     }
