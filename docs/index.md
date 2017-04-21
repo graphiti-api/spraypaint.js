@@ -10,7 +10,7 @@ The first step is to define your models. These will match the [resource objects]
 
 Let's say we have a `/api/v1/people` endpoint:
 
-```es6
+```js
 // es6 import syntax
 // vanilla JS would expose 'jsorm' as a global
 import { Model, attr } from 'jsorm';
@@ -32,12 +32,12 @@ Alternatively, in Typescript:
 ```ts
 // typescript
 class Person extends Model {
-  static baseUrl: 'http://localhost:3000';
-  static apiNamespace: '/api/v1';
-  static jsonapiType: 'people';
+  static baseUrl = 'http://localhost:3000';
+  static apiNamespace = '/api/v1';
+  static jsonapiType = 'people';
 
-  firstName: attr();
-  lastName: attr();
+  firstName = attr();
+  lastName = attr();
 }
 ```
 
@@ -45,7 +45,7 @@ class Person extends Model {
 
 ```js
 import { Config } from 'jsorm';
-Config.setup(); 
+Config.setup();
 ```
 
 ## Basic Usage
@@ -61,7 +61,7 @@ Call `all()`, `first()`, or `find()` to actually fire the query.
 
 All of the following examples can be chained together:
 
-```es6
+```js
 let scope = new Person();
 if (should_include_admins) {
   scope = scope.where({ admin: true });
@@ -81,7 +81,7 @@ scope.page(2).all().then((people) => {
 
 Use `per` and `page`. To limit 10 per page, viewing the second page:
 
-```es6
+```js
 Person.per(10).page(2).all();
 ```
 
@@ -95,7 +95,7 @@ Use `order`. Passing an attribute will default to ascending order.
 
 Ascending:
 
-```es6
+```js
 Person.order('name');
 ```
 
@@ -103,7 +103,7 @@ Person.order('name');
 
 Descending:
 
-```es6
+```js
 Person.order({ name: 'desc' });
 ```
 
@@ -115,7 +115,7 @@ Person.order({ name: 'desc' });
 
 Use `where`:
 
-```es6
+```js
 Person.where({ name: 'Joe' }).where({ age: 30 }).all();
 ```
 
@@ -123,7 +123,7 @@ Person.where({ name: 'Joe' }).where({ age: 30 }).all();
 
 Filters are based on swagger documentation, not object attributes. This means you can do stuff like:
 
-```es6
+```js
 Person.where({ age_greater_than: 30 }).all();
 ```
 
@@ -131,7 +131,7 @@ Person.where({ age_greater_than: 30 }).all();
 
 Arrays are supported automatically, defaulting to an OR clause:
 
-```es6
+```js
 Person.where({ name: ['Joe', 'Bill'] }).all();
 ```
 
@@ -143,7 +143,7 @@ Person.where({ name: ['Joe', 'Bill'] }).all();
 
 Use `select`:
 
-```es6
+```js
 Person.select({ people: ['name', 'age'] }).all();
 ```
 
@@ -155,7 +155,7 @@ This functionality is enabled by [jsonapi_suite](https://jsonapi-suite.github.io
 
 Use `selectExtra`:
 
-```es6
+```js
 Person.selectExtra({ people: ['name', 'age'] }).all();
 ```
 
@@ -167,7 +167,7 @@ Person.selectExtra({ people: ['name', 'age'] }).all();
 
 Use `includes`. This can be a symbol, array, hash, or combination of all. In short - it works exactly like it works in ActiveRecord:
 
-```es6
+```js
 // a person has many tags, and has many pets
 // a pet has many toys, and many tags
 Person.includes(['tags', { pets: ['toys', 'tags'] }]);
@@ -177,7 +177,7 @@ Person.includes(['tags', { pets: ['toys', 'tags'] }]);
 
 The included resources will now be present:
 
-```es6
+```js
 Person.includes('tags').then((person) => {
   person.tags.map((t) => { return t.name; }); // #=> ['funny', 'smart']
 });
@@ -189,13 +189,13 @@ Person.includes('tags').then((person) => {
 
 `all`, `first`, and `find` can be used in conjunction with scopes.
 
-```es6
+```js
 Person.all();
 ```
 
 > GET /people
 
-```es6
+```js
 scope = Person.where({ name: 'Bill' }) # no query
 scope.all(); # => fires query, returns a Promise that resolves to an array of Person objects
 ```
@@ -204,7 +204,7 @@ scope.all(); # => fires query, returns a Promise that resolves to an array of Pe
 
 Use `first` to grab the first result:
 
-```es6
+```js
 // Limits per_page to 1, result is first element in the array
 Person.where({ name: 'Bill' }).first().then((person) => {
  // ...
@@ -219,7 +219,7 @@ Finally, use `find` to find a record by ID. This will hit the `show` action.
 
 By default we will use `console` to log to STDOUT (or the browser's console log). If you are using node and want more in-depth options, inject another logger (we suggest [winston](https://github.com/winstonjs/winston)):
 
-```es6
+```js
 import { Config } from 'jsorm';
 let winston = require('winston');
 
