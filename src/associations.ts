@@ -19,10 +19,12 @@ export class Base extends Attribute {
   }
 
   setter(context: Model, val: any) : void {
-    if (!val.hasOwnProperty('isRelationship')) {
+    if (val && !val.hasOwnProperty('isRelationship')) {
       if (!(val instanceof Model) && !(Array.isArray(val))) {
         val = new this.klass(val);
       }
+      context.relationships[this.name] = val;
+    } else if (val === null || val === undefined) {
       context.relationships[this.name] = val;
     }
   }
