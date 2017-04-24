@@ -4,23 +4,24 @@ import Config from '../configuration';
 import Model from '../model';
 import { camelize } from './string';
 
-function deserialize(resource : japiResource, payload: japiDoc) : Model {
+function deserialize(datum : japiResource, payload: japiDoc) : Model {
   let deserializer = new Deserializer(payload);
-  return deserializer.deserialize(resource);
+  return deserializer.deserialize(datum);
 }
 
-function deserializeInstance(instance: Model, resource : japiResource, payload: japiDoc) : Model {
+function deserializeInstance(instance: Model, resource : japiResource, payload: japiDoc, includeDirective: Object = {}) : Model {
   let deserializer = new Deserializer(payload);
-  return deserializer.deserializeInstance(instance, resource);
+  return deserializer.deserializeInstance(instance, resource, includeDirective);
 }
 
 class Deserializer {
-  _models = [];
+  _deserialized = [];
   _resources = [];
   payload: japiDoc;
 
   constructor(payload) {
     this.payload = payload;
+
     this.addResources(payload.data);
     this.addResources(payload.included);
   }
@@ -37,75 +38,119 @@ class Deserializer {
     }
   }
 
-  deserialize(resource: japiResource, isRelation?: boolean) : Model {
-    let record = this.findModel(resource);
+  instanceFor(type: string) : Model {
+    let klass = Config.modelForType(type);
+    return new klass();
+  }
+
+  relationshipInstanceFor(datum: japiResource, records: Array<Model>) : Model {
+    let record = records.find((r) => {
+      return r.klass.jsonapiType === datum.type &&
+        (r.id && datum.id && r.id === datum.id || r.temp_id && datum['temp-id'] && r.temp_id === datum['temp-id']);
+    });
+
     if (!record) {
-      if (isRelation) {
-        let hydrated = this.findResource(resource);
-        if (hydrated) resource = hydrated;
-      }
-      let klass = Config.modelForType(resource.type);
-      let instance = new klass();
-      record = this.deserializeInstance(instance, resource);
-      record.isPersisted(true);
+      record = this.instanceFor(datum.type);
     }
 
     return record;
   }
 
-  deserializeInstance(instance: Model, resource: japiResource) : Model {
-    instance.id = resource.id;
-    instance.temp_id = resource['temp-id'];
-    this._models.push(instance);
+  // todo null temp id
+  lookupAssociated(recordSet: Array<Model>, record: Model) {
+    return recordSet.find((r) => {
+      return r.klass.jsonapiType === record.klass.jsonapiType &&
+        (r.temp_id && record.temp_id && r.temp_id === record.temp_id || r.id && record.id && r.id === record.id)
+    });
+  }
 
-    instance.attributes = resource.attributes;
-    this._processRelationships(instance, resource.relationships);
-    instance.__meta__ = resource.meta;
+  pushRelation(model: Model, associationName: string, record: Model) : void {
+    let associationRecords = model[associationName];
+    let existingInstance = this.lookupAssociated(associationRecords, record);
+
+    if (!existingInstance) {
+      model[associationName].push(record);
+    }
+  }
+
+  deserialize(datum: japiResource) : Model {
+    let instance = this.instanceFor(datum.type);
+    return this.deserializeInstance(instance, datum, {});
+  }
+
+  deserializeInstance(instance: Model, datum: japiResource, includeDirective: Object = {}) : Model {
+    let existing = this.alreadyDeserialized(datum);
+    if (existing) return existing;
+
+    // assign ids
+    instance.id = datum.id;
+    instance.temp_id = datum['temp-id'];
+
+    // assign attrs
+    instance.assignAttributes(datum.attributes);
+
+    // assign meta
+    instance.__meta__ = datum.meta;
+
+    // so we don't double-process the same thing
+    // must push before relationships
+    this._deserialized.push(instance);
+    this._processRelationships(instance, datum.relationships, includeDirective);
+
+    // remove objects marked for destruction
+    this._removeDeletions(instance, includeDirective);
+
+    // came from server, must be persisted
     instance.isPersisted(true);
+
     return instance;
   }
 
-  _pushRelationship(instance: Model, associationName: string, relatedRecord: Model) {
-    let records = instance[associationName];
-    let existingIndex = this._existingRecordIndex(records, relatedRecord);
-    if (existingIndex > -1) {
-      if (records[existingIndex].isMarkedForDestruction()) {
-        records.splice(existingIndex, 1);
-      } else {
-        records[existingIndex] = relatedRecord;
-      }
-    } else {
-      records.push(relatedRecord);
-    }
-    instance[associationName] = records;
-  }
-
-  _existingRecordIndex(records: Array<Model>, record: Model) : number {
-    let index = -1;
-    records.forEach((r, i) => {
-      if ((r.temp_id && r.temp_id === record.temp_id) || (r.id && r.id === record.id)) {
-        index = i;
+  _removeDeletions(model: Model, includeDirective: Object) {
+    Object.keys(includeDirective).forEach((key) => {
+      let relatedObjects = model[key];
+      if (relatedObjects) {
+        if (Array.isArray(relatedObjects)) {
+          relatedObjects.forEach((relatedObject, index) => {
+            if (relatedObject.isMarkedForDestruction()) {
+              model[key].splice(index, 1);
+            } else {
+              this._removeDeletions(relatedObject, includeDirective[key] || {});
+            }
+          });
+        } else {
+          let relatedObject = relatedObjects;
+          if (relatedObject.isMarkedForDestruction()) {
+            model[key] = null;
+          } else {
+            this._removeDeletions(relatedObject, includeDirective[key] || {});
+          }
+        }
       }
     });
-    return index;
   }
 
-  _processRelationships(instance, relationships) {
+  _processRelationships(instance, relationships, includeDirective) {
     this._iterateValidRelationships(instance, relationships, (relationName, relationData) => {
+      let nestedIncludeDirective = includeDirective[relationName];
+
       if (Array.isArray(relationData)) {
         for (let datum of relationData) {
-          let relatedRecord = this.deserialize(datum, true);
-          this._pushRelationship(instance, relationName, relatedRecord)
-          relatedRecord.temp_id = null;
+          let hydratedDatum = this.findResource(datum);
+          let associationRecords = instance[relationName];
+          let relatedInstance = this.relationshipInstanceFor(hydratedDatum, associationRecords);
+          relatedInstance = this.deserializeInstance(relatedInstance, hydratedDatum, nestedIncludeDirective);
+
+          this.pushRelation(instance, relationName, relatedInstance);
         }
       } else {
-        if (instance[relationName] && instance[relationName].isMarkedForDestruction()) {
-          instance[relationName] = null;
-        } else {
-          // todo belongsto destruction test removes relation
-          let relatedRecord = this.deserialize(relationData, true);
-          relatedRecord.temp_id = null;
-          instance[relationName] = relatedRecord;
+        let hydratedDatum = this.findResource(relationData);
+        let existing = instance[relationName];
+        let associated = existing || this.instanceFor(hydratedDatum.type);
+        this.deserializeInstance(associated, hydratedDatum, nestedIncludeDirective);
+
+        if (!existing) {
+          instance[relationName] = associated;
         }
       }
     });
@@ -122,16 +167,20 @@ class Deserializer {
     }
   }
 
-  findModel(resourceIdentifier) {
-    return this._models.filter((m) => {
-      return m.id == resourceIdentifier.id && m.klass.jsonapiType == resourceIdentifier.type;
-    })[0];
+  alreadyDeserialized(resourceIdentifier) {
+    return this._deserialized.find((m) => {
+      return m.klass.jsonapiType === resourceIdentifier.type &&
+        (m.id && resourceIdentifier.id && m.id === resourceIdentifier.id || m.temp_id && resourceIdentifier.temp_id && m.temp_id === resourceIdentifier['temp-id']);
+    });
   }
 
   findResource(resourceIdentifier) {
-    return this._resources.filter((r) => {
-      return r.id == resourceIdentifier.id && r.type == resourceIdentifier.type;
-    })[0];
+    let found = this._resources.find((r) => {
+      return r.type === resourceIdentifier.type &&
+        (r.id && resourceIdentifier.id && r.id === resourceIdentifier.id || r['temp-id'] && resourceIdentifier['temp-id'] && r['temp-id'] === resourceIdentifier['temp-id']);
+    });
+
+    return found || resourceIdentifier;
   }
 }
 

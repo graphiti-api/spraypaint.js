@@ -203,7 +203,8 @@ describe('Model', function() {
     };
 
     it('assigns id correctly', function() {
-      let instance = Model.fromJsonapi(doc.data, doc);
+      let instance = new Author();
+      instance.fromJsonapi(doc.data, doc);
       expect(instance.id).to.eq('1');
     });
 
@@ -283,6 +284,121 @@ describe('Model', function() {
     it('skips relationships without data', function() {
       let instance = Model.fromJsonapi(doc.data, doc);
       expect(instance.tags).to.eql([]);
+    });
+
+    it('preserves other properties on the object', function() {
+      let instance = new Author({ id: '1' });
+      instance['fooble'] = 'bar';
+      let same = instance.fromJsonapi(doc.data, doc);
+      expect(same).to.eq(instance);
+
+      expect(instance.id).to.eq('1');
+      expect(instance.firstName).to.eq('Donald Budge');
+      expect(instance['fooble']).to.eq('bar');
+    });
+
+    it('preserves other properties on relationships', function() {
+      let genre = new Genre({ id: '1' });
+      genre['bar'] = 'baz';
+      let book = new Book({ id: '1', genre: genre });
+      book['foo'] = 'bar';
+      let instance = new Author({ id: '1', books: [book] });
+      instance.fromJsonapi(doc.data, doc);
+
+      expect(instance.books[0]).to.eq(book);
+      expect(instance.books[0].genre).to.eq(genre);
+
+      expect(book.title).to.eq("Where's My Butt?");
+      expect(book['foo']).to.eq('bar');
+      expect(genre['bar']).to.eq('baz');
+    });
+
+    describe('when a has-many is marked for destruction', function() {
+      let newDoc, instance, book;
+
+      beforeEach(function() {
+        book = new Book({ id: '1' });
+        book.isPersisted(true);
+        book.isMarkedForDestruction(true);
+
+        instance = new Author({ books: [book] });
+
+        newDoc = {
+          data: {
+            id: '1',
+            type: 'authors'
+          }
+        }
+      });
+
+      describe('when the relation is part of the include directive', function() {
+        it('is removed from the array', function() {
+          expect(instance.books.length).to.eq(1);
+          instance.fromJsonapi(newDoc.data, newDoc, { books: {} });
+          expect(instance.books.length).to.eq(0);
+        });
+      });
+
+      describe('when the relation is not part of the include directive', function() {
+        it('is NOT removed from the array', function() {
+          expect(instance.books.length).to.eq(1);
+          instance.fromJsonapi(newDoc.data, newDoc, {});
+          expect(instance.books.length).to.eq(1);
+        });
+      });
+    });
+
+    describe('when a belongs-to is marked for destruction', function() {
+      let newDoc, instance, book;
+
+      beforeEach(function() {
+        let genre = new Genre({ id: '1' });
+        genre.isPersisted(true);
+        genre.isMarkedForDestruction(true);
+
+        book = new Book({ id: '1', genre: genre });
+        book.isPersisted(true);
+
+        instance = new Author({ books: [book] });
+
+        newDoc = {
+          data: {
+            id: '1',
+            type: 'authors'
+          },
+          relationships: {
+            books: {
+              data: [
+                { id: '1', type: 'books' }
+              ]
+            }
+          },
+          included: [
+            {
+              id: '1',
+              type: 'books',
+              attributes: { title: 'whatever' }
+            }
+          ]
+        }
+      });
+
+      it('is set to null', function() {
+        expect(instance.books[0].genre).to.be.instanceof(Genre);
+        instance.fromJsonapi(newDoc.data, newDoc, { books: { genre: {} }});
+        expect(instance.books[0].genre).to.eq(null);
+      });
+
+      describe('within a nested destruction', function() {
+        beforeEach(function() {
+          book.isMarkedForDestruction(true);
+        });
+
+        it('is removed via the parent', function() {
+          instance.fromJsonapi(newDoc.data, newDoc, { books: { genre: {} }});
+          expect(instance.books.length).to.eq(0);
+        });
+      });
     });
   });
 

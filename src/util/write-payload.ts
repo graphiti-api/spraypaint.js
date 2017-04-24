@@ -122,7 +122,6 @@ export default class WritePayload {
       json['included'] = this.included
     }
 
-    console.log(json)
     return json;
   }
 

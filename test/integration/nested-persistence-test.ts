@@ -223,7 +223,7 @@ describe('nested persistence', function() {
       });
     });
 
-    it('removes old temp ids', function(done) {
+    xit('removes old temp ids', function(done) {
       instance.save({ with: { books: 'genre' } }).then((response) => {
         expect(instance.id).to.eq('1');
         expect(instance.books[0].temp_id).to.eq(null);
@@ -285,11 +285,20 @@ describe('nested persistence', function() {
       });
     });
 
-    xit('removes the associated has_many data', function(done) {
-
+    it('removes the associated has_many data', function(done) {
+      instance.books[0].isMarkedForDestruction(true);
+      instance.save({ with: 'books' }).then((response) => {
+        expect(instance.books.length).to.eq(0);
+        done();
+      });
     });
 
-    xit('removes the associated belongs_to data', function(done) {
+    it('removes the associated belongs_to data', function(done) {
+      instance.books[0].genre.isMarkedForDestruction(true);
+      instance.save({ with: { books: 'genre' } }).then((response) => {
+        expect(instance.books[0].genre).to.eq(null);
+        done();
+      });
     });
   });
 

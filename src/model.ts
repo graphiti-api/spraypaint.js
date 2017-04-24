@@ -181,6 +181,11 @@ export default class Model {
   }
 
   set attributes(attrs : Object) {
+    this._attributes = {};
+    this.assignAttributes(attrs);
+  }
+
+  assignAttributes(attrs: Object) {
     for(var key in attrs) {
       let attributeName = camelize(key);
       if (key == 'id' || this.klass.attributeList.indexOf(attributeName) >= 0) {
@@ -209,8 +214,8 @@ export default class Model {
     }
   }
 
-  fromJsonapi(resource: japiResource, payload: japiDoc) : any {
-    return deserializeInstance(this, resource, payload);
+  fromJsonapi(resource: japiResource, payload: japiDoc, includeDirective: Object = {}) : any {
+    return deserializeInstance(this, resource, payload, includeDirective);
   }
 
   get hasError() {
@@ -253,10 +258,9 @@ export default class Model {
 
     let json = payload.asJSON();
     let requestPromise = request[verb](url, json, { jwt });
-    console.log('b4 req')
-    return this._writeRequest(requestPromise, () => {
-      console.log('HERE PRERS')
-      this.isPersisted(true);
+    return this._writeRequest(requestPromise, (response) => {
+      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
+      //this.isPersisted(true);
       payload.postProcess();
     });
   }
@@ -277,7 +281,6 @@ export default class Model {
     } else if (response.status >= 500) {
       reject('Server Error');
     } else {
-      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload']);
       callback(response);
       resolve(true);
     }
