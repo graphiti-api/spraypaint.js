@@ -76,8 +76,5 @@ implementing token expiry).
 
 ### Roadmap
 
-* Find to throw error when record not found
 * Attribute transforms (type coercion)
-* Writes
-* Error / Validation handling
-* Nested Writes
+* Improved Error / Validation handling
