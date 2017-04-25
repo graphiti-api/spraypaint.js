@@ -8,7 +8,7 @@ Written in [Typescript](https://www.typescriptlang.org) and distributed in ES5, 
 
 ### Sample Usage
 
-Please see [our documentation page](https://bbgithub.dev.bloomberg.com/pages/lrichmon/jsorm) for full usage.
+Please see [our documentation page](https://jsonapi-suite.github.io/jsorm/) for full usage.
 
 ```es6
 import { Config, Model, attr, hasMany, belongsTo } from 'jsorm';
