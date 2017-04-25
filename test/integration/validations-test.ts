@@ -125,7 +125,6 @@ describe('validations', function() {
     instance.save({ with: { books: 'genre' }}).then((success) => {
       expect(instance.isPersisted()).to.eq(false);
       expect(success).to.eq(false);
-      console.log(instance.books[0].genre.errors)
       expect(instance.books[0].genre.errors).to.deep.equal({
         name: 'cannot be blank',
       });

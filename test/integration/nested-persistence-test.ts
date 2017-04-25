@@ -248,7 +248,6 @@ describe('nested persistence', function() {
 
       it('should not be sent in the payload', function(done) {
         instance.save({ with: { books: 'genre' } }).then((response) => {
-          console.log(payloads[0]['data'])
           expect(payloads[0]['data']['relationships']).to.eq(undefined)
           done();
         });
