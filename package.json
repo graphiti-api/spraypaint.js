@@ -2,7 +2,7 @@
   "name": "jsorm",
   "version": "0.0.3",
   "description": "Javascript ORM",
-  "main": "lib/index.js",
+  "main": "_bundles/index.js",
   "module": "lib-esm/index.js",
   "author": "Lee Richmond",
   "license": "MIT",
