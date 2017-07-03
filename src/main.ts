@@ -1,7 +1,7 @@
 /// <reference path="./index.d.ts" />
 
-import 'es6-promise';
-import 'isomorphic-fetch';
+import * as es6Promise from 'es6-promise';
+es6Promise.polyfill();
 
 import patchExtends from './custom-extend';
 patchExtends();

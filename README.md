@@ -35,6 +35,22 @@ Person.where({ name: 'Joe' }).page(2).per(10).sort('name').then((people) => {
 });
 ```
 
+### Fetch
+
+Depending on your requirements, you may need a `fetch` polyfill for use
+in legacy browsers or NodeJS. There are a variety of polyfills and ways
+to install, so implementation is up to you. Here are two recommendations:
+
+```js
+// node
+require('isomorphic-fetch')
+```
+
+```js
+// browser
+import 'whatwg-fetch'
+```
+
 ### JSON Web Tokens
 
 jsorm supports setting a JWT and using it for all requests. Set it
