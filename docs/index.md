@@ -13,6 +13,7 @@ Let's say we have a `/api/v1/people` endpoint:
 ```js
 // es6 import syntax
 // vanilla JS would expose 'jsorm' as a global
+import 'isomorphic-fetch';
 import { Model, attr } from 'jsorm';
 
 var Person = Model.extend({
