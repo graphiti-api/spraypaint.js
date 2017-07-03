@@ -11,6 +11,7 @@ Written in [Typescript](https://www.typescriptlang.org) and distributed in ES5, 
 Please see [our documentation page](https://jsonapi-suite.github.io/jsorm/) for full usage.
 
 ```es6
+import 'isomorphic-fetch';
 import { Config, Model, attr, hasMany, belongsTo } from 'jsorm';
 
 const Person = Model.extend({
