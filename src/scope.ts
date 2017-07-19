@@ -26,14 +26,14 @@ export default class Scope {
 
   all() : Promise<CollectionProxy<Model>> {
     return this._fetch(this.model.url()).then((json : japiDoc) => {
-      let collection = new CollectionProxy(json);
+      let collection = new CollectionProxy<Model>(json);
       return collection;
     });
   }
 
   find(id : string | number) : Promise<RecordProxy<Model>> {
     return this._fetch(this.model.url(id)).then((json : japiDoc) => {
-      return new RecordProxy(json)
+      return new RecordProxy<Model>(json);
     });
   }
 
@@ -41,7 +41,7 @@ export default class Scope {
     let newScope = this.per(1);
     return newScope._fetch(newScope.model.url()).then((json : japiDoc) => {
       json.data = json.data[0];
-      return new RecordProxy(json);
+      return new RecordProxy<Model>(json);
     });
   }
 

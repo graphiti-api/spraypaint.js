@@ -132,13 +132,17 @@ export default class Model {
 
   static url(id?: string | number) : string {
     let endpoint = this.endpoint || `/${this.jsonapiType}`;
-    let base = `${this.baseUrl}${this.apiNamespace}${endpoint}`;
+    let base = `${this.fullBasePath()}${endpoint}`;
 
     if (id) {
       base = `${base}/${id}`;
     }
 
     return base;
+  }
+
+  static fullBasePath() : string {
+    return `${this.baseUrl}${this.apiNamespace}`;
   }
 
   static fromJsonapi(resource: japiResource, payload: japiDoc) : any {
