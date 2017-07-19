@@ -76,6 +76,33 @@ describe('Model', function() {
     });
   });
 
+  describe('.url', function() {
+    context('Default base URL generation method', function() {
+      it('should append the baseUrl, apiNamespace, and jsonapi type', function(){
+        class DefaultBaseUrl extends ApplicationRecord {
+          static baseUrl : string = 'http://base.com'
+          static apiNamespace : string = '/namespace/v1'
+          static jsonapiType : string = 'testtype'
+        }
+
+        expect(DefaultBaseUrl.url('testId')).to.eq('http://base.com/namespace/v1/testtype/testId')
+      })
+    })
+
+    context('Base URL path generation is overridden', function() {
+      it('should use the result of the override function', function(){
+        class OverriddenBaseUrl extends ApplicationRecord {
+          static jsonapiType : string = 'testtype'
+          static fullBasePath() : string {
+            return 'http://overridden.base'
+          }
+        }
+
+        expect(OverriddenBaseUrl.url('testId')).to.eq('http://overridden.base/testtype/testId')
+      })
+    })
+  })
+
   describe('#getJWT', function() {
     beforeEach(function() {
       ApplicationRecord.jwt = 'g3tm3';
