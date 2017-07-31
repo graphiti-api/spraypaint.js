@@ -4,6 +4,7 @@
   "description": "Javascript ORM",
   "main": "_bundles/jsorm.js",
   "module": "lib-esm/index.js",
+  "types": "lib-esm/index.d.ts",
   "author": "Lee Richmond",
   "license": "MIT",
   "scripts": {
