@@ -1,2 +1,2 @@
-import * as snakeCase from 'lodash-es/snakecase';
+import * as snakeCase from 'lodash-es/snakeCase';
 export default snakeCase;
