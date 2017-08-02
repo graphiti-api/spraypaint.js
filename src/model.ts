@@ -1,4 +1,4 @@
-/// <reference path="./index.d.ts" />
+/// <reference path="../types/index.d.ts" />
 
 import Scope from './scope';
 import Config from './configuration';

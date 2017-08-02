@@ -7,6 +7,7 @@
   "types": "lib-esm/index.d.ts",
   "author": "Lee Richmond",
   "license": "MIT",
+  "homepage": "https://github.com/jsonapi-suite/jsorm",
   "scripts": {
     "clean": "shx rm -rf _bundles lib lib-esm",
     "build": "shx cp es-shims/* src/util/ && npm run clean && tsc && tsc -m es6 --outDir lib-esm && webpack && shx cp node-shims/* src/util/ ",

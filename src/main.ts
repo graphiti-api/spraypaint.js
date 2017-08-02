@@ -1,4 +1,4 @@
-/// <reference path="./index.d.ts" />
+/// <reference path="../types/index.d.ts" />
 
 import * as es6Promise from 'es6-promise';
 es6Promise.polyfill();
