@@ -4,7 +4,7 @@ export default function parameterize(obj : any, prefix? : string) : string {
   for (let key in obj) {
     let value = obj[key];
 
-    if (!!value) {
+    if (value !== undefined && value !== null && value !== '') {
       if (prefix) {
         key = `${prefix}[${key}]`;
       }
