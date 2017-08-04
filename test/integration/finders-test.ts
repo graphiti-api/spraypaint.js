@@ -260,6 +260,26 @@ describe('Model finders', function() {
       });
     });
 
+    describe('when value is false', function() {
+      before(function () {
+        fetchMock.reset();
+        fetchMock.get('http://example.com/api/v1/people?filter[id]=2&filter[a]=false', {
+          data: [
+            { id: '2', type: 'people' }
+          ]
+        });
+      });
+
+      it('still queries correctly', function(done) {
+        resultData(Person.where({ id: 2 }).where({ a: false }).all()).then((data) => {
+          expect(data.length).to.eq(1);
+          expect(data[0]).to.be.instanceof(Person);
+          expect(data[0]).to.have.property('id', '2');
+          done();
+        });
+      });
+    });
+
     describe('when merging association #where', function() {
       before(function () {
         fetchMock.reset();
