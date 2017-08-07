@@ -1,4 +1,4 @@
-/// <reference path="./index.d.ts" />
+/// <reference path="../types/index.d.ts" />
 
 import Model from './model';
 import Attribute from './attribute';

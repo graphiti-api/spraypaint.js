@@ -1,4 +1,4 @@
-/// <reference path="../index.d.ts" />
+/// <reference path="../../types/index.d.ts" />
 // use for non-typescript extends
 
 let globalObj;
