@@ -12,7 +12,7 @@ import IncludeDirective from './util/include-directive';
 import DirtyChecker from './util/dirty-check';
 import ValidationErrors from './util/validation-errors';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
-import Request from './request';
+import Request, { FetchOptions } from './request';
 import * as _cloneDeep from './util/clonedeep';
 let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
 if (cloneDeep.default) {
@@ -67,6 +67,12 @@ export default class Model {
 
     if (owner) {
       return owner.jwt;
+    }
+  }
+
+  static getFetchOptions() : FetchOptions {
+    return {
+      jwt: this.getJWT()
     }
   }
 

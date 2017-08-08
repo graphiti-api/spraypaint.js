@@ -134,6 +134,20 @@ describe('Model', function() {
     });
   });
 
+  describe('#getFetchOptions', function() {
+    beforeEach(function() {
+      ApplicationRecord.jwt = 'g3tm3';
+    });
+
+    afterEach(function() {
+      ApplicationRecord.jwt = null;
+    });
+
+    it('includes the jwt', function() {
+      expect(Author.getFetchOptions().jwt).to.eq('g3tm3');
+    });
+  })
+
   describe('#isType', function() {
     it('checks the jsonapiType of class', function() {
       instance = new Author()
