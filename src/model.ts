@@ -255,9 +255,8 @@ export default class Model {
     let url     = this.klass.url(this.id);
     let verb    = 'delete';
     let request = new Request();
-    let jwt     = this.klass.getJWT();
 
-    let requestPromise = request.delete(url, { jwt });
+    let requestPromise = request.delete(url, this._fetchOptions());
     return this._writeRequest(requestPromise, () => {
       this.isPersisted(false);
     });
@@ -268,7 +267,6 @@ export default class Model {
     let verb    = 'post';
     let request = new Request();
     let payload = new WritePayload(this, options['with']);
-    let jwt     = this.klass.getJWT();
 
     if (this.isPersisted()) {
       url  = this.klass.url(this.id);
@@ -276,7 +274,7 @@ export default class Model {
     }
 
     let json = payload.asJSON();
-    let requestPromise = request[verb](url, json, { jwt });
+    let requestPromise = request[verb](url, json, this._fetchOptions());
     return this._writeRequest(requestPromise, (response) => {
       this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
       //this.isPersisted(true);
@@ -303,5 +301,9 @@ export default class Model {
       callback(response);
       resolve(true);
     }
+  }
+
+  private _fetchOptions() : RequestInit {
+    return this.klass.fetchOptions()
   }
 }
