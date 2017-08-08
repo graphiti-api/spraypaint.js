@@ -12,7 +12,7 @@ import IncludeDirective from './util/include-directive';
 import DirtyChecker from './util/dirty-check';
 import ValidationErrors from './util/validation-errors';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
-import Request, { FetchOptions } from './request';
+import Request from './request';
 import * as _cloneDeep from './util/clonedeep';
 let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
 if (cloneDeep.default) {
@@ -70,10 +70,19 @@ export default class Model {
     }
   }
 
-  static getFetchOptions() : FetchOptions {
-    return {
-      jwt: this.getJWT()
+  static fetchOptions() : RequestInit {
+    let options = {
+      headers: {
+        Accept: 'application/json',
+        ['Content-Type']: 'application/json'
+      } as any
     }
+
+    if (this.getJWT()) {
+      options.headers.Authorization = `Token token="${this.getJWT()}"`;
+    }
+
+    return options
   }
 
   static getJWTOwner() : typeof Model {

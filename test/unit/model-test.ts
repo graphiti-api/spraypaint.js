@@ -134,18 +134,26 @@ describe('Model', function() {
     });
   });
 
-  describe('#getFetchOptions', function() {
-    beforeEach(function() {
-      ApplicationRecord.jwt = 'g3tm3';
-    });
+  describe('#fetchOptions', function() {
+    context('jwt is set', function() {
+      beforeEach(function() {
+        ApplicationRecord.jwt = 'g3tm3';
+      });
 
-    afterEach(function() {
-      ApplicationRecord.jwt = null;
-    });
+      afterEach(function() {
+        ApplicationRecord.jwt = null;
+      });
 
-    it('includes the jwt', function() {
-      expect(Author.getFetchOptions().jwt).to.eq('g3tm3');
-    });
+      it('sets the auth header', function() {
+        expect(Author.fetchOptions().headers.Authorization).to.eq('Token token="g3tm3"');
+      });
+    })
+
+    it('includes the content headers', function() {
+      let headers = Author.fetchOptions().headers
+      expect(headers.Accept).to.eq('application/json')
+      expect(headers['Content-Type']).to.eq('application/json')
+    })
   })
 
   describe('#isType', function() {
