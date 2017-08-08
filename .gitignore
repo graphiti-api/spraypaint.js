@@ -6,3 +6,4 @@ lib
 lib-esm
 _bundles
 yarn.lock
+yarn-error.log

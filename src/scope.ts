@@ -219,9 +219,9 @@ export default class Scope {
       url = `${url}?${qp}`;
     }
     let request = new Request();
-    let jwt = this.model.getJWT();
+    let fetchOpts = this.model.fetchOptions()
 
-    return request.get(url, { jwt }).then((response) => {
+    return request.get(url, fetchOpts).then((response) => {
       let jwtHeader = response.headers.get('X-JWT');
       if (jwtHeader) {
         this.model.setJWT(jwtHeader);

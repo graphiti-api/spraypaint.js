@@ -70,6 +70,21 @@ export default class Model {
     }
   }
 
+  static fetchOptions() : RequestInit {
+    let options = {
+      headers: {
+        Accept: 'application/json',
+        ['Content-Type']: 'application/json'
+      } as any
+    }
+
+    if (this.getJWT()) {
+      options.headers.Authorization = `Token token="${this.getJWT()}"`;
+    }
+
+    return options
+  }
+
   static getJWTOwner() : typeof Model {
     if (this.isJWTOwner) {
       return this;
