@@ -40,6 +40,7 @@ class Book extends ApplicationRecord {
   title: string = attr();
 
   genre = belongsTo('genres');
+  author = hasOne('authors')
 }
 
 class Genre extends ApplicationRecord {

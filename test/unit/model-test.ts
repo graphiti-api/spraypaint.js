@@ -198,6 +198,9 @@ describe('Model', function() {
             data: [{
               id: '1',
               type: 'books'
+            }, {
+              id: '2',
+              type: 'books'
             }]
           },
           bio: {
@@ -217,6 +220,29 @@ describe('Model', function() {
           id: '1',
           attributes: {
             title: "Where's My Butt?"
+          },
+          relationships: {
+            author: {
+              data: { 
+                id: '2', 
+                type: 'authors' 
+              },
+            }
+          }
+        },
+        {
+          type: 'books',
+          id: '2',
+          attributes: {
+            title: "Catcher in the Rye"
+          },
+          relationships: {
+            author: {
+              data: { 
+                id: '2', 
+                type: 'authors' 
+              },
+            }
           }
         },
         {
@@ -300,7 +326,7 @@ describe('Model', function() {
 
     it('assigns hasMany relationships correctly', function() {
       let instance = Model.fromJsonapi(doc.data, doc);
-      expect(instance.books.length).to.eq(1);
+      expect(instance.books.length).to.eq(2);
       let book = instance.books[0];
       expect(book).to.be.instanceof(Book);
       expect(book.title).to.eq("Where's My Butt?");
@@ -328,6 +354,15 @@ describe('Model', function() {
       expect(authors[1]).to.be.instanceof(Author);
       expect(authors[0].firstName).to.eq('Donald Budge');
       expect(authors[1].firstName).to.eq('Maurice Sendak');
+    });
+
+    it('assigns duplicated nested relationships correctly', function() {
+      let instance = Model.fromJsonapi(doc.data, doc);
+      let book1 = instance.books[0];
+      let book2 = instance.books[1];
+
+      expect(book1.author.firstName).to.eq("Maurice Sendak");
+      expect(book2.author.firstName).to.eq("Maurice Sendak");
     });
 
     it('skips relationships without data', function() {
