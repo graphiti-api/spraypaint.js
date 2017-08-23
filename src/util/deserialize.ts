@@ -147,7 +147,8 @@ class Deserializer {
         let hydratedDatum = this.findResource(relationData);
         let existing = instance[relationName];
         let associated = existing || this.instanceFor(hydratedDatum.type);
-        this.deserializeInstance(associated, hydratedDatum, nestedIncludeDirective);
+
+        associated = this.deserializeInstance(associated, hydratedDatum, nestedIncludeDirective);
 
         if (!existing) {
           instance[relationName] = associated;
