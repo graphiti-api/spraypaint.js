@@ -11,10 +11,12 @@ export default class ValidationErrors {
 
   static apply(model: Model, payload: Array<Object>) {
     let instance = new ValidationErrors(model, payload);
-    instance.apply();
+    let errors = instance.apply();
   }
 
   apply() {
+    let errorsAccumulator = {}
+
     this.payload['errors'].forEach((err) => {
       let meta = err['meta'];
       let metaRelationship = meta['relationship'];
@@ -22,13 +24,15 @@ export default class ValidationErrors {
       if (metaRelationship) {
         this._processRelationship(this.model, metaRelationship);
       } else {
-        this._processResource(this.model, meta);
+        this._processResource(errorsAccumulator, meta);
       }
     });
+
+    this.model.errors = errorsAccumulator
   }
 
-  private _processResource(model: Model, meta: Object) {
-    model.errors[meta['attribute']] = meta['message'];
+  private _processResource(errorsAccumulator: object, meta: Object) {
+    errorsAccumulator[meta['attribute']] = meta['message'];
   }
 
   private _processRelationship(model: Model, meta: Object) {
@@ -38,10 +42,14 @@ export default class ValidationErrors {
         return (r.id === meta['id'] || r.temp_id === meta['temp-id']);
       });
     }
+
     if (meta['relationship']) {
       this._processRelationship(relatedObject, meta['relationship']);
     } else {
-      this._processResource(relatedObject, meta);
+      let relatedAccumulator = {}
+      this._processResource(relatedAccumulator, meta);
+      relatedObject.errors = relatedAccumulator
     }
+
   }
 }

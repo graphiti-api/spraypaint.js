@@ -110,6 +110,32 @@ describe('validations', function() {
     });
   });
 
+  it('instantiates a new error object instance after save', function(done) {
+    let originalErrors = instance.errors = {foo: 'bar'};
+    let result = instance.save({ with: { books: 'genre' }});
+    let postSavePreValidateErrors = instance.errors;
+
+    expect(postSavePreValidateErrors).not.to.equal(originalErrors);
+
+    result.then(() => {
+      done()
+    }).catch(done)
+  })
+
+  it('instantiates a new error object instance after validate', function(done) {
+    let result = instance.save({ with: { books: 'genre' }});
+
+    let postSavePreValidateErrors = instance.errors;
+
+    result.then((val) => {
+      let postValidateErrors = instance.errors;
+
+      expect(postValidateErrors).not.to.equal(postSavePreValidateErrors);
+
+      done()
+    }).catch(done)
+  })
+
   it('applies errors to nested hasMany relationships', function(done) {
     instance.save({ with: { books: 'genre' }}).then((success) => {
       expect(instance.isPersisted()).to.eq(false);
