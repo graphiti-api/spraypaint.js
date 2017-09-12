@@ -1,6 +1,6 @@
 {
   "name": "jsorm",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "Javascript ORM",
   "main": "_bundles/jsorm.js",
   "module": "lib-esm/index.js",
