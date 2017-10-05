@@ -1,5 +1,5 @@
 import { expect, fetchMock } from '../test-helper';
-import { Person } from '../fixtures';
+import { Person, PersonWithExtraAttr } from '../fixtures';
 
 let fetchMock = require('fetch-mock');
 
@@ -51,6 +51,17 @@ describe('Model persistence', function() {
   });
 
   describe('#save()', function() {
+    describe('when a unpersisted attr', function() {
+      it('does not send the attr to server', function(done) {
+        instance = new PersonWithExtraAttr({ extraThing: 'foo' });
+        expect(instance.extraThing).to.eq('foo');
+        instance.save().then(() => {
+          expect(payloads[0]['data']['attributes']).to.eq(undefined);
+          done()
+        });
+      });
+    });
+
     describe('when the model is already persisted', function() {
       beforeEach(function() {
         instance.id = '1';

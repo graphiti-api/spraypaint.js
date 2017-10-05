@@ -14,6 +14,10 @@ class Person extends ApplicationRecord {
   lastName: string = attr();
 }
 
+class PersonWithExtraAttr extends Person {
+  extraThing: string = attr({ persist: false });
+}
+
 // Ensure setup() can be run multiple times with no problems
 // putting this here, otherwise relations wont be available.
 Config.setup();
@@ -86,6 +90,7 @@ export {
   NonJWTOwner,
   Author,
   Person,
+  PersonWithExtraAttr,
   Book,
   Genre,
   Bio,
