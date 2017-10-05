@@ -38,6 +38,7 @@ export default class Model {
   __meta__: Object | void = null;
   _persisted: boolean = false;
   _markedForDestruction: boolean = false;
+  _markedForDisassociation: boolean = false;
   klass: typeof Model;
 
   static attributeList = [];
@@ -230,6 +231,15 @@ export default class Model {
       return val;
     } else {
       return this._markedForDestruction;
+    }
+  }
+
+  isMarkedForDisassociation(val? : boolean) : boolean {
+    if (val != undefined) {
+      this._markedForDisassociation = val;
+      return val;
+    } else {
+      return this._markedForDisassociation;
     }
   }
 

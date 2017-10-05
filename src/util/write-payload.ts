@@ -35,7 +35,7 @@ export default class WritePayload {
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
-            if (relatedObject.isMarkedForDestruction()) {
+            if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
               model[key].splice(index, 1);
             } else {
               this.removeDeletions(relatedObject, nested);
@@ -43,7 +43,7 @@ export default class WritePayload {
           });
         } else {
           let relatedObject = relatedObjects;
-          if (relatedObject.isMarkedForDestruction()) {
+          if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
             model[key] = null;
           } else {
             this.removeDeletions(relatedObject, nested);
@@ -161,8 +161,10 @@ export default class WritePayload {
     if (model.isPersisted()) {
       if (model.isMarkedForDestruction()) {
         method = 'destroy';
+      } else if (model.isMarkedForDisassociation()) {
+        method = 'disassociate';
       } else {
-        method = 'update'
+        method = 'update';
       }
     } else {
       method = 'create';

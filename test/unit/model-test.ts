@@ -432,6 +432,41 @@ describe('Model', function() {
       });
     });
 
+    describe('when a has-many is marked for disassociation', function() {
+      let newDoc, instance, book;
+
+      beforeEach(function() {
+        book = new Book({ id: '1' });
+        book.isPersisted(true);
+        book.isMarkedForDisassociation(true);
+
+        instance = new Author({ books: [book] });
+
+        newDoc = {
+          data: {
+            id: '1',
+            type: 'authors'
+          }
+        }
+      });
+
+      describe('when the relation is part of the include directive', function() {
+        it('is removed from the array', function() {
+          expect(instance.books.length).to.eq(1);
+          instance.fromJsonapi(newDoc.data, newDoc, { books: {} });
+          expect(instance.books.length).to.eq(0);
+        });
+      });
+
+      describe('when the relation is not part of the include directive', function() {
+        it('is NOT removed from the array', function() {
+          expect(instance.books.length).to.eq(1);
+          instance.fromJsonapi(newDoc.data, newDoc, {});
+          expect(instance.books.length).to.eq(1);
+        });
+      });
+    });
+
     describe('when a belongs-to is marked for destruction', function() {
       let newDoc, instance, book;
 
@@ -484,6 +519,59 @@ describe('Model', function() {
         });
       });
     });
+
+    describe('when a belongs-to is marked for disassociation', function() {
+      let newDoc, instance, book;
+
+      beforeEach(function() {
+        let genre = new Genre({ id: '1' });
+        genre.isPersisted(true);
+        genre.isMarkedForDisassociation(true);
+
+        book = new Book({ id: '1', genre: genre });
+        book.isPersisted(true);
+
+        instance = new Author({ books: [book] });
+
+        newDoc = {
+          data: {
+            id: '1',
+            type: 'authors'
+          },
+          relationships: {
+            books: {
+              data: [
+                { id: '1', type: 'books' }
+              ]
+            }
+          },
+          included: [
+            {
+              id: '1',
+              type: 'books',
+              attributes: { title: 'whatever' }
+            }
+          ]
+        }
+      });
+
+      it('is set to null', function() {
+        expect(instance.books[0].genre).to.be.instanceof(Genre);
+        instance.fromJsonapi(newDoc.data, newDoc, { books: { genre: {} }});
+        expect(instance.books[0].genre).to.eq(null);
+      });
+
+      describe('within a nested destruction', function() {
+        beforeEach(function() {
+          book.isMarkedForDisassociation(true);
+        });
+
+        it('is removed via the parent', function() {
+          instance.fromJsonapi(newDoc.data, newDoc, { books: { genre: {} }});
+          expect(instance.books.length).to.eq(0);
+        });
+      });
+    });
   });
 
   describe('isMarkedForDestruction', function() {
@@ -494,6 +582,17 @@ describe('Model', function() {
       expect(instance.isMarkedForDestruction()).to.eq(true)
       instance.isMarkedForDestruction(false);
       expect(instance.isMarkedForDestruction()).to.eq(false)
+    });
+  });
+
+  describe('isMarkedForDisassociation', function() {
+    it('toggles correctly', function() {
+      instance = new Author();
+      expect(instance.isMarkedForDisassociation()).to.eq(false)
+      instance.isMarkedForDisassociation(true);
+      expect(instance.isMarkedForDisassociation()).to.eq(true)
+      instance.isMarkedForDisassociation(false);
+      expect(instance.isMarkedForDisassociation()).to.eq(false)
     });
   });
 
@@ -546,8 +645,12 @@ describe('Model', function() {
     });
 
     describe('when marked for disassociation', function() {
-      // disassociations not implemented yet
-      xit('is dirty', function() {
+      it('is dirty', function() {
+        instance = new Author();
+        instance.isPersisted(true);
+        expect(instance.isDirty()).to.eq(false);
+        instance.isMarkedForDisassociation(true);
+        expect(instance.isDirty()).to.eq(true);
       });
     });
 
@@ -655,6 +758,20 @@ describe('Model', function() {
 
           expect(instance.isDirty('books')).to.eq(false);
           book.isMarkedForDestruction(true);
+          expect(instance.isDirty('books')).to.eq(true);
+          expect(instance.isDirty()).to.eq(false);
+        });
+      });
+
+      describe('when a hasMany relationship has a member marked for disassociation', function() {
+        it('is dirty', function() {
+          let book = new Book({ id: 1 });
+          book.isPersisted(true);
+          instance.books = [book];
+          instance.isPersisted(true);
+
+          expect(instance.isDirty('books')).to.eq(false);
+          book.isMarkedForDisassociation(true);
           expect(instance.isDirty('books')).to.eq(true);
           expect(instance.isDirty()).to.eq(false);
         });

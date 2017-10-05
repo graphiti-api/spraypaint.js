@@ -112,7 +112,7 @@ class Deserializer {
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
-            if (relatedObject.isMarkedForDestruction()) {
+            if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
               model[key].splice(index, 1);
             } else {
               this._removeDeletions(relatedObject, includeDirective[key] || {});
@@ -120,7 +120,7 @@ class Deserializer {
           });
         } else {
           let relatedObject = relatedObjects;
-          if (relatedObject.isMarkedForDestruction()) {
+          if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
             model[key] = null;
           } else {
             this._removeDeletions(relatedObject, includeDirective[key] || {});
