@@ -29,3 +29,7 @@ interface IResultProxy<T> {
   meta: Object
   raw: japiDoc
 }
+
+interface attributeOptions {
+  persist: boolean;
+}

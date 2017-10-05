@@ -160,7 +160,7 @@ class Deserializer {
   _iterateValidRelationships(instance, relationships, callback) {
     for (let key in relationships) {
       let relationName = camelize(key);
-      if (instance.klass.attributeList.indexOf(relationName) >= 0) {
+      if (instance.klass.attributeList[relationName]) {
         let relationData = relationships[key].data;
         if(!relationData) continue; // only links, empty, etc
         callback(relationName, relationData);

@@ -41,7 +41,7 @@ export default class Model {
   _markedForDisassociation: boolean = false;
   klass: typeof Model;
 
-  static attributeList = [];
+  static attributeList = {};
   static relationList = [];
   private static _scope: Scope;
 
@@ -208,7 +208,7 @@ export default class Model {
   assignAttributes(attrs: Object) {
     for(var key in attrs) {
       let attributeName = camelize(key);
-      if (key == 'id' || this.klass.attributeList.indexOf(attributeName) >= 0) {
+      if (key == 'id' || this.klass.attributeList[attributeName]) {
         this[attributeName] = attrs[key];
       }
     }

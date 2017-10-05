@@ -194,8 +194,10 @@ export default class WritePayload {
   private _eachAttribute(callback: Function) : void {
     let modelAttrs = this.model.attributes;
     Object.keys(modelAttrs).forEach((key) => {
-      let value = modelAttrs[key];
-      callback(key, value);
+      if (this.model.klass.attributeList[key].persist) {
+        let value = modelAttrs[key];
+        callback(key, value);
+      }
     });
   }
 }

@@ -12,8 +12,8 @@ import Attribute from './attribute';
 import attrDecorator from './util/attr-decorator';
 import { hasMany, hasOne, belongsTo } from './associations';
 
-const attr = function() : any {
-  return new Attribute();
+const attr = function(opts?: attributeOptions) : any {
+  return new Attribute(opts);
 }
 
 export { Config, Model, attr, attrDecorator, hasMany, hasOne, belongsTo, patchExtends };

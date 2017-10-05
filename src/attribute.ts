@@ -7,12 +7,19 @@ import Config from './configuration';
 export default class Attribute {
   name: string;
 
+  persist: boolean = true;
   isAttr: boolean = true;
   isRelationship: boolean = false;
 
+  constructor(opts?: attributeOptions) {
+    if (opts && opts.hasOwnProperty('persist')) {
+      this.persist = opts.persist;
+    }
+  }
+
   static applyAll(klass: typeof Model) : void {
     this._eachAttribute(klass, (attr) => {
-      klass.attributeList.push(attr.name);
+      klass.attributeList[attr.name] = attr;
       let descriptor = attr.descriptor();
       Object.defineProperty(klass.prototype, attr.name, descriptor);
       let instance = new klass();
