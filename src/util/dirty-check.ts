@@ -27,7 +27,7 @@ class DirtyChecker {
 
   // Either:
   // * attributes changed
-  // * marked for destruction
+  // * marked for destruction / disassociation
   // * not persisted (and thus must be send to server)
   // * not itself dirty, but has nested relations that are dirty
   check(relationships: Object | Array<any> | string = {}) : boolean {
@@ -37,6 +37,7 @@ class DirtyChecker {
     return this._hasDirtyAttributes() ||
       this._hasDirtyRelationships(includeHash) ||
       this.model.isMarkedForDestruction() ||
+      this.model.isMarkedForDisassociation() ||
       this._isUnpersisted()
   }
 

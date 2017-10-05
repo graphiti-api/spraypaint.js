@@ -302,7 +302,33 @@ describe('nested persistence', function() {
   });
 
   describe('basic nested disassociate', function() {
-    xit('sends the correct payload', function() {
+    beforeEach(function() {
+      seedPersistedData();
+    });
+
+    it('sends the correct payload', function(done) {
+      instance.books[0].isMarkedForDisassociation(true);
+      instance.books[0].genre.isMarkedForDisassociation(true);
+      instance.save({ with: { books: 'genre' } }).then((response) => {
+        expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('disassociate'));
+        done();
+      });
+    });
+
+    it('removes the associated has_many data', function(done) {
+      instance.books[0].isMarkedForDisassociation(true);
+      instance.save({ with: 'books' }).then((response) => {
+        expect(instance.books.length).to.eq(0);
+        done();
+      });
+    });
+
+    it('removes the associated belongs_to data', function(done) {
+      instance.books[0].genre.isMarkedForDisassociation(true);
+      instance.save({ with: { books: 'genre' } }).then((response) => {
+        expect(instance.books[0].genre).to.eq(null);
+        done();
+      });
     });
   });
 });
