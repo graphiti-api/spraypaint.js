@@ -77,7 +77,6 @@ let expectedUpdatePayload = function(method) {
     data: {
       id: '1',
       type: 'authors',
-      attributes: { first_name: 'Stephen' },
       relationships: {
         books: {
           data: [
@@ -206,7 +205,6 @@ describe('nested persistence', function() {
     // todo test on the way back - id set, attrs updated, isPersisted
     // todo remove #destroy? and just save when markwithpersisted? combo? for ombined payload
     // todo test unique includes/circular relationshio
-    // todo only send dirty
     it('sends the correct payload', function(done) {
       instance.save({ with: { books: 'genre' } }).then((response) => {
         expect(payloads[0]).to.deep.equal(expectedCreatePayload);

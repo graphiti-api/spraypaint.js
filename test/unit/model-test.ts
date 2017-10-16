@@ -617,6 +617,31 @@ describe('Model', function() {
     });
   });
 
+  describe('changes', function() {
+    describe('when unpersisted', function() {
+      it('counts everything but nulls', function() {
+        instance = new Author({ firstName: 'foo' });
+        expect(instance.changes()).to.deep.equal({
+          firstName: [null, 'foo']
+        });
+      });
+    });
+
+    describe('when persisted', function() {
+      it('only counts dirty attrs', function() {
+        instance = new Author({ firstName: 'foo' });
+        instance.isPersisted(true);
+        expect(instance.changes()).to.deep.equal({});
+        instance.firstName = 'bar'
+        expect(instance.changes()).to.deep.equal({
+          firstName: ['foo', 'bar']
+        });
+        instance.isPersisted(true);
+        expect(instance.changes()).to.deep.equal({});
+      });
+    });
+  });
+
   describe('isDirty', function() {
     describe('when an attribute changes', function() {
       it('is marked as dirty', function() {

@@ -256,6 +256,11 @@ export default class Model {
     return dc.check(relationships);
   }
 
+  changes() : Object {
+    let dc = new DirtyChecker(this);
+    return dc.dirtyAttributes();
+  }
+
   hasDirtyRelation(relationName: string, relatedModel: Model) : boolean {
     let dc = new DirtyChecker(this);
     return dc.checkRelation(relationName, relatedModel);
