@@ -51,7 +51,7 @@ describe('Model persistence', function() {
   });
 
   describe('#save()', function() {
-    describe('when a unpersisted attr', function() {
+    describe('when an unpersisted attr', function() {
       it('does not send the attr to server', function(done) {
         instance = new PersonWithExtraAttr({ extraThing: 'foo' });
         expect(instance.extraThing).to.eq('foo');
@@ -92,6 +92,26 @@ describe('Model persistence', function() {
           expect(instance.isPersisted()).to.eq(true);
         });
       });
+
+      describe('when no dirty attributes', function() {
+        beforeEach(function() {
+          instance.firstName = 'Joe';
+          instance.isPersisted(true);
+        });
+
+        it('does not send attributes to the server', function(done) {
+          instance.save().then(() => {
+            console.log(putPayloads[0])
+            expect(putPayloads[0]).to.deep.equal({
+              data: {
+                id: '1',
+                type: 'people'
+              }
+            });
+            done();
+          });
+        });
+      })
     });
 
     describe('when the model is not already persisted', function() {

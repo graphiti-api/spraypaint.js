@@ -41,6 +41,23 @@ class DirtyChecker {
       this._isUnpersisted()
   }
 
+  dirtyAttributes() : Object {
+    let dirty = {};
+
+    for (let key of Object.keys(this.model.attributes)) {
+      let prior = this.model._originalAttributes[key];
+      let current = this.model.attributes[key];
+
+      if (!this.model.isPersisted()) {
+        dirty[key] = [null, current];
+      } else if (prior != current) {
+        dirty[key] = [prior, current]
+      }
+    }
+
+    return dirty;
+  }
+
   // TODO: allow attributes == {} configurable
   private _isUnpersisted() {
     return !this.model.isPersisted() && JSON.stringify(this.model.attributes) !== JSON.stringify({});

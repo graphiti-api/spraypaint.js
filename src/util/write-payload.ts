@@ -21,7 +21,10 @@ export default class WritePayload {
 
     this._eachAttribute((key, value) => {
       let snakeKey    = snakeCase(key);
-      attrs[snakeKey] = value;
+
+      if (!this.model.isPersisted() || this.model.changes()[key]) {
+        attrs[snakeKey] = value;
+      }
     });
 
     return attrs;
