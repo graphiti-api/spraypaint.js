@@ -203,6 +203,12 @@ describe('Model', function() {
               type: 'books'
             }]
           },
+          special_books: {
+            data: [{
+              id: '3',
+              type: 'books'
+            }]
+          },
           bio: {
             data: {
               id: '1',
@@ -223,8 +229,8 @@ describe('Model', function() {
           },
           relationships: {
             author: {
-              data: { 
-                id: '2', 
+              data: {
+                id: '2',
                 type: 'authors' 
               },
             }
@@ -243,6 +249,13 @@ describe('Model', function() {
                 type: 'authors' 
               },
             }
+          }
+        },
+        {
+          type: 'books',
+          id: '3',
+          attributes: {
+            title: "Peanut Butter & Cupcake"
           }
         },
         {
@@ -330,6 +343,14 @@ describe('Model', function() {
       let book = instance.books[0];
       expect(book).to.be.instanceof(Book);
       expect(book.title).to.eq("Where's My Butt?");
+    });
+
+    it('assigns hasMany relationships with same jsonapiType correctly', function() {
+      let instance = Model.fromJsonapi(doc.data, doc);
+      expect(instance.specialBooks.length).to.eq(1);
+      let book = instance.specialBooks[0];
+      expect(book).to.be.instanceof(Book);
+      expect(book.title).to.eq("Peanut Butter & Cupcake");
     });
 
     it('assigns belongsTo relationships correctly', function() {
