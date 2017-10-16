@@ -31,11 +31,12 @@ let Author = Person.extend({
 
   nilly:      attr(),
 
-  multiWords: hasMany('multi_words'),
-  books:      hasMany(),
-  tags:       hasMany(),
-  genre:      belongsTo('genres'),
-  bio:        hasOne('bios')
+  multiWords:   hasMany('multi_words'),
+  specialBooks: hasMany('books'),
+  books:        hasMany(),
+  tags:         hasMany(),
+  genre:        belongsTo('genres'),
+  bio:          hasOne('bios')
 });
 
 class Book extends ApplicationRecord {
