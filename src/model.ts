@@ -42,7 +42,6 @@ export default class Model {
   klass: typeof Model;
 
   static attributeList = {};
-  static relationList = [];
   private static _scope: Scope;
 
   static extend(obj : any) : any {
@@ -53,6 +52,7 @@ export default class Model {
     Config.models.push(subclass)
     subclass.parentClass = this;
     subclass.prototype.klass = subclass;
+    subclass.attributeList = cloneDeep(subclass.attributeList)
   }
 
   static scope(): Scope {
