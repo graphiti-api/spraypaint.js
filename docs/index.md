@@ -42,12 +42,28 @@ class Person extends Model {
 }
 ```
 
-**NB**: *Once your models are defined, you must call `Config.setup()`:
+**NOTE**: *Once your models are defined, you must call `Config.setup()`:
 
 ```js
 import { Config } from 'jsorm';
 Config.setup();
 ```
+
+### ES6/Typescript Classes
+
+ES6 and TypeScript classes do not have an `inherited` hook. Because this hook provides critical functionality, you have three options:
+
+* Edit your `.tsconfig`:
+  * Set `target` to `es5`.
+  * Add `noEmitHelpers: "true"`
+  
+* Call the inherited hook manually after each class definition:
+  ```ts
+  class Author extends Person { ... }
+  Person.inherited(Author);
+  ```
+  
+* Use the `let Person = Model.extend({ ... })` pattern shown above instead of native classes.
 
 ## Basic Usage
 
