@@ -3,6 +3,11 @@
 import Model from './model';
 import Attribute from './attribute';
 import Logger from './logger';
+import * as _cloneDeep from './util/clonedeep';
+let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
+if (cloneDeep.default) {
+  cloneDeep = cloneDeep.default;
+}
 
 let ctx = this;
 
@@ -24,6 +29,12 @@ export default class Config {
 
     for (let model of this.models) {
       Attribute.applyAll(model);
+    }
+
+    for (let model of this.models) {
+      let parentAttrList = cloneDeep(model.parentClass.attributeList);
+      let attrList = cloneDeep(model.attributeList);
+      model.attributeList = Object.assign(parentAttrList, attrList);
     }
   }
 

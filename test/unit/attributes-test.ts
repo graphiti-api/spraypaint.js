@@ -36,5 +36,19 @@ describe('Model attributes', function() {
       let person = new Person({ foo: 'bar' });
       expect(person['foo']).to.eq(undefined);
     });
+
+    describe('but that attribute exists in an unrelated model', function() {
+      it('still silently drops', function() {
+        let person = new Person({ title: 'bar' });
+        expect(person['title']).to.eq(undefined);
+      });
+    });
+
+    describe('but that attribute exists in a subclass', function() {
+      it('still silently drops', function() {
+        let person = new Person({ extraThing: 'bar' });
+        expect(person['extraThing']).to.eq(undefined);
+      });
+    });
   })
 });

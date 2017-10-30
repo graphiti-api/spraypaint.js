@@ -19,7 +19,7 @@ describe('Model finders', function() {
           id: '1',
           type: 'people',
           attributes: {
-            name: 'John'
+            firstName: 'John'
           }
         }
       });
@@ -35,7 +35,7 @@ describe('Model finders', function() {
 
     it('assigns attributes correctly', function(done) {
       resultData(Person.find(1)).then((data) => {
-        expect(data).to.have.property('name', 'John');
+        expect(data).to.have.property('firstName', 'John');
         done();
       });
     });
