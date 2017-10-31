@@ -1,5 +1,6 @@
 /// <reference path="../types/index.d.ts" />
 
+import 'object-assign-shim'
 import * as es6Promise from 'es6-promise';
 es6Promise.polyfill();
 
