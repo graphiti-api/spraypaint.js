@@ -1,5 +1,5 @@
 import { sinon, expect } from '../test-helper';
-import { Person } from '../fixtures';
+import { Person, Author } from '../fixtures';
 
 describe('Model attributes', function() {
   it('supports direct assignment', function() {
@@ -27,6 +27,18 @@ describe('Model attributes', function() {
     expect(person.attributes).to.eql({ firstName: 'John' });
     person.attributes['firstName'] = 'Jane';
     expect(person.firstName).to.eq('Jane');
+  });
+
+  it('sets attributes properties on the instance', function() {
+    let person = new Person();
+    expect(person.hasOwnProperty('firstName')).to.eq(true);
+    expect(Object.getOwnPropertyDescriptor(person, 'firstName'))
+      .to.not.eq(undefined);
+  });
+
+  it('defaults hasMany before the getter is called', function() {
+    let author = new Author();
+    expect(author.relationships['books']).to.deep.eq([])
   });
 
   // Without this behavior, the API could add a backwards-compatible field,

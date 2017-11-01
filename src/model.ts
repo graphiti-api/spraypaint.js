@@ -166,6 +166,7 @@ export default class Model {
   }
 
   constructor(attributes?: Object) {
+    this._initializeAttributes();
     this.attributes = attributes;
     this._originalAttributes = cloneDeep(this.attributes);
     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
@@ -266,6 +267,10 @@ export default class Model {
     return dc.checkRelation(relationName, relatedModel);
   }
 
+  dup() : Model {
+    return cloneDeep(this);
+  }
+
   destroy() : Promise<any> {
     let url     = this.klass.url(this.id);
     let verb    = 'delete';
@@ -295,6 +300,15 @@ export default class Model {
       //this.isPersisted(true);
       payload.postProcess();
     });
+  }
+
+  // Define getter/setters and set defaults
+  private _initializeAttributes() {
+    for (let key in this.klass.attributeList) {
+      let attr = this.klass.attributeList[key];
+      Object.defineProperty(this, attr.name, attr.descriptor());
+      this[key] = this[key]; // set defaults
+    }
   }
 
   private _writeRequest(requestPromise : Promise<any>, callback: Function) : Promise<any> {
