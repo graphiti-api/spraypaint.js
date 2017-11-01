@@ -21,6 +21,7 @@ export default class Attribute {
     this._eachAttribute(klass, (attr) => {
       klass.attributeList[attr.name] = attr;
       let descriptor = attr.descriptor();
+      Object.defineProperty(klass.prototype, attr.name, descriptor);
       let instance = new klass();
 
       let decorators = instance['__attrDecorators'] || [];
