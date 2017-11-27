@@ -11,6 +11,7 @@ import WritePayload from './util/write-payload';
 import IncludeDirective from './util/include-directive';
 import DirtyChecker from './util/dirty-check';
 import ValidationErrors from './util/validation-errors';
+import refreshJWT from './util/refresh-jwt';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
 import Request from './request';
 import * as _cloneDeep from './util/clonedeep';
@@ -321,6 +322,8 @@ export default class Model {
   }
 
   private _handleResponse(response: any, resolve: Function, reject: Function, callback: Function) : void {
+    refreshJWT(this.klass, response);
+
     if (response.status == 422) {
       ValidationErrors.apply(this, response['jsonPayload']);
       resolve(false);

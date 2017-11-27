@@ -5,6 +5,7 @@ import IncludeDirective from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies';
 import Request from './request';
 import colorize from './util/colorize';
+import refreshJWT from './util/refresh-jwt';
 import * as _cloneDeep from './util/clonedeep';
 let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
 cloneDeep = cloneDeep.default || cloneDeep;
@@ -222,10 +223,7 @@ export default class Scope {
     let fetchOpts = this.model.fetchOptions()
 
     return request.get(url, fetchOpts).then((response) => {
-      let jwtHeader = response.headers.get('X-JWT');
-      if (jwtHeader) {
-        this.model.setJWT(jwtHeader);
-      }
+      refreshJWT(this.model, response);
       return response['jsonPayload'];
     });
   }

@@ -15,15 +15,23 @@ export default class Config {
   static models: Array<typeof Model> = [];
   static typeMapping: Object = {};
   static logger: Logger = new Logger();
+  static jwtLocalStorage: string | false = 'jwt';
+  static localStorage;
 
   static setup(options? : Object) : void {
     if (!options) options = {};
+
+    this.jwtLocalStorage = options['jwtLocalStorage'];
 
     for (let model of this.models) {
       this.typeMapping[model.jsonapiType] = model;
 
       if (options['jwtOwners'] && options['jwtOwners'].indexOf(model) !== -1) {
         model.isJWTOwner = true;
+
+        if (this.jwtLocalStorage) {
+          model.jwt = this.localStorage.getItem(this.jwtLocalStorage);
+        }
       }
     }
 
@@ -51,4 +59,11 @@ export default class Config {
       throw(`Could not find class for jsonapi type "${type}"`)
     }
   }
+}
+
+// In node, no localStorage available
+// We do this so we can mock it
+try {
+  Config.localStorage = localStorage
+} catch(e) {
 }
