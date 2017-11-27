@@ -78,14 +78,17 @@ const TestJWTSubclass = ApplicationRecord.extend({
 const NonJWTOwner = Model.extend({
 });
 
-Config.setup({
-  jwtOwners: [
+const configSetup = function(opts = {}) {
+  opts['jwtOwners'] = [
     ApplicationRecord,
     TestJWTSubclass
   ]
-});
+  Config.setup(opts);
+}
+configSetup();
 
 export {
+  configSetup,
   ApplicationRecord,
   TestJWTSubclass,
   NonJWTOwner,
