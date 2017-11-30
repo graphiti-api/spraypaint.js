@@ -55,8 +55,18 @@ export default class ValidationErrors {
     } else {
       let relatedAccumulator = {}
       this._processResource(relatedAccumulator, meta);
-      relatedObject.errors = relatedAccumulator
-    }
 
+      // make sure to assign a new error object, instead of mutating
+      // the existing one, otherwise js frameworks with object tracking
+      // won't be able to keep up. Validate vue.js when changing this code:
+      let newErrs = {}
+      Object.keys(relatedObject.errors).forEach((key) => {
+        newErrs[key] = relatedObject.errors[key]
+      });
+      Object.keys(relatedAccumulator).forEach((key) => {
+        newErrs[key] = relatedAccumulator[key]
+      });
+      relatedObject.errors = newErrs
+    }
   }
 }

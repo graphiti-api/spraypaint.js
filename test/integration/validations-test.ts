@@ -59,6 +59,26 @@ const resetMocks = function() {
                 }
               }
             }
+          },
+          {
+            code: 'unprocessable_entity',
+            status: '422',
+            title: 'Validation Error',
+            detail: 'base some error',
+            meta: {
+              relationship: {
+                name: 'books',
+                type: 'books',
+                ['temp-id']: 'abc1',
+                relationship: {
+                  name: 'genre',
+                  type: 'genres',
+                  id: '1',
+                  attribute: 'base',
+                  message: 'some error'
+                }
+              }
+            }
           }
         ]
       }
@@ -176,8 +196,11 @@ describe('validations', function() {
     instance.save({ with: { books: 'genre' }}).then((success) => {
       expect(instance.isPersisted()).to.eq(false);
       expect(success).to.eq(false);
+
+      // note we're validating multiple properties
       expect(instance.books[0].genre.errors).to.deep.equal({
         name: 'cannot be blank',
+        base: 'some error'
       });
       done();
     });
