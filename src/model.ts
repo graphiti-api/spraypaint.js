@@ -28,6 +28,7 @@ export default class Model {
   static isJWTOwner: boolean = false;
   static jwt: string = null;
   static parentClass: typeof Model;
+  static camelizeKeys: boolean = true;
 
   id: string;
   temp_id: string;
@@ -209,7 +210,12 @@ export default class Model {
 
   assignAttributes(attrs: Object) {
     for(var key in attrs) {
-      let attributeName = camelize(key);
+      let attributeName = key;
+
+      if (this.klass.camelizeKeys) {
+        attributeName = camelize(key);
+      }
+      
       if (key == 'id' || this.klass.attributeList[attributeName]) {
         this[attributeName] = attrs[key];
       }

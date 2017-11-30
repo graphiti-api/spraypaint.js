@@ -18,6 +18,12 @@ class PersonWithExtraAttr extends Person {
   extraThing: string = attr({ persist: false });
 }
 
+class PersonWithoutCamelizedKeys extends Person {
+  static camelizeKeys = false;
+
+  first_name: string = attr();
+}
+
 // Ensure setup() can be run multiple times with no problems
 // putting this here, otherwise relations wont be available.
 Config.setup();
@@ -95,6 +101,7 @@ export {
   Author,
   Person,
   PersonWithExtraAttr,
+  PersonWithoutCamelizedKeys,
   Book,
   Genre,
   Bio,

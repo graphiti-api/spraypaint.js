@@ -1,5 +1,5 @@
 import { sinon, expect } from '../test-helper';
-import { Person, Author } from '../fixtures';
+import { Person, Author, PersonWithoutCamelizedKeys } from '../fixtures';
 
 describe('Model attributes', function() {
   it('supports direct assignment', function() {
@@ -19,6 +19,12 @@ describe('Model attributes', function() {
     let person = new Person({ first_name: 'Joe' });
     expect(person.firstName).to.eq('Joe');
   });
+
+  it('does not camlize underscored strings if camelization is disabled', function() {
+    let person = new PersonWithoutCamelizedKeys({ first_name: 'Joe' });
+    expect(person.firstName).to.eq(undefined);
+    expect(person.first_name).to.eq('Joe');
+  })
 
   it('syncs with #attributes', function() {
     let person = new Person();
