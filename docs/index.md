@@ -84,11 +84,11 @@ if (should_include_admins) {
   scope = scope.where({ admin: true });
 }
 scope.all().then((people) => {
-  people.map((p) => { return p.firstName; }); // => ['Joe', 'Jane', 'Bill']
+  people.data.map((p) => { return p.firstName; }); // => ['Joe', 'Jane', 'Bill']
 });
 
 scope.page(2).all().then((people) => {
-  people.map((p) => { return p.firstName; }); // => ['Chris', 'Sarah', 'Ben']
+  people.data.map((p) => { return p.firstName; }); // => ['Chris', 'Sarah', 'Ben']
 });
 ```
 
@@ -195,8 +195,8 @@ Person.includes(['tags', { pets: ['toys', 'tags'] }]);
 The included resources will now be present:
 
 ```js
-Person.includes('tags').then((person) => {
-  person.tags.map((t) => { return t.name; }); // #=> ['funny', 'smart']
+Person.includes('tags').all().then((person) => {
+  person.data.tags.map((t) => { return t.name; }); // #=> ['funny', 'smart']
 });
 ```
 

@@ -29,8 +29,8 @@ const Person = Model.extend({
 
 Config.setup();
 
-Person.where({ name: 'Joe' }).page(2).per(10).sort('name').then((people) => {
-  let names = people.map((p) => { return p.fullName(); });
+Person.where({ name: 'Joe' }).page(2).per(10).sort('name').all().then((people) => {
+  let names = people.data.map((p) => { return p.fullName(); });
   console.log(names); // ['Joe Blow', 'Joe DiMaggio', ...]
 });
 ```
