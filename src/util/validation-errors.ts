@@ -1,4 +1,5 @@
 import Model from '../model';
+import { camelize } from './string'
 
 export default class ValidationErrors {
   model: Model;
@@ -32,7 +33,13 @@ export default class ValidationErrors {
   }
 
   private _processResource(errorsAccumulator: object, meta: Object) {
-    errorsAccumulator[meta['attribute']] = meta['message'];
+    let attribute = meta['attribute']
+
+    if (this.model.klass.camelizeKeys) {
+      attribute = camelize(attribute)
+    }
+
+    errorsAccumulator[attribute] = meta['message'];
   }
 
   private _processRelationship(model: Model, meta: Object) {
