@@ -2,8 +2,6 @@ import { expect, sinon, fetchMock } from '../test-helper';
 import { Author, Book, Genre } from '../fixtures';
 import uuid from '../../src/util/uuid';
 
-let serverResponse;
-
 const resetMocks = function() {
   fetchMock.restore();
 
@@ -61,14 +59,30 @@ const resetMocks = function() {
                 }
               }
             }
+          },
+          {
+            code: 'unprocessable_entity',
+            status: '422',
+            title: 'Validation Error',
+            detail: 'base some error',
+            meta: {
+              relationship: {
+                name: 'books',
+                type: 'books',
+                ['temp-id']: 'abc1',
+                relationship: {
+                  name: 'genre',
+                  type: 'genres',
+                  id: '1',
+                  attribute: 'base',
+                  message: 'some error'
+                }
+              }
+            }
           }
         ]
       }
     }
-  });
-
-  fetchMock.post('http://example.com/api/v1/people', function(url, payload) {
-    return serverResponse;
   });
 }
 
@@ -97,16 +111,47 @@ describe('validations', function() {
     uuid.generate['restore']();
   });
 
-  // todo on next save, remove errs
   it('applies errors to the instance', function(done) {
     instance.save({ with: { books: 'genre' }}).then((success) => {
       expect(instance.isPersisted()).to.eq(false);
       expect(success).to.eq(false);
       expect(instance.errors).to.deep.equal({
-        first_name: 'cannot be blank',
-        last_name: 'cannot be blank'
+        firstName: 'cannot be blank',
+        lastName: 'cannot be blank'
       });
       done();
+    });
+  });
+
+  describe('when camelizeKeys is false', function() {
+    beforeEach(function() {
+      instance.klass.camelizeKeys = false
+    });
+
+    afterEach(function() {
+      instance.klass.camelizeKeys = true
+    });
+
+    it('does not camelize the error keys', function() {
+      instance.save({ with: { books: 'genre' }}).then((success) => {
+        expect(instance.errors).to.deep.equal({
+          first_name: 'cannot be blank',
+          last_name: 'cannot be blank'
+        });
+      });
+    });
+  });
+
+  it('clears errors on save', function(done) {
+    fetchMock.restore()
+    fetchMock.mock({
+      matcher: '*',
+      response: { data: { id: '1', type: 'employees'} }
+    });
+    instance.errors = { foo: 'bar' }
+    instance.save().then(() => {
+      expect(instance.errors).to.deep.eq({})
+      done()
     });
   });
 
@@ -151,8 +196,11 @@ describe('validations', function() {
     instance.save({ with: { books: 'genre' }}).then((success) => {
       expect(instance.isPersisted()).to.eq(false);
       expect(success).to.eq(false);
+
+      // note we're validating multiple properties
       expect(instance.books[0].genre.errors).to.deep.equal({
         name: 'cannot be blank',
+        base: 'some error'
       });
       done();
     });
