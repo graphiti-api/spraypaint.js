@@ -35,7 +35,7 @@ let Author = Person.extend({
     jsonapiType: 'authors'
   },
 
-  nilly:      attr(),
+  nilly:        attr(),
 
   multiWords:   hasMany('multi_words'),
   specialBooks: hasMany('books'),
@@ -45,19 +45,36 @@ let Author = Person.extend({
   bio:          hasOne('bios')
 });
 
+let NonFictionAuthor = Author.extend({
+  static: {
+    endpoint: '/v1/non_fiction_authors',
+    jsonapiType: 'non_fiction_authors',
+    camelizeKeys: false
+  },
+
+  nilly:         attr(),
+
+  multi_words:   hasMany('multi_words'),
+  special_books: hasMany('books'),
+  books:         hasMany(),
+  tags:          hasMany(),
+  genre:         belongsTo('genres'),
+  bio:           hasOne('bios')
+});
+
 class Book extends ApplicationRecord {
   static jsonapiType = 'books';
 
   title: string = attr();
 
   genre = belongsTo('genres');
-  author = hasOne('authors')
+  author = hasOne('authors');
 }
 
 class Genre extends ApplicationRecord {
   static jsonapiType = 'genres';
 
-  authors: any = hasMany('authors')
+  authors: any = hasMany('authors');
 
   name: string = attr();
 }
@@ -65,32 +82,27 @@ class Genre extends ApplicationRecord {
 class Bio extends ApplicationRecord {
   static jsonapiType = 'bios';
 
-  description: string = attr()
+  description: string = attr();
 }
 
 class Tag extends ApplicationRecord {
   static jsonapiType = 'tags';
 
-  name: string = attr()
+  name: string = attr();
 }
 
 class MultiWord extends ApplicationRecord {
   static jsonapiType = 'multi_words';
 }
 
-const TestJWTSubclass = ApplicationRecord.extend({
-});
+const TestJWTSubclass = ApplicationRecord.extend({});
 
-const NonJWTOwner = Model.extend({
-});
+const NonJWTOwner = Model.extend({});
 
 const configSetup = function(opts = {}) {
-  opts['jwtOwners'] = [
-    ApplicationRecord,
-    TestJWTSubclass
-  ]
+  opts['jwtOwners'] = [ApplicationRecord, TestJWTSubclass];
   Config.setup(opts);
-}
+};
 configSetup();
 
 export {
@@ -99,6 +111,7 @@ export {
   TestJWTSubclass,
   NonJWTOwner,
   Author,
+  NonFictionAuthor,
   Person,
   PersonWithExtraAttr,
   PersonWithoutCamelizedKeys,
