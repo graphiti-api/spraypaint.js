@@ -33,4 +33,12 @@ describe('Model relationships', function() {
     let genre = new Genre();
     expect(genre.authors.length).to.eql(0);
   });
+
+  it('has enumerable properties', function() {
+    let genre = new Genre({ name: 'Horror' });
+    let author = new Author({ genre: genre });
+    let keys = Object.keys(author);
+
+    expect(keys).to.include('genre');
+  });
 });

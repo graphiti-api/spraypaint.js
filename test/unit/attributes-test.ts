@@ -47,6 +47,14 @@ describe('Model attributes', function() {
     expect(author.relationships['books']).to.deep.eq([])
   });
 
+  it('has enumerable properties', function() {
+    let person = new Person();
+    let keys = Object.keys(person)
+
+    expect(keys).to.include('firstName');
+    expect(keys).to.include('lastName');
+  });
+
   // Without this behavior, the API could add a backwards-compatible field,
   // and this object might blow up.
   describe('when passed an invalid attribute in constructor', function() {
