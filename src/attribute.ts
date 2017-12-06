@@ -51,11 +51,11 @@ export default class Attribute {
   }
 
   // This returns the getters/setters for use on the *model*
-  descriptor() {
+  descriptor(): PropertyDescriptor {
     let attr = this;
 
     return {
-      writeable: true,
+      enumerable: true,
       get() : any {
         return attr.getter(this);
       },
