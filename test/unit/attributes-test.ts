@@ -49,7 +49,17 @@ describe('Model attributes', function() {
 
   it('has enumerable properties', function() {
     let person = new Person();
-    let keys = Object.keys(person)
+    let keys = Object.keys(person);
+
+    expect(keys).to.include('firstName');
+    expect(keys).to.include('lastName');
+  });
+
+  it('has enumerable properties even when subclassing', function() {
+    class BadPerson extends Person {}
+
+    let badPerson = new BadPerson();
+    let keys = Object.keys(badPerson);
 
     expect(keys).to.include('firstName');
     expect(keys).to.include('lastName');
