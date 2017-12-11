@@ -1,6 +1,6 @@
 import { expect, sinon, fetchMock } from '../test-helper';
 import { Author, Book, Genre } from '../fixtures';
-import uuid from '../../src/util/uuid';
+import tempId from '../../src/util/temp-id';
 
 const resetMocks = function() {
   fetchMock.restore();
@@ -94,7 +94,7 @@ describe('validations', function() {
   });
 
   beforeEach(function() {
-    sinon.stub(uuid, 'generate').callsFake(function() {
+    sinon.stub(tempId, 'generate').callsFake(function() {
       tempIdIndex++
       return `abc${tempIdIndex}`;
     });
@@ -108,7 +108,7 @@ describe('validations', function() {
 
   afterEach(function() {
     tempIdIndex = 0;
-    uuid.generate['restore']();
+    tempId.generate['restore']();
   });
 
   it('applies errors to the instance', function(done) {

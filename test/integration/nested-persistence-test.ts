@@ -1,6 +1,6 @@
 import { sinon, expect, fetchMock } from '../test-helper';
 import { Author, Book, Genre } from '../fixtures';
-import uuid from '../../src/util/uuid';
+import tempId from '../../src/util/temp-id';
 
 let fetchMock = require('fetch-mock');
 
@@ -184,7 +184,7 @@ describe('nested persistence', function() {
 
   let tempIdIndex = 0;
   beforeEach(function() {
-    sinon.stub(uuid, 'generate').callsFake(function() {
+    sinon.stub(tempId, 'generate').callsFake(function() {
       tempIdIndex++
       return `abc${tempIdIndex}`;
     });
@@ -192,7 +192,7 @@ describe('nested persistence', function() {
 
   afterEach(function() {
     tempIdIndex = 0;
-    uuid.generate['restore']();
+    tempId.generate['restore']();
   });
 
   describe('basic nested create', function() {
