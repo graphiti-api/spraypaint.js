@@ -1,7 +1,7 @@
 import Model from '../model';
 import IncludeDirective from './include-directive';
 import * as _snakeCase from './snakecase';
-import uuid from './uuid';
+import tempId from './temp-id';
 let snakeCase: any = (<any>_snakeCase).default || _snakeCase;
 snakeCase = snakeCase['default'] || snakeCase;
 
@@ -134,7 +134,7 @@ export default class WritePayload {
     model.clearErrors();
 
     if (!model.isPersisted()) {
-      model.temp_id = uuid.generate();
+      model.temp_id = tempId.generate()
     }
 
     let wp            = new WritePayload(model, nested);
