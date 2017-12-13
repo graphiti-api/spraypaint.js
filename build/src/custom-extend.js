@@ -1,0 +1,32 @@
+"use strict";
+// Override defined here w/noEmitHelpers
+// https://github.com/Microsoft/TypeScript/issues/6425
+// Allows 'inherited' hook
+Object.defineProperty(exports, "__esModule", { value: true });
+var globalObj;
+if (typeof window === 'undefined') {
+    globalObj = global;
+}
+else {
+    globalObj = window;
+}
+var originalSetPrototypeOf = Object['setPrototypeOf'];
+var patchExtends = function () {
+    Object['setPrototypeOf'] = function (subClass, superClass) {
+        originalSetPrototypeOf(subClass, superClass);
+        if (superClass['inherited']) {
+            superClass['inherited'](subClass);
+        }
+    };
+    globalObj['__extends'] = function (d, b) {
+        for (var p in b)
+            if (b.hasOwnProperty(p))
+                d[p] = b[p];
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        if (b.inherited)
+            b.inherited(d);
+    };
+};
+exports.default = patchExtends;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY3VzdG9tLWV4dGVuZC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9jdXN0b20tZXh0ZW5kLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQSx3Q0FBd0M7QUFDeEMsc0RBQXNEO0FBQ3RELDBCQUEwQjs7QUFFMUIsSUFBSSxTQUFTLENBQUM7QUFDZCxFQUFFLENBQUMsQ0FBQyxPQUFPLE1BQU0sS0FBSyxXQUFXLENBQUMsQ0FBQyxDQUFDO0lBQ2xDLFNBQVMsR0FBRyxNQUFNLENBQUM7QUFDckIsQ0FBQztBQUFDLElBQUksQ0FBQyxDQUFDO0lBQ04sU0FBUyxHQUFHLE1BQU0sQ0FBQztBQUNyQixDQUFDO0FBRUQsSUFBSSxzQkFBc0IsR0FBRyxNQUFNLENBQUMsZ0JBQWdCLENBQUMsQ0FBQztBQUV0RCxJQUFNLFlBQVksR0FBRztJQUNuQixNQUFNLENBQUMsZ0JBQWdCLENBQUMsR0FBRyxVQUFTLFFBQVEsRUFBRSxVQUFVO1FBQ3RELHNCQUFzQixDQUFDLFFBQVEsRUFBRSxVQUFVLENBQUMsQ0FBQztRQUU3QyxFQUFFLENBQUEsQ0FBQyxVQUFVLENBQUMsV0FBVyxDQUFDLENBQUMsQ0FBQyxDQUFDO1lBQzNCLFVBQVUsQ0FBQyxXQUFXLENBQUMsQ0FBQyxRQUFRLENBQUMsQ0FBQztRQUNwQyxDQUFDO0lBQ0gsQ0FBQyxDQUFBO0lBRUQsU0FBUyxDQUFDLFdBQVcsQ0FBQyxHQUFHLFVBQVUsQ0FBQyxFQUFFLENBQUM7UUFDckMsR0FBRyxDQUFDLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxDQUFDO1lBQUMsRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDLGNBQWMsQ0FBQyxDQUFDLENBQUMsQ0FBQztnQkFBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDO1FBQ3RELGdCQUFnQixJQUFJLENBQUMsV0FBVyxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUM7UUFDdkMsQ0FBQyxDQUFDLFNBQVMsR0FBRyxDQUFDLEtBQUssSUFBSSxDQUFDLENBQUMsQ0FBQyxNQUFNLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxTQUFTLEdBQUcsQ0FBQyxDQUFDLFNBQVMsRUFBRSxJQUFJLEVBQUUsRUFBRSxDQUFDLENBQUM7UUFDckYsRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDLFNBQVMsQ0FBQztZQUFDLENBQUMsQ0FBQyxTQUFTLENBQUMsQ0FBQyxDQUFDLENBQUM7SUFDbEMsQ0FBQyxDQUFDO0FBQ0osQ0FBQyxDQUFBO0FBRUQsa0JBQWUsWUFBWSxDQUFDIn0=

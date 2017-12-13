@@ -4,14 +4,11 @@
     "target": "es5",
     "module": "commonjs",
     "outDir": "build/",
-    "inlineSourceMap": true,
-    "skipLibCheck": true
+    "inlineSourceMap": true
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx",
     "test/**/*.ts",
-    "test/**/*.tsx",
     "types/**/*.d.ts"
   ]
 }

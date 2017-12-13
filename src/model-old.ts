@@ -14,11 +14,7 @@ import ValidationErrors from './util/validation-errors';
 import refreshJWT from './util/refresh-jwt';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
 import Request from './request';
-import * as _cloneDeep from './util/clonedeep';
-let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
-if (cloneDeep.default) {
-  cloneDeep = cloneDeep.default;
-}
+import cloneDeep from './util/clonedeep';
 
 export default class Model {
   static baseUrl = 'http://please-set-a-base-url.com';
@@ -26,7 +22,7 @@ export default class Model {
   static jsonapiType = 'define-in-subclass';
   static endpoint: string;
   static isJWTOwner: boolean = false;
-  static jwt: string = null;
+  static jwt?: string;
   static parentClass: typeof Model;
   static camelizeKeys: boolean = true;
 
@@ -37,7 +33,7 @@ export default class Model {
   _originalRelationships: Object = {};
   relationships: Object = {};
   errors: Object = {};
-  __meta__: Object | void = null;
+  __meta__: Object | null = null;
   _persisted: boolean = false;
   _markedForDestruction: boolean = false;
   _markedForDisassociation: boolean = false;
@@ -65,7 +61,7 @@ export default class Model {
     this.getJWTOwner().jwt = token;
   }
 
-  static getJWT() : string {
+  static getJWT() : string | undefined {
     let owner = this.getJWTOwner();
 
     if (owner) {
@@ -88,15 +84,13 @@ export default class Model {
     return options
   }
 
-  static getJWTOwner() : typeof Model {
+  static getJWTOwner() : typeof Model | undefined {
     if (this.isJWTOwner) {
       return this;
-    } else {
-      if (this.parentClass) {
+    } else if (this.parentClass) {
         return this.parentClass.getJWTOwner();
-      } else {
-        return;
-      }
+    } else {
+      return;
     }
   }
 
@@ -169,7 +163,7 @@ export default class Model {
 
   constructor(attributes?: Object) {
     this._initializeAttributes();
-    this.attributes = attributes;
+    this.attributes = attributes || {};
     this._originalAttributes = cloneDeep(this.attributes);
     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
   }

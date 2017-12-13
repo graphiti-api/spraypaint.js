@@ -6,9 +6,7 @@ import { CollectionProxy, RecordProxy } from './proxies';
 import Request from './request';
 import colorize from './util/colorize';
 import refreshJWT from './util/refresh-jwt';
-import * as _cloneDeep from './util/clonedeep';
-let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
-cloneDeep = cloneDeep.default || cloneDeep;
+import cloneDeep from './util/clonedeep';
 
 export default class Scope {
   model: typeof Model;
