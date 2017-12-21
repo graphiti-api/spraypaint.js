@@ -1,35 +1,30 @@
-import Scope from '../scope';
-import Config from '../configuration';
-import Attribute, { AttributeOptions, Attr } from '../attribute';
-import { deserialize, deserializeInstance } from '../util/deserialize';
-import { CollectionProxy, RecordProxy } from '../proxies';
-import _extend from '../util/extend';
-import { camelize } from '../util/string';
-import WritePayload from '../util/write-payload';
-import IncludeDirective from '../util/include-directive';
-import DirtyChecker from '../util/dirty-check';
-import ValidationErrors from '../util/validation-errors';
-import refreshJWT from '../util/refresh-jwt';
-import relationshipIdentifiersFor from '../util/relationship-identifiers';
-import Request from '../request';
-import cloneDeep from '../util/clonedeep';
-export { AttributeOptions, attr } from '../attribute'
+// import Scope from '../scope';
+// import Config from '../configuration';
+// import { deserialize, deserializeInstance } from '../util/deserialize';
+// import { CollectionProxy, RecordProxy } from '../proxies';
+// import _extend from '../util/extend';
+// import { camelize } from '../util/string';
+// import WritePayload from '../util/write-payload';
+// import IncludeDirective from '../util/include-directive';
+// import DirtyChecker from '../util/dirty-check';
+// import ValidationErrors from '../util/validation-errors';
+// import refreshJWT from '../util/refresh-jwt';
+// import relationshipIdentifiersFor from '../util/relationship-identifiers';
+// import Request from '../request';
+import Attribute, { AttributeOptions, Attr, attr } from '../attribute';
 export { belongsTo, hasMany, hasOne } from '../associations'
+import cloneDeep from '../util/clonedeep';
 
-export type ModelSubclassInstance<Instance extends Model, Attributes, Methods> = 
-  Instance &
-  Attributes &
-  Model & 
-  Methods
+export { attr }
 
 export type ExtendedModel<
   Subclass extends Model, 
   Attributes, 
   Methods
 > = 
+  Model &
   Subclass &
   Attributes &
-  Model & 
   Methods
 
 export type AttrMap<T> = {
@@ -38,36 +33,45 @@ export type AttrMap<T> = {
 
 export type DefaultAttrs = Record<string, any>
 export type DefaultMethods<V> =  { [key: string]: (this: V, ...args: any[]) => any };
+
 export interface ExtendOptions<
   M extends Model,
   Attributes=DefaultAttrs,
-  Methods=DefaultMethods<M>,
+  Methods=DefaultMethods<M>
   > {
   attrs?: AttrMap<Attributes>
   methods?: Methods
 }
 
-export type ThisTypedExtendOptions<M extends Model, Attributes, Methods> = 
-  object &
-  ExtendOptions<M, Attributes, Methods> &
-  ThisType<ModelSubclassInstance<M, Attributes, Methods>>
+export interface ModelConstructor<M extends Model, Attrs> {
+  new (attrs?: Partial<Attrs>) : M
+  extend<
+    ExtendedAttrs,
+    Methods
+  >(
+    this: { new(attrs?: Partial<Attrs>) : M }, 
+    options : ExtendOptions<M, ExtendedAttrs, Methods>
+  ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs>
 
-export interface ModelConstructor<MC extends typeof Model, M extends Model, Attributes, Methods> {
-  new (attrs?: Partial<Attributes>) : M
-  extend<MC extends typeof Model, M extends Model, Attributes, Methods>(this: MC, options : ThisTypedExtendOptions<M, Attributes, Methods>) : ModelConstructor<MC, ExtendedModel<M, Attributes, Methods>, Attributes, Methods>
-  attributeList : Attributes
-  extendOptions : ExtendOptions<M, Attributes, Methods>
+  attributeList : Attrs
+  extendOptions : any//ExtendOptions<M, Attributes, Methods>
 }
 
-function extendModel<MC extends typeof Model, M extends Model, Attributes, Methods>(
-  Superclass : ModelConstructor<MC, M, Attributes, Methods>, 
-  options : ThisTypedExtendOptions<M, Attributes, Methods>
-) : ModelConstructor<MC, ExtendedModel<M, Attributes, Methods>, Attributes, Methods> {
-  class Subclass extends (<ModelConstructor<typeof Superclass, Model, Attributes, Methods>>Superclass) {
-    constructor(attrs?: AttrMap<Attributes>) {
+function extendModel<
+  MC extends ModelConstructor<M, Attrs>, 
+  M extends Model, 
+  Attrs, 
+  ExtendedAttrs, 
+  Methods
+>(
+  Superclass: ModelConstructor<M, Attrs>, 
+  options : ExtendOptions<M, ExtendedAttrs, Methods>
+) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
+  class Subclass extends (<ModelConstructor<Model, Attrs>>Superclass) {
+    constructor(attrs?: Partial<Attrs & ExtendedAttrs>) {
       super()
-      this._klass = Subclass
-      this._parent = Superclass
+      this._klass = <any>Subclass
+      this._parent = <any>Superclass
 
       if (attrs) {
         for(const k in attrs) {
@@ -88,12 +92,12 @@ function extendModel<MC extends typeof Model, M extends Model, Attributes, Metho
     }
   }
 
-  return <ModelConstructor<typeof Subclass, ExtendedModel<M, Attributes, Methods>, Attributes, Methods>>Subclass
+  return <any>Subclass
 }
 
 export default class Model {
   static attributeList : any
-  static extendOptions : any//ExtendOptions<Model, {}, {}> = {}
+  static extendOptions : any
 
   protected _klass : typeof Model = Model
   protected _parent? : typeof Model = undefined
@@ -103,11 +107,20 @@ export default class Model {
     this._initializeAttributes();
   }
 
-  static extend<MC extends typeof Model, M extends Model, Attributes, Methods>(options : ThisTypedExtendOptions<M, Attributes, Methods>) : ModelConstructor<MC, ExtendedModel<M, Attributes, Methods>, Attributes, Methods> {
+  static extend<
+    MC extends ModelConstructor<M, Attrs>, 
+    M extends Model,
+    Attrs, 
+    ExtendedAttrs,
+    Methods
+  >(
+    this : MC, 
+    options : ExtendOptions<M, ExtendedAttrs, Methods>
+  ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
     const Super = this
     const Subclass = extendModel(Super, options)
 
-    return <ModelConstructor<MC, ExtendedModel<M, Attributes, Methods>, Attributes, Methods>>Subclass
+    return Subclass
   }
 
   // Define getter/setters 

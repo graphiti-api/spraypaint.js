@@ -1,17 +1,62 @@
 import { expect, sinon } from '../test-helper';
 // import { Config, Model, belongsTo, hasMany, hasOne } from '../../src/model';
 import { default as Model, attr, hasOne, hasMany } from '../../src/model'
-import { belongsTo } from '../../src/associations';
-import { default as Attribute, AttributeValue } from '../../src/attribute';
+import { belongsTo } from '../../src/associations'
+import { default as Attribute, AttributeValue } from '../../src/attribute'
+import { Model as ModelDecorator } from '../../src/decorators'
 
 describe('Model', () => {
+  class BaseModel extends Model {}
+
+  describe('class extends API', () => {
+    class Person extends BaseModel {
+      name : string
+    }
+    
+    @ModelDecorator()
+    class Post extends BaseModel {
+
+    }
+
+
+    it('correctly instantiates the model', () => {
+
+      let theAuthor = new Person()
+      let post  = new Post({title: 'The Title', author: theAuthor})
+
+      // expect(post.author).to.equal(theAuthor)
+      expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
+    })
+
+    it('allows extension of the model', () => {
+      @ModelDecorator()
+      class FrontPagePost extends Post {
+
+      }
+    //   const FrontPagePost = Post.extend({
+    //     attrs: {
+    //       pageOrder: attr({type: Number})
+    //     },
+    //     methods: {
+    //       isFirst() {
+    //         return this.pageOrder === 1
+    //       }
+    //     }
+    //   })
+
+      let post  = new FrontPagePost({title: 'The Title' , pageOrder: 1})
+
+      expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
+      expect(post.isFirst()).to.be.true
+    })
+  })
+
   describe('.extend() API', () => {
-    class Person extends Model {
+    class Person extends BaseModel {
       name : string
     }
 
-    Model.extend
-    const Post = Model.extend({
+    const Post = BaseModel.extend({
       attrs: {
         title: attr({ type: String }),
         author: hasOne({ type: Person })
@@ -53,32 +98,6 @@ describe('Model', () => {
 
       expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
       expect(post.isFirst()).to.be.true
-    })
-  })
-
-  describe('Initialization', () => {
-    it('should work', () => {
-      class Base {
-        value : string = 'default'
-
-        static identity<M extends typeof Base>() : M  {
-          return this
-        }
-      }
-
-      class Extended extends Base {
-        otherValue = 'extended'
-
-        constructor() {
-          super()
-        }
-      }
-
-      let baseClass = Base.identity()
-      let extendedClass = Extended.identity()
-      expect(new baseClass().value).to.eq('default')
-      expect(new extendedClass().otherValue).to.eq('extended')
-      
     })
   })
 })
