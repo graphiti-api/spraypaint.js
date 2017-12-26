@@ -21,7 +21,6 @@ const ModelDecorator = function(config? : ModelConfigurationOptions) {
   }
 }
 
-
 function modelFactory<M extends typeof Model>(ModelClass : typeof Model, config? : ModelConfigurationOptions) : M {
   ensureModelInheritance(ModelClass)
   ensureClonedAttrList(ModelClass)

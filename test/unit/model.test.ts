@@ -11,7 +11,7 @@ describe('Model', () => {
       name : string
     }
 
-    @ModelDecorator()
+    // @ModelDecorator()
     class Post extends Model {
       @attrDecorator title : string
       @attrDecorator author : Person
@@ -56,6 +56,26 @@ describe('Model', () => {
         expect(() => {
           new Post({title: 'The Title' , pageOrder: 1})
         }).to.throw(/Unknown attribute: pageOrder/)
+      })
+    })
+
+    describe('model inheritence with .extends() API', () => {
+      const FrontPagePost = Post.extend({
+        attrs: {
+          pageOrder: attr({type: Number})
+        },
+        methods: {
+          isFirst() {
+            return this.pageOrder === 1
+          }
+        }
+      })
+
+      it('allows extension of the model', () => {
+        let post  = new FrontPagePost({title: 'The Title' , pageOrder: 1})
+
+        expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
+        expect(post.isFirst()).to.be.true
       })
     })
 
@@ -108,6 +128,9 @@ describe('Model', () => {
 
           return `${this.title.toUpperCase()}${loudness}`
         },
+        other() : boolean {
+          return true
+        }
       }
     })
 
@@ -145,32 +168,61 @@ describe('Model', () => {
       })
     })
 
-    describe('class options', () => {
-      let config = {
-        apiNamespace: 'api/v1',
-        jsonapiType: 'test_types',
-        jwt: 'abc123', 
+    describe('inheritance with class-based declaration', () => {
+      class FrontPagePost extends Post {
+        @attrDecorator pageOrder : number
+
+        isFirst() {
+          return this.pageOrder === 1
+        }
       }
 
-      let MyModel = Model.extend({
-        config: config
+      it('allows extension of the model', () => {
+        let post  = new FrontPagePost({title: 'The Title' , pageOrder: 1})
+
+        expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
+        expect(post.isFirst()).to.be.true
       })
 
-      it('preserves defaults for unspecified items', () => {
-        expect(MyModel.baseUrl).to.eq('http://please-set-a-base-url.com')
-        expect(MyModel.camelizeKeys).to.be.true
+      it('does not modify the parent attributes', () => { 
+        expect(() => { 
+          new Post((<any>{title: 'The Title' , pageOrder: 1})) 
+        }).to.throw(/Unknown attribute: pageOrder/)
       })
+    })
 
-      it('correctly assigns options', () => {
-        expect(MyModel.apiNamespace).to.eq(config.apiNamespace)
-        expect(MyModel.jsonapiType).to.eq(config.jsonapiType)
-        expect(MyModel.jwt).to.eq(config.jwt)
-      })
+    describe('class options', () => {
+      const configProps : Array<'static' | 'config'> = ['static', 'config']
 
-      it('does not override parent class options', () => {
-        expect(Model.apiNamespace).not.to.eq(config.apiNamespace)
-        expect(Model.jsonapiType).not.to.eq(config.jsonapiType)
-        expect(Model.jwt).not.to.eq(config.jwt)
+      configProps.forEach((prop) => {
+        describe(`config prop is "${prop}"`, () => {
+          let config = {
+            apiNamespace: 'api/v1',
+            jsonapiType: 'test_types',
+            jwt: 'abc123', 
+          }
+
+          let MyModel = Model.extend({
+            [prop]: config
+          })
+
+          it('preserves defaults for unspecified items', () => {
+            expect(MyModel.baseUrl).to.eq('http://please-set-a-base-url.com')
+            expect(MyModel.camelizeKeys).to.be.true
+          })
+
+          it('correctly assigns options', () => {
+            expect(MyModel.apiNamespace).to.eq(config.apiNamespace)
+            expect(MyModel.jsonapiType).to.eq(config.jsonapiType)
+            expect(MyModel.jwt).to.eq(config.jwt)
+          })
+
+          it('does not override parent class options', () => {
+            expect(Model.apiNamespace).not.to.eq(config.apiNamespace)
+            expect(Model.jsonapiType).not.to.eq(config.jsonapiType)
+            expect(Model.jwt).not.to.eq(config.jwt)
+          })
+        })
       })
     })
   })

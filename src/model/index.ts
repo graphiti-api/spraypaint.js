@@ -48,24 +48,27 @@ export type DefaultAttrs = Record<string, any>
 export type DefaultMethods<V> =  { [key: string]: (this: V, ...args: any[]) => any };
 
 export interface ExtendOptions<
-  M extends Model,
+  M,
   Attributes=DefaultAttrs,
   Methods=DefaultMethods<M>
   > {
+  static?: ModelConfigurationOptions
   config?: ModelConfigurationOptions
   attrs?: AttrMap<Attributes>
-  methods?: Methods
+  methods?: ThisType<M & Attributes & Methods> & Methods
 }
 
 export interface ModelConstructor<M extends Model, Attrs> {
-  new (attrs?: Partial<Attrs>) : M
-  extend<
-    ExtendedAttrs,
-    Methods
-  >(
-    this: { new(attrs?: Partial<Attrs>) : M }, 
+  // new (attrs?: Partial<Attrs>) : M
+  new (attrs?: Record<string, any>) : M
+  extend<ExtendedAttrs, Methods> (
+    // this: { new(attrs?: Partial<Attrs>) : M }, 
+    this: { new(attrs?: Record<string, any>) : M }, 
     options : ExtendOptions<M, ExtendedAttrs, Methods>
-  ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs>
+  ) : ModelConstructor<
+      ExtendedModel<M, ExtendedAttrs, Methods>, 
+      Attrs & ExtendedAttrs
+    >
 
   // create<M extends Model>(this: ModelConstructor<M, Attrs>, attrs? : Partial<Attrs>) : M
 
@@ -95,16 +98,20 @@ function extendModel<
   options : ExtendOptions<M, ExtendedAttrs, Methods>
 ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
   class Subclass extends (<ModelConstructor<Model, Attrs>>Superclass) {
-    constructor(attrs?: Partial<Attrs & ExtendedAttrs>) {
+    // constructor(attrs?: Partial<Attrs & ExtendedAttrs>) {
+    constructor(attrs?: Record<string, any>) {
       super(attrs)
       this._klass = <any>Subclass
-      // this._parent = <any>Superclass
     }
   }
 
   Subclass.parentClass = <any>Superclass
   Subclass.currentClass = <any>Subclass
   Subclass.attributeList = Object.assign({}, cloneDeep(Superclass.attributeList), options.attrs)
+
+  if (options.static) {
+    applyModelConfig(Subclass, options.static)
+  }
 
   if (options.config) {
     applyModelConfig(Subclass, options.config)
@@ -144,7 +151,7 @@ export class Model {
   static jwt?: string;
   static camelizeKeys: boolean = true;
 
-  static attributeList : Record<string, Attribute> = {}
+  static attributeList : Record<string, any> = {}
   static extendOptions : any
   static parentClass : typeof Model;
   static currentClass : typeof Model = Model
@@ -154,7 +161,7 @@ export class Model {
   // something is a class of a certain type or subtype
   // (as opposed to an instance of that class), so we set a magic prop on this
   // for use around the code.
-  static readonly isJSORMModel = true
+  static readonly isJSORMModel : boolean = true
 
   protected _klass : typeof Model = Model
   _attributes : Record<string, any>
@@ -188,10 +195,10 @@ export class Model {
     ExtendedAttrs,
     Methods
   >(
-    this : MC, 
+    this : { new(...args: any[]) : M }, 
     options : ExtendOptions<M, ExtendedAttrs, Methods>
   ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-    const Super = this
+    const Super = this as MC
     const Subclass = extendModel(Super, options)
 
     return Subclass

@@ -8,7 +8,7 @@ export interface AssociationRecord<T extends Model | undefined> extends AttrReco
 export class AssociationBase<T extends Model> extends Attribute<T> {
   klass: typeof Model;
   // isRelationship = true;
-  // jsonapiType: string;
+  jsonapiType: string;
 
   constructor(options: AssociationRecord<T>) {
     super(options);
