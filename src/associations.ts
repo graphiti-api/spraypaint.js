@@ -1,5 +1,5 @@
-import Attribute, { AttrRecord, Attr } from './attribute';
-import Model from './model';
+import { Attribute, AttrRecord, Attr } from './attribute';
+import { Model } from './model';
 
 export interface AssociationRecord<T extends Model | undefined> extends AttrRecord<T> {
   type?: Attr<T>

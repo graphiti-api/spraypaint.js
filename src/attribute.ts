@@ -1,14 +1,14 @@
-import Model from './model'
+import { Model } from './model'
 
 export type Attr<T> = { (): T } | { new (...args: any[]): T & object }
 
 export type AttrType<T> = Attr<T>
 
 export interface AttrRecord<T> {
+  name?: string | symbol
   type?: AttrType<T>
   persist? : boolean
 }
-export type AttributeOptions<T> = AttrRecord<T> | Attr<T>;
 
 export function attr<T=any>(options? : AttrRecord<T>) : Attribute<T> {
   if (!options) {
@@ -22,11 +22,17 @@ export type AttributeValue<Attributes> = {
   [K in keyof Attributes] : Attributes[K]
 }
 
-export default class Attribute<T=any> {
-  public name? : string = undefined
+export type AttributeOptions = Partial<{
+  name: string | symbol
+  type : { () : any }
+  persist : true
+}>
+
+export class Attribute<T=any> {
+  public name : string | symbol
   public type? : T = undefined
   public persist : boolean = true
-  public options? : AttributeOptions<T>
+  public options? : AttrRecord<T>
 
   constructor(options: AttrRecord<T>) {
     this.options = options
@@ -34,6 +40,8 @@ export default class Attribute<T=any> {
     if (!options) {
       return
     }
+
+    if (options.name) { this.name = options.name }
 
     if (options.type) {
       this.type = options.type as any as T
@@ -46,12 +54,12 @@ export default class Attribute<T=any> {
 
   // The model calls this setter
   setter(context: Model, val: any) : void {
-    context.attributes[this.name] = val;
+    context._attributes[this.name] = val;
   }
 
   // The model calls this getter
   getter(context: Model) : any {
-    return context.attributes[this.name];
+    return context._attributes[this.name];
   }
 
   // This returns the getters/setters for use on the *model*

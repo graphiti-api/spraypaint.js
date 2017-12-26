@@ -1,5 +1,5 @@
 import { expect, sinon } from '../test-helper';
-import  Model  from '../../src/model'
+import  { Model } from '../../src/model'
 import { hasMany, hasOne, HasMany, HasOne } from '../../src/associations'
 
 class Employee extends Model {

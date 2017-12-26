@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowJs": false,
     "allowUnreachableCode": false,
+    "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "outDir": "lib/",

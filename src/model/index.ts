@@ -1,4 +1,3 @@
-// import Scope from '../scope';
 // import Config from '../configuration';
 // import { deserialize, deserializeInstance } from '../util/deserialize';
 // import { CollectionProxy, RecordProxy } from '../proxies';
@@ -11,11 +10,25 @@
 // import refreshJWT from '../util/refresh-jwt';
 // import relationshipIdentifiersFor from '../util/relationship-identifiers';
 // import Request from '../request';
-import Attribute, { AttributeOptions, Attr, attr } from '../attribute';
-export { belongsTo, hasMany, hasOne } from '../associations'
 import cloneDeep from '../util/clonedeep';
+import { 
+  Attribute, 
+  AttributeOptions, 
+  Attr
+} from '../attribute';
+import Scope from '../scope';
 
-export { attr }
+export interface ModelConfiguration {
+  baseUrl : string
+  apiNamespace : string
+  jsonapiType : string
+  endpoint : string;
+  isJWTOwner : boolean
+  jwt : string
+  camelizeKeys : boolean
+}
+
+export type ModelConfigurationOptions = Partial<ModelConfiguration> 
 
 export type ExtendedModel<
   Subclass extends Model, 
@@ -39,6 +52,7 @@ export interface ExtendOptions<
   Attributes=DefaultAttrs,
   Methods=DefaultMethods<M>
   > {
+  config?: ModelConfigurationOptions
   attrs?: AttrMap<Attributes>
   methods?: Methods
 }
@@ -53,8 +67,21 @@ export interface ModelConstructor<M extends Model, Attrs> {
     options : ExtendOptions<M, ExtendedAttrs, Methods>
   ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs>
 
+  // create<M extends Model>(this: ModelConstructor<M, Attrs>, attrs? : Partial<Attrs>) : M
+
   attributeList : Attrs
   extendOptions : any//ExtendOptions<M, Attributes, Methods>
+  parentClass : typeof Model;
+  currentClass : typeof Model;
+  isJSORMModel : boolean
+
+  baseUrl : string
+  apiNamespace : string
+  jsonapiType : string
+  endpoint : string;
+  isJWTOwner : boolean
+  jwt? : string;
+  camelizeKeys : boolean
 }
 
 function extendModel<
@@ -69,22 +96,19 @@ function extendModel<
 ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
   class Subclass extends (<ModelConstructor<Model, Attrs>>Superclass) {
     constructor(attrs?: Partial<Attrs & ExtendedAttrs>) {
-      super()
+      super(attrs)
       this._klass = <any>Subclass
-      this._parent = <any>Superclass
-
-      if (attrs) {
-        for(const k in attrs) {
-          (<any>this)[k] = attrs[k]
-        }
-      }
+      // this._parent = <any>Superclass
     }
   }
-  class MyError extends Error {
 
-  }
-
+  Subclass.parentClass = <any>Superclass
+  Subclass.currentClass = <any>Subclass
   Subclass.attributeList = Object.assign({}, cloneDeep(Superclass.attributeList), options.attrs)
+
+  if (options.config) {
+    applyModelConfig(Subclass, options.config)
+  }
 
   if (options.methods) {
     for(const methodName in options.methods) {
@@ -95,17 +119,67 @@ function extendModel<
   return <any>Subclass
 }
 
-export default class Model {
-  static attributeList : any
+export function applyModelConfig<
+  M extends Model, 
+  Attrs, 
+  ExtendedAttrs,
+  Methods
+>(
+  ModelClass : ModelConstructor<ExtendedModel<M, Attrs, Methods>, Attrs & ExtendedAttrs>, 
+  config: ModelConfigurationOptions
+) : void {
+  let k : keyof ModelConfigurationOptions
+
+  for(k in config) {
+    ModelClass[k] = config[k]
+  }    
+}
+
+export class Model {
+  static baseUrl = 'http://please-set-a-base-url.com';
+  static apiNamespace = '/';
+  static jsonapiType = 'define-in-subclass';
+  static endpoint: string;
+  static isJWTOwner: boolean = false;
+  static jwt?: string;
+  static camelizeKeys: boolean = true;
+
+  static attributeList : Record<string, Attribute> = {}
   static extendOptions : any
+  static parentClass : typeof Model;
+  static currentClass : typeof Model = Model
+
+  // This is to allow for sane type checking in collaboration with the 
+  // isModelClass function exported below.  It is very hard to find out whether
+  // something is a class of a certain type or subtype
+  // (as opposed to an instance of that class), so we set a magic prop on this
+  // for use around the code.
+  static readonly isJSORMModel = true
 
   protected _klass : typeof Model = Model
-  protected _parent? : typeof Model = undefined
-  protected _attributes : Record<string, any>
+  _attributes : Record<string, any>
 
-  constructor() {
+  constructor(attrs? : Record<string, any>) {
     this._initializeAttributes();
+
+    if (attrs) {
+      for(let k in attrs) {
+        if (Object.keys((<any>this.constructor).attributeList).indexOf(k) < 0) {
+          throw new Error(`Unknown attribute: ${k}`)
+        }
+        (<any>this)[k] = attrs[k]
+      }
+    }
   }
+
+  get attributes() {
+    return this._attributes
+  }
+
+  // static create<M extends Model, Attrs>(this: ModelConstructor<M, Attrs>, attrs? : Partial<Attrs>) : M {
+  //   const instance = new this(attrs)
+  //   return instance
+  // }
 
   static extend<
     MC extends ModelConstructor<M, Attrs>, 
@@ -131,17 +205,23 @@ export default class Model {
       Object.defineProperty(this, key, attr.descriptor());
     }
   }
+
+  // static scope(): Scope {
+  //   return this._scope || new Scope(this);
+  // }
 } 
 
+export function isModelClass(arg: any) : arg is typeof Model {
+  if (!arg) { return false }
+  return arg.currentClass && arg.currentClass.isJSORMModel
+}
+
+export function isModelInstance(arg: any) : arg is Model {
+  if (!arg) { return false }
+  return isModelClass(arg.constructor.currentClass)
+}
+
 // export abstract class OldModel {
-//   static baseUrl = 'http://please-set-a-base-url.com';
-//   static apiNamespace = '/';
-//   static jsonapiType = 'define-in-subclass';
-//   static endpoint: string;
-//   static isJWTOwner: boolean = false;
-//   static jwt?: string;
-//   static parentClass: typeof Model;
-//   static camelizeKeys: boolean = true;
 
 //   id: string;
 //   temp_id: string;
@@ -168,10 +248,6 @@ export default class Model {
 //     subclass.parentClass = this;
 //     subclass.prototype.klass = subclass;
 //     subclass.attributeList = cloneDeep(subclass.attributeList)
-//   }
-
-//   static scope(): Scope {
-//     return this._scope || new Scope(this);
 //   }
 
 //   static setJWT(token: string) : void {

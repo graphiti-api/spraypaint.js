@@ -1,5 +1,5 @@
 import { expect, sinon } from '../test-helper';
-import { attr, default as Attribute } from '../../src/attribute'
+import { attr, Attribute } from '../../src/attribute'
 
 describe('Attributes', () => {
   describe('Initializing Attribute', () => {
