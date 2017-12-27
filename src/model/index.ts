@@ -25,6 +25,7 @@ export interface ModelConfiguration {
   isJWTOwner : boolean
   jwt : string
   camelizeKeys : boolean
+  strictAttributes : boolean
 }
 
 export type ModelConfigurationOptions = Partial<ModelConfiguration> 
@@ -86,6 +87,7 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
   isJWTOwner : boolean
   jwt? : string;
   camelizeKeys : boolean
+  strictAttributes : boolean
 }
 
 function extendModel<
@@ -166,6 +168,7 @@ export class JSORMBase {
   static isJWTOwner : boolean = false
   static jwt? : string;
   static camelizeKeys : boolean = true
+  static strictAttributes : boolean = false
 
   static attributeList : Record<string, Attribute> = {}
   static extendOptions : any
@@ -267,15 +270,7 @@ export class JSORMBase {
 
   constructor(attrs? : Record<string, any>) {
     this._initializeAttributes();
-
-    if (attrs) {
-      for(let k in attrs) {
-        if (Object.keys((<any>this.constructor).attributeList).indexOf(k) < 0 && k != 'id') {
-          throw new Error(`Unknown attribute: ${k}`)
-        }
-        (<any>this)[k] = attrs[k]
-      }
-    }
+    this.assignAttributes(attrs)
   }
 
   // Define getter/setters 
@@ -323,7 +318,7 @@ export class JSORMBase {
     return this._attributes
   }
 
-  set attributes(attrs : Object) {
+  set attributes(attrs : Record<string, any>) {
     this._attributes = {};
     this.assignAttributes(attrs);
   }
@@ -343,6 +338,8 @@ export class JSORMBase {
       
       if (key == 'id' || this.klass.attributeList[attributeName]) {
         (<any>this)[attributeName] = attrs[key];
+      } else if (this.klass.strictAttributes) {
+        throw new Error(`Unknown attribute: ${key}`)
       }
     }
   }

@@ -134,9 +134,9 @@ describe('Model', () => {
         })
 
         it('does not modify the parent attributes', () => { 
-          expect(() => {
-            new Post({title: 'The Title' , pageOrder: 1})
-          }).to.throw(/Unknown attribute: pageOrder/)
+          let post = new Post({title: 'The Title' , pageOrder: 1})
+
+          expect(post._attributes['pageOrder']).to.be.undefined
         })
       })
 
@@ -267,9 +267,9 @@ describe('Model', () => {
         })
 
         it('does not modify the parent attributes', () => { 
-          expect(() => { 
-            new Post((<any>{title: 'The Title' , pageOrder: 1})) 
-          }).to.throw(/Unknown attribute: pageOrder/)
+          let post = new Post({title: 'The Title' , pageOrder: 1})
+
+          expect(post._attributes['pageOrder']).to.be.undefined
         })
       })
 
@@ -290,9 +290,9 @@ describe('Model', () => {
         })
 
         it('does not modify the parent attributes', () => { 
-          expect(() => { 
-            new Post((<any>{title: 'The Title' , pageOrder: 1})) 
-          }).to.throw(/Unknown attribute: pageOrder/)
+          let post = new Post({title: 'The Title' , pageOrder: 1})
+
+          expect(post._attributes['pageOrder']).to.be.undefined
         })
       })
 
