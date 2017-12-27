@@ -1,6 +1,6 @@
 /// <reference path="../types/index.d.ts" />
 
-import Model from './model';
+import { JSORMBase } from './model';
 import Attribute from './attribute';
 import Logger from './logger';
 import cloneDeep from './util/clonedeep';

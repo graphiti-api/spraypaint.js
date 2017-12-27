@@ -1,12 +1,12 @@
 import { expect, sinon } from '../test-helper';
-import  { Model } from '../../src/model'
+import  { JSORMBase } from '../../src/model'
 import { hasMany, hasOne, HasMany, HasOne } from '../../src/associations'
 
-class Employee extends Model {
+class Employee extends JSORMBase {
   position = hasMany({ type: Positions })
 }
 
-class Positions extends Model {
+class Positions extends JSORMBase {
 }
 
 describe('Associations', () => {

@@ -1,4 +1,4 @@
-import { Model } from './model'
+import { JSORMBase } from './model'
 
 export type Attr<T> = { (): T } | { new (...args: any[]): T & object }
 
@@ -25,7 +25,7 @@ export type AttributeValue<Attributes> = {
 export type AttributeOptions = Partial<{
   name: string | symbol
   type : { () : any }
-  persist : true
+  persist : boolean
 }>
 
 export class Attribute<T=any> {
@@ -53,12 +53,12 @@ export class Attribute<T=any> {
   }
 
   // The model calls this setter
-  setter(context: Model, val: any) : void {
+  setter(context: JSORMBase, val: any) : void {
     context._attributes[this.name] = val;
   }
 
   // The model calls this getter
-  getter(context: Model) : any {
+  getter(context: JSORMBase) : any {
     return context._attributes[this.name];
   }
 

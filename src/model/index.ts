@@ -18,6 +18,8 @@ import {
 } from '../attribute';
 import Scope from '../scope';
 
+import { TypeRegistry } from '../type-registry'
+
 export interface ModelConfiguration {
   baseUrl : string
   apiNamespace : string
@@ -31,11 +33,11 @@ export interface ModelConfiguration {
 export type ModelConfigurationOptions = Partial<ModelConfiguration> 
 
 export type ExtendedModel<
-  Subclass extends Model, 
+  Subclass extends JSORMBase, 
   Attributes, 
   Methods
 > = 
-  Model &
+  JSORMBase &
   Subclass &
   Attributes &
   Methods
@@ -58,7 +60,7 @@ export interface ExtendOptions<
   methods?: ThisType<M & Attributes & Methods> & Methods
 }
 
-export interface ModelConstructor<M extends Model, Attrs> {
+export interface ModelConstructor<M extends JSORMBase, Attrs> {
   // new (attrs?: Partial<Attrs>) : M
   new (attrs?: Record<string, any>) : M
   extend<ExtendedAttrs, Methods> (
@@ -69,18 +71,17 @@ export interface ModelConstructor<M extends Model, Attrs> {
       ExtendedModel<M, ExtendedAttrs, Methods>, 
       Attrs & ExtendedAttrs
     >
-
-  // create<M extends Model>(this: ModelConstructor<M, Attrs>, attrs? : Partial<Attrs>) : M
+  inherited(subclass : typeof JSORMBase) : void
 
   attributeList : Attrs
   extendOptions : any//ExtendOptions<M, Attributes, Methods>
-  parentClass : typeof Model;
-  currentClass : typeof Model;
+  parentClass : typeof JSORMBase;
+  currentClass : typeof JSORMBase;
   isJSORMModel : boolean
 
   baseUrl : string
   apiNamespace : string
-  jsonapiType : string
+  jsonapiType? : string
   endpoint : string;
   isJWTOwner : boolean
   jwt? : string;
@@ -89,7 +90,7 @@ export interface ModelConstructor<M extends Model, Attrs> {
 
 function extendModel<
   MC extends ModelConstructor<M, Attrs>, 
-  M extends Model, 
+  M extends JSORMBase, 
   Attrs, 
   ExtendedAttrs, 
   Methods
@@ -97,17 +98,29 @@ function extendModel<
   Superclass: ModelConstructor<M, Attrs>, 
   options : ExtendOptions<M, ExtendedAttrs, Methods>
 ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-  class Subclass extends (<ModelConstructor<Model, Attrs>>Superclass) {
+  class Subclass extends (<ModelConstructor<JSORMBase, Attrs>>Superclass) {
     // constructor(attrs?: Partial<Attrs & ExtendedAttrs>) {
-    constructor(attrs?: Record<string, any>) {
-      super(attrs)
-      this._klass = <any>Subclass
+    // constructor(attrs?: Record<string, any>) {
+    //   super(attrs)
+    // }
+  }
+
+  Superclass.inherited(<any>Subclass)
+  
+  let attrs : any = {}
+  if (options.attrs) {
+    for(let key in options.attrs) {
+      let attr = options.attrs[key]
+
+      if(!attr.name) {
+        attr.name = key
+      }
+
+      attrs[key] = attr
     }
   }
 
-  Subclass.parentClass = <any>Superclass
-  Subclass.currentClass = <any>Subclass
-  Subclass.attributeList = Object.assign({}, cloneDeep(Superclass.attributeList), options.attrs)
+  Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs)
 
   if (options.static) {
     applyModelConfig(Subclass, options.static)
@@ -127,7 +140,7 @@ function extendModel<
 }
 
 export function applyModelConfig<
-  M extends Model, 
+  M extends JSORMBase, 
   Attrs, 
   ExtendedAttrs,
   Methods
@@ -142,19 +155,21 @@ export function applyModelConfig<
   }    
 }
 
-export class Model {
-  static baseUrl = 'http://please-set-a-base-url.com';
-  static apiNamespace = '/';
-  static jsonapiType = 'define-in-subclass';
-  static endpoint: string;
-  static isJWTOwner: boolean = false;
-  static jwt?: string;
-  static camelizeKeys: boolean = true;
+export class JSORMBase {
+  static baseUrl = 'http://please-set-a-base-url.com'
+  static apiNamespace = '/'
+  static jsonapiType? : string
+  static endpoint : string
+  static isBaseClass : boolean
+  static isJWTOwner : boolean = false
+  static jwt? : string;
+  static camelizeKeys : boolean = true
 
   static attributeList : Record<string, any> = {}
   static extendOptions : any
-  static parentClass : typeof Model;
-  static currentClass : typeof Model = Model
+  static parentClass : typeof JSORMBase
+  static currentClass : typeof JSORMBase = JSORMBase
+  static typeRegistry : TypeRegistry
 
   // This is to allow for sane type checking in collaboration with the 
   // isModelClass function exported below.  It is very hard to find out whether
@@ -163,8 +178,15 @@ export class Model {
   // for use around the code.
   static readonly isJSORMModel : boolean = true
 
-  protected _klass : typeof Model = Model
+
+  id : string;
+  temp_id : string;
   _attributes : Record<string, any>
+  _originalAttributes : Record<string, any>
+  protected klass : typeof JSORMBase//# = JSORMBase
+  private _persisted : boolean = false;
+  private _markedForDestruction: boolean = false;
+  private _markedForDisassociation: boolean = false;
 
   constructor(attrs? : Record<string, any>) {
     this._initializeAttributes();
@@ -179,18 +201,65 @@ export class Model {
     }
   }
 
-  get attributes() {
-    return this._attributes
+  static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
+    // return deserialize(resource, payload);
   }
 
-  // static create<M extends Model, Attrs>(this: ModelConstructor<M, Attrs>, attrs? : Partial<Attrs>) : M {
-  //   const instance = new this(attrs)
-  //   return instance
-  // }
+  static inherited(subclass : typeof JSORMBase) : void {
+    subclass.parentClass = this;
+    subclass.currentClass = subclass;
+    subclass.prototype.klass = subclass;
+    subclass.attributeList = cloneDeep(subclass.attributeList)
+
+    if (this.isBaseClass === undefined) {
+      subclass.setAsBase()
+    } else if (this.isBaseClass === true) {
+      subclass.isBaseClass = false
+    }
+  }
+
+  static setAsBase() : void {
+    this.isBaseClass = true
+    this.jsonapiType = undefined
+
+    if (!this.typeRegistry) {
+      this.typeRegistry = new TypeRegistry(this)
+    }
+  }
+
+  static isSubclassOf(maybeSuper : typeof JSORMBase) : boolean {
+    let current = this.currentClass
+
+    while(current) {
+      if(current === maybeSuper) {
+        return true
+      }
+
+      current = current.parentClass
+    }
+
+    return false
+  }
+
+  static registerType() : void {
+    if (!this.jsonapiType) { return }
+
+    let existingType = this.typeRegistry.get(this.jsonapiType)
+
+    if (existingType) {
+      // Don't try to register a type of we're looking
+      // at a subclass. Otherwise we'll make a register
+      // call which will fail in order to get a helpful
+      // error message from the registry
+      if (this.isSubclassOf(existingType)) { return }
+    }
+
+    this.typeRegistry.register(this.jsonapiType, this)
+  }
 
   static extend<
     MC extends ModelConstructor<M, Attrs>, 
-    M extends Model,
+    M extends JSORMBase,
     Attrs, 
     ExtendedAttrs,
     Methods
@@ -204,58 +273,73 @@ export class Model {
     return Subclass
   }
 
+  get attributes() {
+    return this._attributes
+  }
+
   // Define getter/setters 
   private _initializeAttributes() {
     this._attributes = {}
-    for (let key in this._klass.attributeList) {
-      let attr = this._klass.attributeList[key];
+    const attrs = this.klass.attributeList 
+    for (let key in attrs) {
+      let attr = attrs[key];
       Object.defineProperty(this, key, attr.descriptor());
     }
   }
 
-  // static scope(): Scope {
-  //   return this._scope || new Scope(this);
-  // }
-} 
+  isType(jsonapiType : string) {
+    return this.klass.jsonapiType === jsonapiType;
+  }
 
-export function isModelClass(arg: any) : arg is typeof Model {
+  get isPersisted() : boolean {
+    return this._persisted;
+  }
+  set isPersisted(val : boolean) {
+      this._persisted = val;
+    //   this._originalAttributes = cloneDeep(this.attributes);
+    //   this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
+    //   return val;
+  }
+
+  get isMarkedForDestruction() : boolean {
+    return this._markedForDestruction;
+  }
+  set isMarkedForDestruction(val : boolean) {
+    this._markedForDestruction = val
+  }
+
+  get isMarkedForDisassociation() : boolean {
+    return this._markedForDisassociation;
+  }
+  set isMarkedForDisassociation(val : boolean) {
+    this._markedForDisassociation = val
+  }
+}; 
+(<any>JSORMBase.prototype).klass = JSORMBase
+
+export function isModelClass(arg: any) : arg is typeof JSORMBase {
   if (!arg) { return false }
   return arg.currentClass && arg.currentClass.isJSORMModel
 }
 
-export function isModelInstance(arg: any) : arg is Model {
+export function isModelInstance(arg: any) : arg is JSORMBase {
   if (!arg) { return false }
   return isModelClass(arg.constructor.currentClass)
 }
 
 // export abstract class OldModel {
 
-//   id: string;
-//   temp_id: string;
-//   _attributes: Object = {};
-//   _originalAttributes: Object = {};
 //   _originalRelationships: Object = {};
 //   relationships: Object = {};
 //   errors: Object = {};
 //   __meta__: Object | null = null;
-//   _persisted: boolean = false;
-//   _markedForDestruction: boolean = false;
-//   _markedForDisassociation: boolean = false;
-//   klass: typeof Model;
 
-//   static attributeList = {};
 //   private static _scope: Scope;
 
 //   static extend(obj : any) : any {
 //     return _extend(this, obj);
 //   }
 
-//   static inherited(subclass : any) {
-//     Config.models.push(subclass)
-//     subclass.parentClass = this;
-//     subclass.prototype.klass = subclass;
-//     subclass.attributeList = cloneDeep(subclass.attributeList)
-//   }
 
 //   static setJWT(token: string) : void {
 //     this.getJWTOwner().jwt = token;
@@ -296,73 +380,6 @@ export function isModelInstance(arg: any) : arg is Model {
 //     }
 //   }
 
-//   static all() : Promise<CollectionProxy<Model>> {
-//     return this.scope().all();
-//   }
-
-//   static find(id : string | number) : Promise<RecordProxy<Model>> {
-//     return this.scope().find(id);
-//   }
-
-//   static first() : Promise<RecordProxy<Model>> {
-//     return this.scope().first();
-//   }
-
-//   static where(clause: Object) : Scope {
-//     return this.scope().where(clause);
-//   }
-
-//   static page(number: number) : Scope {
-//     return this.scope().page(number);
-//   }
-
-//   static per(size: number) : Scope {
-//     return this.scope().per(size);
-//   }
-
-//   static order(clause: Object | string) : Scope {
-//     return this.scope().order(clause);
-//   }
-
-//   static select(clause: Object) : Scope {
-//     return this.scope().select(clause);
-//   }
-
-//   static selectExtra(clause: Object) : Scope {
-//     return this.scope().selectExtra(clause);
-//   }
-
-//   static stats(clause: Object) : Scope {
-//     return this.scope().stats(clause);
-//   }
-
-//   static includes(clause: string | Object | Array<any>) : Scope {
-//     return this.scope().includes(clause);
-//   }
-
-//   static merge(obj : Object) : Scope {
-//     return this.scope().merge(obj);
-//   }
-
-//   static url(id?: string | number) : string {
-//     let endpoint = this.endpoint || `/${this.jsonapiType}`;
-//     let base = `${this.fullBasePath()}${endpoint}`;
-
-//     if (id) {
-//       base = `${base}/${id}`;
-//     }
-
-//     return base;
-//   }
-
-//   static fullBasePath() : string {
-//     return `${this.baseUrl}${this.apiNamespace}`;
-//   }
-
-//   static fromJsonapi(resource: japiResource, payload: japiDoc) : any {
-//     return deserialize(resource, payload);
-//   }
-
 
 //   clearErrors() {
 //     this.errors = {};
@@ -381,9 +398,6 @@ export function isModelInstance(arg: any) : arg is Model {
 //     return relationshipIdentifiersFor(this, relationNames);
 //   }
 
-//   isType(jsonapiType : string) {
-//     return this.klass.jsonapiType === jsonapiType;
-//   }
 
 //   get resourceIdentifier() : Object {
 //     return { type: this.klass.jsonapiType, id: this.id };
@@ -411,36 +425,6 @@ export function isModelInstance(arg: any) : arg is Model {
 //       }
 //     }
 //   }
-
-//   isPersisted(val? : boolean) : boolean {
-//     if (val != undefined) {
-//       this._persisted = val;
-//       this._originalAttributes = cloneDeep(this.attributes);
-//       this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
-//       return val;
-//     } else {
-//       return this._persisted;
-//     }
-//   }
-
-//   isMarkedForDestruction(val? : boolean) : boolean {
-//     if (val != undefined) {
-//       this._markedForDestruction = val;
-//       return val;
-//     } else {
-//       return this._markedForDestruction;
-//     }
-//   }
-
-//   isMarkedForDisassociation(val? : boolean) : boolean {
-//     if (val != undefined) {
-//       this._markedForDisassociation = val;
-//       return val;
-//     } else {
-//       return this._markedForDisassociation;
-//     }
-//   }
-
 //   fromJsonapi(resource: japiResource, payload: japiDoc, includeDirective: Object = {}) : any {
 //     return deserializeInstance(this, resource, payload, includeDirective);
 //   }
@@ -526,3 +510,69 @@ export function isModelInstance(arg: any) : arg is Model {
 //     return this.klass.fetchOptions()
 //   }
 // }
+
+//   static all() : Promise<CollectionProxy<Model>> {
+//     return this.scope().all();
+//   }
+
+//   static find(id : string | number) : Promise<RecordProxy<Model>> {
+//     return this.scope().find(id);
+//   }
+
+//   static first() : Promise<RecordProxy<Model>> {
+//     return this.scope().first();
+//   }
+
+//   static where(clause: Object) : Scope {
+//     return this.scope().where(clause);
+//   }
+
+//   static page(number: number) : Scope {
+//     return this.scope().page(number);
+//   }
+
+//   static per(size: number) : Scope {
+//     return this.scope().per(size);
+//   }
+
+//   static order(clause: Object | string) : Scope {
+//     return this.scope().order(clause);
+//   }
+
+//   static select(clause: Object) : Scope {
+//     return this.scope().select(clause);
+//   }
+
+//   static selectExtra(clause: Object) : Scope {
+//     return this.scope().selectExtra(clause);
+//   }
+
+//   static stats(clause: Object) : Scope {
+//     return this.scope().stats(clause);
+//   }
+
+//   static includes(clause: string | Object | Array<any>) : Scope {
+//     return this.scope().includes(clause);
+//   }
+
+//   static merge(obj : Object) : Scope {
+//     return this.scope().merge(obj);
+//   }
+
+//   static url(id?: string | number) : string {
+//     let endpoint = this.endpoint || `/${this.jsonapiType}`;
+//     let base = `${this.fullBasePath()}${endpoint}`;
+
+//     if (id) {
+//       base = `${base}/${id}`;
+//     }
+
+//     return base;
+//   }
+
+//   static fullBasePath() : string {
+//     return `${this.baseUrl}${this.apiNamespace}`;
+//   }
+  // static scope(): Scope {
+  //   return this._scope || new Scope(this);
+  // }

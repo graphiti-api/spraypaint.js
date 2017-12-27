@@ -1,122 +1,142 @@
-import { Model, Config, attr, hasMany, belongsTo, hasOne } from '../src/index';
+import { 
+  JSORMBase, 
+  Model, 
+  ModelConstructor, 
+  Config, 
+  attr, 
+  hasMany, 
+  belongsTo, 
+  hasOne 
+} from '../src/index';
 
-class ApplicationRecord extends Model {
-  static baseUrl = 'http://example.com';
-  static apiNamespace = '/api';
+import { 
+  Attr,
+  BelongsTo,
+  HasMany,
+  HasOne,
+} from '../src/decorators'
+
+@Model({
+  baseUrl: 'http://example.com',
+  apiNamespace: '/api'
+})
+export class ApplicationRecord extends JSORMBase {
 }
 
-// typescript class
-class Person extends ApplicationRecord {
+@Model()
+export class Person extends ApplicationRecord {
   static endpoint = '/v1/people';
   static jsonapiType = 'people';
 
-  firstName: string = attr();
-  lastName: string = attr();
+  @Attr firstName : string
+  @Attr lastName : string
 }
 
-class PersonWithExtraAttr extends Person {
-  extraThing: string = attr({ persist: false });
+@Model()
+export class PersonWithExtraAttr extends Person {
+  @Attr({persist: false}) extraThing: string;
 }
 
-class PersonWithoutCamelizedKeys extends Person {
-  static camelizeKeys = false;
-
-  first_name: string = attr();
+@Model({camelizeKeys: false})
+export class PersonWithoutCamelizedKeys extends Person {
+  @Attr first_name: string
 }
 
 // Ensure setup() can be run multiple times with no problems
 // putting this here, otherwise relations wont be available.
-Config.setup();
-
-// plain js class
-let Author = Person.extend({
-  static: {
+// Config.setup();
+export const Author = Person.extend({
+  config: {
     endpoint: '/v1/authors',
     jsonapiType: 'authors'
   },
 
-  nilly:        attr(),
+  attrs: {
+    nilly:        attr(),
+    // multiWords:   hasMany({type: MultiWord}),
+    // specialBooks: hasMany({type: Book}),
+    books:        hasMany(),
+    tags:         hasMany(),
+    // genre:        belongsTo({type: Genre}),
+    // bio:          hasOne({type: Bio})
+  }
+})
 
-  multiWords:   hasMany('multi_words'),
-  specialBooks: hasMany('books'),
-  books:        hasMany(),
-  tags:         hasMany(),
-  genre:        belongsTo('genres'),
-  bio:          hasOne('bios')
-});
-
-let NonFictionAuthor = Author.extend({
+export const NonFictionAuthor = Author.extend({
   static: {
     endpoint: '/v1/non_fiction_authors',
     jsonapiType: 'non_fiction_authors',
     camelizeKeys: false
   },
 
-  nilly:         attr(),
+  attrs: {
+    nilly:         attr(),
 
-  multi_words:   hasMany('multi_words'),
-  special_books: hasMany('books'),
-  books:         hasMany(),
-  tags:          hasMany(),
-  genre:         belongsTo('genres'),
-  bio:           hasOne('bios')
+    multi_words:   hasMany({type: MultiWord}),
+    special_books: hasMany({type: Book}),
+    books:         hasMany(),
+    tags:          hasMany(),
+    genre:         belongsTo({type: Genre}),
+    bio:           hasOne({type: Bio})
+  }
 });
 
-class Book extends ApplicationRecord {
+export class Book extends ApplicationRecord {
   static jsonapiType = 'books';
 
-  title: string = attr();
+  @Attr title: string
 
-  genre = belongsTo('genres');
-  author = hasOne('authors');
+  @BelongsTo({type: Genre}) genre : Genre
+  @HasOne({type: Author}) author : any
 }
 
-class Genre extends ApplicationRecord {
+export class Genre extends ApplicationRecord {
   static jsonapiType = 'genres';
 
-  authors: any = hasMany('authors');
-
-  name: string = attr();
+  @Attr name : string 
+  @HasMany('authors') authors: any
 }
 
-class Bio extends ApplicationRecord {
+export class Bio extends ApplicationRecord {
   static jsonapiType = 'bios';
 
-  description: string = attr();
+  @Attr description : string 
 }
 
-class Tag extends ApplicationRecord {
+export class Tag extends ApplicationRecord {
   static jsonapiType = 'tags';
 
-  name: string = attr();
+  @Attr name: string 
 }
 
-class MultiWord extends ApplicationRecord {
+export class MultiWord extends ApplicationRecord {
   static jsonapiType = 'multi_words';
 }
 
+
+
 const TestJWTSubclass = ApplicationRecord.extend({});
 
-const NonJWTOwner = Model.extend({});
+const NonJWTOwner = JSORMBase.extend({});
 
-const configSetup = function(opts = {}) {
-  opts['jwtOwners'] = [ApplicationRecord, TestJWTSubclass];
-  Config.setup(opts);
-};
-configSetup();
+// const configSetup = function(opts = {}) {
+//   opts['jwtOwners'] = [ApplicationRecord, TestJWTSubclass];
+//   Config.setup(opts);
+// };
+// configSetup();
 
-export {
-  configSetup,
-  ApplicationRecord,
-  TestJWTSubclass,
-  NonJWTOwner,
-  Author,
-  NonFictionAuthor,
-  Person,
-  PersonWithExtraAttr,
-  PersonWithoutCamelizedKeys,
-  Book,
-  Genre,
-  Bio,
-  Tag
-};
+// export {
+//   configSetup,
+//   ApplicationRecord,
+//   TestJWTSubclass,
+//   NonJWTOwner,
+//   Author,
+//   NonFictionAuthor,
+//   Person,
+//   PersonWithExtraAttr,
+//   PersonWithoutCamelizedKeys,
+//   Book,
+//   Genre,
+//   Bio,
+//   Tag
+// };

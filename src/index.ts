@@ -2,17 +2,17 @@ import 'object-assign-shim';
 import * as es6Promise from 'es6-promise';
 es6Promise.polyfill();
 
-import patchExtends from './custom-extend';
-patchExtends();
+export { default as Config } from './configuration';
+export { JSORMBase as JSORMBase, ModelConstructor } from './model';
+export { Attribute, attr } from './attribute';
 
-import Config from './configuration';
-import Model from './model';
-import Attribute from './attribute';
-import attrDecorator from './util/attr-decorator';
-import { hasMany, hasOne, belongsTo } from './associations';
+export { hasMany, hasOne, belongsTo } from './associations';
 
-const attr = function(opts?: attributeOptions): any {
-  return new Attribute(opts);
-};
+export { 
+  Model, 
+  Attr 
+} from './decorators'
 
-export { Config, Model, attr, attrDecorator, hasMany, hasOne, belongsTo, patchExtends };
+// const attr = function(opts?: attributeOptions): any {
+//   return new Attribute(opts);
+// };

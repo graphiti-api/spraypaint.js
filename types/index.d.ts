@@ -1,35 +1,23 @@
-// todo deglobalize?, split test
-
-declare module NodeJS  {
-  interface Global {
-    __extends: Function;
-  }
+interface JsonapiDoc {
+  data: Array<JsonapiResource> | JsonapiResource
+  included?: Array<JsonapiResource>;
+  meta?: Object;
 }
 
-interface japiDoc {
-  data: any; // can't do Array | japiResource
-  included?: Array<japiResource>;
-  meta?: any;
-}
-
-interface japiResourceIdentifier {
+interface JsonapiResourceIdentifier {
   id: string;
   type: string;
 }
 
-interface japiResource extends japiResourceIdentifier {
+interface JsonapiResource extends JsonapiResourceIdentifier {
   attributes?: Object;
   relationships?: Object;
   meta?: Object;
   links?: Object;
 }
 
-interface IResultProxy<T> {
-  data: any
-  meta: Object
-  raw: japiDoc
-}
-
-interface attributeOptions {
-  persist: boolean;
-}
+// interface IResultProxy<T> {
+//   data: any
+//   meta: Object
+//   raw: JsonapiDoc
+// }

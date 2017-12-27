@@ -68,7 +68,9 @@
     "winston": "^2.3.1"
   },
   "dependencies": {
+    "@types/inflected": "1.1.29",
     "es6-promise": "^4.0.5",
+    "inflected": "2.0.3",
     "lodash-es": "^4.17.4",
     "npm-check-updates": "^2.13.0",
     "object-assign-shim": "1.0.0"

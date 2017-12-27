@@ -1,12 +1,12 @@
 import { Attribute, AttrRecord, Attr } from './attribute';
-import { Model } from './model';
+import { JSORMBase } from './model';
 
-export interface AssociationRecord<T extends Model | undefined> extends AttrRecord<T> {
+export interface AssociationRecord<T extends JSORMBase | undefined> extends AttrRecord<T> {
   type?: Attr<T>
 }
 
-export class AssociationBase<T extends Model> extends Attribute<T> {
-  klass: typeof Model;
+export class AssociationBase<T extends JSORMBase> extends Attribute<T> {
+  klass: typeof JSORMBase;
   // isRelationship = true;
   jsonapiType: string;
 
@@ -30,7 +30,7 @@ export class AssociationBase<T extends Model> extends Attribute<T> {
   // }
 }
 
-export class HasMany<T extends Model> extends AssociationBase<T> {
+export class HasMany<T extends JSORMBase> extends AssociationBase<T> {
   // getter(context: Model) {
   //   let gotten = super.getter(context);
   //   if (!gotten) {
@@ -42,13 +42,13 @@ export class HasMany<T extends Model> extends AssociationBase<T> {
   // }
 }
 
-export class HasOne<T extends Model> extends AssociationBase<T> {
+export class HasOne<T extends JSORMBase> extends AssociationBase<T> {
 }
 
-export class BelongsTo<T extends Model> extends AssociationBase<T> {
+export class BelongsTo<T extends JSORMBase> extends AssociationBase<T> {
 }
 
-function hasMany<T extends Model>(options?: AssociationRecord<T>) : HasMany<T> {
+function hasMany<T extends JSORMBase>(options?: AssociationRecord<T>) : HasMany<T> {
   if (!options) {
     options = {}
   }
@@ -56,7 +56,7 @@ function hasMany<T extends Model>(options?: AssociationRecord<T>) : HasMany<T> {
   return new HasMany(options);
 }
 
-function hasOne<T extends Model>(options?: AssociationRecord<T>) : HasOne<T> {
+function hasOne<T extends JSORMBase>(options?: AssociationRecord<T>) : HasOne<T> {
   if (!options) {
     options = {}
   }
@@ -64,7 +64,7 @@ function hasOne<T extends Model>(options?: AssociationRecord<T>) : HasOne<T> {
   return new HasOne(options);
 }
 
-function belongsTo<T extends Model>(options?: AssociationRecord<T>) : BelongsTo<T> {
+function belongsTo<T extends JSORMBase>(options?: AssociationRecord<T>) : BelongsTo<T> {
   if (!options) {
     options = {}
   }
