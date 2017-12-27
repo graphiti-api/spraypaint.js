@@ -29,14 +29,12 @@ export type AttributeOptions = Partial<{
 }>
 
 export class Attribute<T=any> {
+  public isRelationship = false;
   public name : string | symbol
   public type? : T = undefined
   public persist : boolean = true
-  public options? : AttrRecord<T>
 
   constructor(options: AttrRecord<T>) {
-    this.options = options
-
     if (!options) {
       return
     }
@@ -142,7 +140,7 @@ const _toString = Object.prototype.toString
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
  */
-function isPlainObject (obj: any): boolean {
+function isPlainObject (obj: any): obj is object {
   return _toString.call(obj) === '[object Object]'
 }
 

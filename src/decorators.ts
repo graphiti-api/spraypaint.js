@@ -14,8 +14,8 @@ import {
 } from './attribute'
 
 import {
+  AssociationFactoryOpts,
   AssociationRecord,
-  AssociationBase,
   HasMany,
   HasOne,
   BelongsTo,
@@ -49,8 +49,10 @@ function AttrDecoratorFactory(configOrTarget? : JSORMBase | AttributeOptions | u
 
   const attrFunction = function(ModelClass : typeof JSORMBase, propertyKey : string | symbol) : PropertyDescriptor {
     ensureModelInheritance(ModelClass)
-    // ensureClonedAttrList(ModelClass)
 
+    if (!attrDefinition.name) {
+      attrDefinition.name = propertyKey
+    }
     ModelClass.attributeList[propertyKey] = attrDefinition
 
     return attrDefinition.descriptor()
@@ -62,11 +64,11 @@ function AttrDecoratorFactory(configOrTarget? : JSORMBase | AttributeOptions | u
       throw new Error('This should not be possible')
     }
     let target : JSORMBase = configOrTarget
-
+    
     return attrFunction(<any>target.constructor, propertyKey)
   } else {
     if (configOrTarget) {
-      attrDefinition = new Attribute(Object.assign({name: propertyKey}, configOrTarget))
+      attrDefinition = new Attribute(configOrTarget)
     }
 
     return function(target : JSORMBase, propertyKey : string | symbol) {
@@ -80,13 +82,6 @@ function ensureModelInheritance(ModelClass : typeof JSORMBase) {
     ModelClass.currentClass.inherited(ModelClass)
   }
 }
-
-// function ensureClonedAttrList(ModelClass : typeof JSORMBase) {
-//   ensureModelInheritance(ModelClass)
-//   if (ModelClass.attributeList === ModelClass.parentClass.attributeList) {
-//     ModelClass.attributeList = Object.assign({}, ModelClass.parentClass.attributeList)
-//   }
-// }
 
 /* 
  * Yup that's a super-Java-y method name.  Decorators in 
@@ -104,24 +99,44 @@ function ensureModelInheritance(ModelClass : typeof JSORMBase) {
  * association types
  * 
  */ 
-function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: typeof AssociationBase) {
-  return function(optsOrType: AssociationRecord<T> | string) {
+function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) {
+  return function(optsOrType?: AssociationFactoryOpts<T> | string) {
     function extend(ModelClass : typeof JSORMBase) : typeof JSORMBase {
       ensureModelInheritance(ModelClass)
 
       return ModelClass
     }
 
-    let opts : AssociationRecord<T>
+    let opts : AssociationRecord<T> | undefined
 
-    if(typeof optsOrType === 'string') {
-      // lookup type
-    } else {
-      opts = optsOrType
-    }
+    return function(target: JSORMBase, propertyKey : string) {
+      if (optsOrType === undefined) {
+        let inferredType = pluralize(underscore(propertyKey))
 
-    return function(target: JSORMBase, propertyKey : string | symbol) {
+        opts = {
+          jsonapiType: inferredType
+        }
+      } else if(typeof optsOrType === 'string') {
+        opts = {
+          jsonapiType: optsOrType
+        }
+      } else {
+        opts = {
+          persist: optsOrType.persist,
+          name: optsOrType.name,
+        }
+
+        if (typeof optsOrType.type === 'string') {
+          opts.jsonapiType = optsOrType.type
+        } else {
+          opts.type = optsOrType.type as any
+        }
+      }
+
       let attrDefinition = new AttrType(opts)
+      if (!attrDefinition.name) {
+        attrDefinition.name = propertyKey
+      }
     
       extend(<any>target.constructor).attributeList[propertyKey] = attrDefinition
 

@@ -6,7 +6,7 @@
 // import IncludeDirective from '../util/include-directive';
 // import ValidationErrors from '../util/validation-errors';
 // import refreshJWT from '../util/refresh-jwt';
-// import relationshipIdentifiersFor from '../util/relationship-identifiers';
+import relationshipIdentifiersFor from '../util/relationship-identifiers';
 // import Request from '../request';
 
 import cloneDeep from '../util/clonedeep';
@@ -167,7 +167,7 @@ export class JSORMBase {
   static jwt? : string;
   static camelizeKeys : boolean = true
 
-  static attributeList : Record<string, any> = {}
+  static attributeList : Record<string, Attribute> = {}
   static extendOptions : any
   static parentClass : typeof JSORMBase
   static currentClass : typeof JSORMBase = JSORMBase
@@ -186,24 +186,12 @@ export class JSORMBase {
   _attributes : Record<string, any>
   _originalAttributes : Record<string, any>
   __meta__ : any
-  relationships : Record<string, any> = {}
+  relationships : Record<string, JSORMBase | JSORMBase[]> = {}
+  _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
   klass : typeof JSORMBase
   private _persisted : boolean = false;
   private _markedForDestruction: boolean = false;
   private _markedForDisassociation: boolean = false;
-
-  constructor(attrs? : Record<string, any>) {
-    this._initializeAttributes();
-
-    if (attrs) {
-      for(let k in attrs) {
-        if (Object.keys((<any>this.constructor).attributeList).indexOf(k) < 0 && k != 'id') {
-          throw new Error(`Unknown attribute: ${k}`)
-        }
-        (<any>this)[k] = attrs[k]
-      }
-    }
-  }
 
   static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
     return deserialize(this.typeRegistry, resource, payload);
@@ -277,12 +265,29 @@ export class JSORMBase {
     return Subclass
   }
 
+  constructor(attrs? : Record<string, any>) {
+    this._initializeAttributes();
+
+    if (attrs) {
+      for(let k in attrs) {
+        if (Object.keys((<any>this.constructor).attributeList).indexOf(k) < 0 && k != 'id') {
+          throw new Error(`Unknown attribute: ${k}`)
+        }
+        (<any>this)[k] = attrs[k]
+      }
+    }
+  }
+
   // Define getter/setters 
   private _initializeAttributes() {
     this._attributes = {}
+    this._originalAttributes = {}
     const attrs = this.klass.attributeList 
     for (let key in attrs) {
       let attr = attrs[key];
+      if (attr.isRelationship) {
+        let foo = 'bar'
+      }
       Object.defineProperty(this, key, attr.descriptor());
     }
   }
@@ -296,9 +301,8 @@ export class JSORMBase {
   }
   set isPersisted(val : boolean) {
       this._persisted = val;
-    //   this._originalAttributes = cloneDeep(this.attributes);
-    //   this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
-    //   return val;
+      this._originalAttributes = cloneDeep(this._attributes);
+      this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
   }
 
   get isMarkedForDestruction() : boolean {
@@ -324,6 +328,10 @@ export class JSORMBase {
     this.assignAttributes(attrs);
   }
 
+  relationship(name : string) : Array<JSORMBase> | JSORMBase | undefined {
+    return this.relationships[name]
+  }
+
   assignAttributes(attrs? : Record<string, any>) : void {
     if (!attrs) { return }
     for(var key in attrs) {
@@ -339,12 +347,23 @@ export class JSORMBase {
     }
   }
 
+  relationshipResourceIdentifiers(relationNames: Array<string>) {
+    return relationshipIdentifiersFor(this, relationNames);
+  }
+
   fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc, includeDirective: Object = {}) : any {
     return deserializeInstance(this, resource, payload, includeDirective);
   }
 
-  get resourceIdentifier() : Object {
-    return { type: this.klass.jsonapiType, id: this.id };
+  get resourceIdentifier() : JsonapiResourceIdentifier {
+    if (this.klass.jsonapiType === undefined) {
+      throw new Error('Cannot build resource identifier for class. No JSONAPI Type specified.')
+    }
+
+    return { 
+      id: this.id,
+      type: this.klass.jsonapiType
+     }
   }
 
   get hasError() {
@@ -361,12 +380,12 @@ export class JSORMBase {
     return dc.dirtyAttributes();
   }
 
-  hasDirtyRelation(relationName: string, relatedModel: Model) : boolean {
+  hasDirtyRelation(relationName: string, relatedModel: JSORMBase) : boolean {
     let dc = new DirtyChecker(this);
     return dc.checkRelation(relationName, relatedModel);
   }
 
-  dup() : Model {
+  dup() : JSORMBase {
     return cloneDeep(this);
   }
 }; 
@@ -447,10 +466,6 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
 //   // * Make all calls go through resetRelationTracking();
 //   resetRelationTracking(includeDirective: Object) {
 //     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
-//   }
-
-//   relationshipResourceIdentifiers(relationNames: Array<string>) {
-//     return relationshipIdentifiersFor(this, relationNames);
 //   }
 
 

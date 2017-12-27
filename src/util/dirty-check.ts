@@ -1,20 +1,20 @@
-import Model from '../model';
+import { JSORMBase } from '../model';
 import IncludeDirective from './include-directive';
 
 class DirtyChecker {
-  model: Model;
+  model: JSORMBase;
 
-  constructor(model: Model) {
+  constructor(model: JSORMBase) {
     this.model = model;
   }
 
   // Check if we are switching persisted objects. Either:
   // * adding a new already-persisted object to a hasMany array
   // * switching an existing persisted hasOne/belongsTo object
-  checkRelation(relationName: string, relatedModel: Model) : boolean {
+  checkRelation(relationName: string, relatedModel: JSORMBase) : boolean {
     let dirty = false;
 
-    if (relatedModel.isPersisted()) {
+    if (relatedModel.isPersisted) {
       let identifiers = this.model._originalRelationships[relationName] || [];
       let found = identifiers.find((ri) => {
         return JSON.stringify(ri) == JSON.stringify(relatedModel.resourceIdentifier);
@@ -36,8 +36,8 @@ class DirtyChecker {
 
     return this._hasDirtyAttributes() ||
       this._hasDirtyRelationships(includeHash) ||
-      this.model.isMarkedForDestruction() ||
-      this.model.isMarkedForDisassociation() ||
+      this.model.isMarkedForDestruction ||
+      this.model.isMarkedForDisassociation ||
       this._isUnpersisted()
   }
 
@@ -48,7 +48,7 @@ class DirtyChecker {
       let prior = this.model._originalAttributes[key];
       let current = this.model.attributes[key];
 
-      if (!this.model.isPersisted()) {
+      if (!this.model.isPersisted) {
         dirty[key] = [null, current];
       } else if (prior != current) {
         dirty[key] = [prior, current]
@@ -60,7 +60,7 @@ class DirtyChecker {
 
   // TODO: allow attributes == {} configurable
   private _isUnpersisted() {
-    return !this.model.isPersisted() && JSON.stringify(this.model.attributes) !== JSON.stringify({});
+    return !this.model.isPersisted && JSON.stringify(this.model.attributes) !== JSON.stringify({});
   }
 
   private _hasDirtyAttributes() {

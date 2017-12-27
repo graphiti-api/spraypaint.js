@@ -1,17 +1,28 @@
 import { Attribute, AttrRecord, Attr } from './attribute';
-import { JSORMBase } from './model';
+import { JSORMBase, ModelConstructor } from './model';
 
-export interface AssociationRecord<T extends JSORMBase | undefined> extends AttrRecord<T> {
-  type?: Attr<T>
+export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
+  type? : Attr<T>
+  jsonapiType? : string
 }
 
-export class AssociationBase<T extends JSORMBase> extends Attribute<T> {
-  klass: typeof JSORMBase;
-  // isRelationship = true;
-  jsonapiType: string;
+export interface Association {
+  isRelationship : true
+  klass: typeof JSORMBase
+  jsonapiType: string
+}
+
+export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> implements Association {
+  isRelationship : true = true
+  klass : typeof JSORMBase
+  jsonapiType : string
 
   constructor(options: AssociationRecord<T>) {
     super(options);
+
+    if (options.jsonapiType) {
+      this.jsonapiType = options.jsonapiType
+    }
   }
 
   getter(context: JSORMBase) {
@@ -30,46 +41,94 @@ export class AssociationBase<T extends JSORMBase> extends Attribute<T> {
   }
 }
 
-export class HasMany<T extends JSORMBase> extends AssociationBase<T> {
+export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements Association {
+  isRelationship : true = true
+  klass : typeof JSORMBase
+  jsonapiType : string
+
+  constructor(options: AssociationRecord<T>) {
+    super(options as any);
+
+    if (options.jsonapiType) {
+      this.jsonapiType = options.jsonapiType
+    }
+  }
+
   getter(context: JSORMBase) {
-    let gotten = super.getter(context);
+    let gotten = context.relationships[this.name]
     if (!gotten) {
       this.setter(context, []);
-      return super.getter(context);
+      return context.relationships[this.name]
     } else {
       return gotten;
     }
   }
-}
 
-export class HasOne<T extends JSORMBase> extends AssociationBase<T> {
-}
-
-export class BelongsTo<T extends JSORMBase> extends AssociationBase<T> {
-}
-
-function hasMany<T extends JSORMBase>(options?: AssociationRecord<T>) : HasMany<T> {
-  if (!options) {
-    options = {}
+  setter(context: JSORMBase, val: any) : void {
+    if (val && !val.hasOwnProperty('isRelationship')) {
+      if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
+        val = new this.klass(val);
+      }
+      context.relationships[this.name] = val;
+    } else if (val === null || val === undefined) {
+      context.relationships[this.name] = val;
+    }
   }
-
-  return new HasMany(options);
 }
 
-function hasOne<T extends JSORMBase>(options?: AssociationRecord<T>) : HasOne<T> {
-  if (!options) {
-    options = {}
+export class HasOne<T extends JSORMBase> extends SingleAssociationBase<T> {
+}
+
+export class BelongsTo<T extends JSORMBase> extends SingleAssociationBase<T> {
+}
+
+export interface AssociationFactoryOpts<T extends JSORMBase> {
+  type? : string | Attr<T>
+  persist? : boolean
+  name? : string
+}
+
+export type AssociationFactoryArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string
+
+export function hasOne<T extends JSORMBase>(options?: AssociationFactoryOpts<T>) : HasOne<T> {
+  let opts = extractAssocOpts(options)
+
+  return new HasOne(opts)
+}
+
+export function belongsTo<T extends JSORMBase>(options?: AssociationFactoryArgs<T>) : BelongsTo<T> {
+  let opts = extractAssocOpts(options)
+
+  return new BelongsTo(opts)
+}
+
+export function hasMany<T extends JSORMBase>(options?: AssociationFactoryArgs<T>) : HasMany<T> {
+  let opts = extractAssocOpts(options)
+
+  return new HasMany(opts)
+}
+
+function extractAssocOpts<T extends JSORMBase>(options?: AssociationFactoryArgs<T> | string) {
+  let associationOpts : AssociationRecord<T> = {}
+
+  if (options !== undefined) {
+    if(typeof options === 'string') {
+      associationOpts = {
+        jsonapiType: options
+      }
+    } else {
+      associationOpts = {
+        persist: options.persist,
+        name: options.name,
+      }
+
+      if (typeof options.type === 'string') {
+        associationOpts.jsonapiType = options.type
+      } else {
+        associationOpts.type = options.type as any
+      }
+    }
   }
-
-  return new HasOne(options);
+  
+  return associationOpts
 }
-
-function belongsTo<T extends JSORMBase>(options?: AssociationRecord<T>) : BelongsTo<T> {
-  if (!options) {
-    options = {}
-  }
-
-  return new BelongsTo(options);
-}
-
-export { hasMany, hasOne, belongsTo };

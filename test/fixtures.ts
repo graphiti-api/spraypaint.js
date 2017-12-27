@@ -42,25 +42,29 @@ export class PersonWithoutCamelizedKeys extends Person {
   @Attr first_name: string
 }
 
-// Ensure setup() can be run multiple times with no problems
-// putting this here, otherwise relations wont be available.
-// Config.setup();
-export const Author = Person.extend({
-  config: {
-    endpoint: '/v1/authors',
-    jsonapiType: 'authors'
-  },
-
-  attrs: {
-    nilly:        attr(),
-    multiWords:   hasMany({type: MultiWord}),
-    specialBooks: hasMany({type: Book}),
-    books:        hasMany(),
-    tags:         hasMany(),
-    genre:        belongsTo({type: Genre}),
-    bio:          hasOne({type: Bio})
-  }
+@Model({
+  endpoint: '/v1/authors',
+  jsonapiType: 'authors',
 })
+export class Author extends Person {
+  @Attr nilly : string
+  @HasMany({type: 'multi_words'}) multiWords : MultiWord[]
+  @HasMany('books') specialBooks : Book[]
+  @HasMany() books : Book[]
+  @HasMany() tags : Tag[]
+  @BelongsTo({type: 'genres'}) genre : Genre
+  @HasOne('bios') bio : Bio
+}
+
+@Model()
+export class Book extends ApplicationRecord {
+  static jsonapiType = 'books';
+
+  @Attr title: string
+
+  @BelongsTo({type: 'genres'}) genre : Genre
+  @HasOne({type: Author}) author : any
+}
 
 export const NonFictionAuthor = Author.extend({
   static: {
@@ -72,24 +76,14 @@ export const NonFictionAuthor = Author.extend({
   attrs: {
     nilly:         attr(),
 
-    multi_words:   hasMany({type: MultiWord}),
+    multi_words:   hasMany('multi_words'),
     special_books: hasMany({type: Book}),
     books:         hasMany(),
     tags:          hasMany(),
-    genre:         belongsTo({type: Genre}),
-    bio:           hasOne({type: Bio})
+    genre:         belongsTo({type: 'genres'}),
+    bio:           hasOne({type: 'bios'})
   }
 });
-
-@Model()
-export class Book extends ApplicationRecord {
-  static jsonapiType = 'books';
-
-  @Attr title: string
-
-  @BelongsTo({type: Genre}) genre : Genre
-  @HasOne({type: Author}) author : any
-}
 
 @Model()
 export class Genre extends ApplicationRecord {
@@ -118,9 +112,9 @@ export class MultiWord extends ApplicationRecord {
   static jsonapiType = 'multi_words';
 }
 
-const TestJWTSubclass = ApplicationRecord.extend({});
+export const TestJWTSubclass = ApplicationRecord.extend({});
 
-const NonJWTOwner = JSORMBase.extend({});
+export const NonJWTOwner = JSORMBase.extend({});
 
 // const configSetup = function(opts = {}) {
 //   opts['jwtOwners'] = [ApplicationRecord, TestJWTSubclass];
@@ -128,18 +122,3 @@ const NonJWTOwner = JSORMBase.extend({});
 // };
 // configSetup();
 
-// export {
-//   configSetup,
-//   ApplicationRecord,
-//   TestJWTSubclass,
-//   NonJWTOwner,
-//   Author,
-//   NonFictionAuthor,
-//   Person,
-//   PersonWithExtraAttr,
-//   PersonWithoutCamelizedKeys,
-//   Book,
-//   Genre,
-//   Bio,
-//   Tag
-// };

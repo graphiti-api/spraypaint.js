@@ -8,14 +8,14 @@ import { JSORMBase } from '../model';
 // Will be array regardless of relationship type
 // This will only contain persisted objects
 // Used for dirty tracking associations
-export default function(model: JSORMBase, relationNames: Array<string>) : Object {
-  let identifiers = {};
+export default function(model: JSORMBase, relationNames: Array<string>) {
+  let identifiers : Record<string, JsonapiResourceIdentifier[]>= {};
   relationNames.forEach((relationName) => {
-    let relatedObjects = model.relationships[relationName];
+    let relatedObjects = model.relationship(relationName)
     if (relatedObjects) {
       if (!Array.isArray(relatedObjects)) relatedObjects = [relatedObjects];
       relatedObjects.forEach((r) => {
-        if (r.isPersisted()) {
+        if (r.isPersisted) {
           if (!identifiers[relationName]) {
             identifiers[relationName] = [];
           }

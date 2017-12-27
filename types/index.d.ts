@@ -11,7 +11,6 @@ interface JsonapiResourceIdentifier {
   type : string;
 }
 
-
 interface JsonapiResource extends JsonapiResourceIdentifier {
   attributes?: object;
   relationships?: object;
