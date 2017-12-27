@@ -1,52 +1,57 @@
-/// <reference path="../../types/index.d.ts" />
-
-import Config from '../configuration';
-import Model from '../model';
+import { TypeRegistry } from '../type-registry'
+import { JSORMBase } from '../model';
 import { camelize } from './string';
 
-function deserialize(datum : japiResource, payload: japiDoc) : Model {
-  let deserializer = new Deserializer(payload);
+function deserialize(registry : TypeRegistry, datum : JsonapiResource, payload: JsonapiDoc) : JSORMBase {
+  let deserializer = new Deserializer(registry, payload);
   return deserializer.deserialize(datum);
 }
 
-function deserializeInstance(instance: Model, resource : japiResource, payload: japiDoc, includeDirective: Object = {}) : Model {
-  let deserializer = new Deserializer(payload);
+function deserializeInstance(instance: JSORMBase, resource : JsonapiResource, payload: JsonapiDoc, includeDirective: Object = {}) : JSORMBase {
+  let deserializer = new Deserializer(instance.klass.typeRegistry, payload);
   return deserializer.deserializeInstance(instance, resource, includeDirective);
 }
 
 class Deserializer {
-  _deserialized = [];
-  _resources = [];
-  payload: japiDoc;
+  payload : JsonapiDoc;
+  registry : TypeRegistry
+  private _deserialized : Array<JSORMBase> = []
+  private _resources : Array<JsonapiResource> = []
 
-  constructor(payload) {
-    this.payload = payload;
+  constructor(registry : TypeRegistry, payload : JsonapiDoc) {
+    this.registry = registry
+    this.payload = payload
 
-    this.addResources(payload.data);
-    this.addResources(payload.included);
+    this.addResources(payload.data)
+    this.addResources(payload.included)
   }
 
-  addResources(data) {
-    if (!data) return;
+  addResources(data? : Array<JsonapiResource> | JsonapiResource) {
+    if (!data) return
 
     if (Array.isArray(data)) {
       for (let datum of data) {
-        this._resources.push(datum);
+        this._resources.push(datum)
       }
     } else {
-      this._resources.push(data);
+      this._resources.push(data)
     }
   }
 
-  instanceFor(type: string) : Model {
-    let klass = Config.modelForType(type);
+  instanceFor(type: string) : JSORMBase {
+    let klass = this.registry.get(type)
+
+    if (!klass) {
+      throw new Error(`Unknown type "${type}"`)
+    }
+
     return new klass();
   }
 
-  relationshipInstanceFor(datum: japiResource, records: Array<Model>) : Model {
+  relationshipInstanceFor(datum: JsonapiResource, records: Array<JSORMBase>) : JSORMBase {
     let record = records.find((r) => {
-      return r.klass.jsonapiType === datum.type &&
-        (r.id && datum.id && r.id === datum.id || r.temp_id && datum['temp-id'] && r.temp_id === datum['temp-id']);
+      return !!(r.klass.jsonapiType === datum.type &&
+        (r.id && datum.id && r.id === datum.id || r.temp_id && datum['temp-id'] && r.temp_id === datum['temp-id']))
     });
 
     if (!record) {
@@ -57,14 +62,14 @@ class Deserializer {
   }
 
   // todo null temp id
-  lookupAssociated(recordSet: Array<Model>, record: Model) {
+  lookupAssociated(recordSet: Array<JSORMBase>, record: JSORMBase) {
     return recordSet.find((r) => {
-      return r.klass.jsonapiType === record.klass.jsonapiType &&
-        (r.temp_id && record.temp_id && r.temp_id === record.temp_id || r.id && record.id && r.id === record.id)
+      return !!(r.klass.jsonapiType === record.klass.jsonapiType &&
+        (r.temp_id && record.temp_id && r.temp_id === record.temp_id || r.id && record.id && r.id === record.id))
     });
   }
 
-  pushRelation(model: Model, associationName: string, record: Model) : void {
+  pushRelation(model: JSORMBase, associationName: string, record: JSORMBase) : void {
     let associationRecords = model[associationName];
     let existingInstance = this.lookupAssociated(associationRecords, record);
 
@@ -73,12 +78,12 @@ class Deserializer {
     }
   }
 
-  deserialize(datum: japiResource) : Model {
+  deserialize(datum: JsonapiResource) : JSORMBase {
     let instance = this.instanceFor(datum.type);
     return this.deserializeInstance(instance, datum, {});
   }
 
-  deserializeInstance(instance: Model, datum: japiResource, includeDirective: Object = {}) : Model {
+  deserializeInstance(instance: JSORMBase, datum: JsonapiResource, includeDirective: Object = {}) : JSORMBase {
     let existing = this.alreadyDeserialized(datum);
     if (existing) return existing;
 
@@ -95,24 +100,24 @@ class Deserializer {
     // so we don't double-process the same thing
     // must push before relationships
     this._deserialized.push(instance);
-    this._processRelationships(instance, datum.relationships, includeDirective);
+    this._processRelationships(instance, datum.relationships || {}, includeDirective);
 
     // remove objects marked for destruction
     this._removeDeletions(instance, includeDirective);
 
     // came from server, must be persisted
-    instance.isPersisted(true);
+    instance.isPersisted = true
 
     return instance;
   }
 
-  _removeDeletions(model: Model, includeDirective: Object) {
+  _removeDeletions(model: JSORMBase, includeDirective: Object) {
     Object.keys(includeDirective).forEach((key) => {
       let relatedObjects = model[key];
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
-            if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
+            if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
               model[key].splice(index, 1);
             } else {
               this._removeDeletions(relatedObject, includeDirective[key] || {});
@@ -120,7 +125,7 @@ class Deserializer {
           });
         } else {
           let relatedObject = relatedObjects;
-          if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
+          if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
             model[key] = null;
           } else {
             this._removeDeletions(relatedObject, includeDirective[key] || {});
@@ -130,7 +135,7 @@ class Deserializer {
     });
   }
 
-  _processRelationships(instance, relationships, includeDirective) {
+  _processRelationships(instance : JSORMBase, relationships : Record<string, JsonapiDoc>, includeDirective : Object) {
     this._iterateValidRelationships(instance, relationships, (relationName, relationData) => {
       let nestedIncludeDirective = includeDirective[relationName];
 
@@ -157,7 +162,7 @@ class Deserializer {
     });
   }
 
-  _iterateValidRelationships(instance, relationships, callback) {
+  _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiDoc>, callback : (name : string, data: Array<JsonapiResource> | JsonapiResource) => void) {
     for (let key in relationships) {
       let relationName = key;
 
@@ -173,17 +178,17 @@ class Deserializer {
     }
   }
 
-  alreadyDeserialized(resourceIdentifier) {
+  alreadyDeserialized(resourceIdentifier : JsonapiResource) {
     return this._deserialized.find((m) => {
-      return m.klass.jsonapiType === resourceIdentifier.type &&
-        (m.id && resourceIdentifier.id && m.id === resourceIdentifier.id || m.temp_id && resourceIdentifier.temp_id && m.temp_id === resourceIdentifier['temp-id']);
+      return !!(m.klass.jsonapiType === resourceIdentifier.type &&
+        (m.id && resourceIdentifier.id && m.id === resourceIdentifier.id || m.temp_id && resourceIdentifier.temp_id && m.temp_id === resourceIdentifier['temp-id']))
     });
   }
 
-  findResource(resourceIdentifier) {
-    let found = this._resources.find((r) => {
-      return r.type === resourceIdentifier.type &&
-        (r.id && resourceIdentifier.id && r.id === resourceIdentifier.id || r['temp-id'] && resourceIdentifier['temp-id'] && r['temp-id'] === resourceIdentifier['temp-id']);
+  findResource(resourceIdentifier : JsonapiResource) {
+    let found = this._resources.find((r) : boolean => {
+      return !!(r.type === resourceIdentifier.type &&
+        (r.id && resourceIdentifier.id && r.id === resourceIdentifier.id || r['temp-id'] && resourceIdentifier['temp-id'] && r['temp-id'] === resourceIdentifier['temp-id']))
     });
 
     return found || resourceIdentifier;

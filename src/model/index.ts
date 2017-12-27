@@ -1,24 +1,21 @@
 // import Config from '../configuration';
-// import { deserialize, deserializeInstance } from '../util/deserialize';
 // import { CollectionProxy, RecordProxy } from '../proxies';
 // import _extend from '../util/extend';
 // import { camelize } from '../util/string';
 // import WritePayload from '../util/write-payload';
 // import IncludeDirective from '../util/include-directive';
-// import DirtyChecker from '../util/dirty-check';
 // import ValidationErrors from '../util/validation-errors';
 // import refreshJWT from '../util/refresh-jwt';
 // import relationshipIdentifiersFor from '../util/relationship-identifiers';
 // import Request from '../request';
-import cloneDeep from '../util/clonedeep';
-import { 
-  Attribute, 
-  AttributeOptions, 
-  Attr
-} from '../attribute';
-import Scope from '../scope';
 
+import cloneDeep from '../util/clonedeep';
+import { deserialize, deserializeInstance } from '../util/deserialize';
+import { Attribute } from '../attribute';
+import DirtyChecker from '../util/dirty-check';
+import Scope from '../scope';
 import { TypeRegistry } from '../type-registry'
+import { camelize } from 'inflected'
 
 export interface ModelConfiguration {
   baseUrl : string
@@ -72,12 +69,15 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
       Attrs & ExtendedAttrs
     >
   inherited(subclass : typeof JSORMBase) : void
+  registerType() : void
 
   attributeList : Attrs
   extendOptions : any//ExtendOptions<M, Attributes, Methods>
   parentClass : typeof JSORMBase;
   currentClass : typeof JSORMBase;
   isJSORMModel : boolean
+  isBaseClass : boolean
+  typeRegistry : TypeRegistry
 
   baseUrl : string
   apiNamespace : string
@@ -130,6 +130,8 @@ function extendModel<
     applyModelConfig(Subclass, options.config)
   }
 
+  Subclass.registerType()
+
   if (options.methods) {
     for(const methodName in options.methods) {
       (<any>Subclass.prototype)[methodName] = options.methods[methodName]
@@ -179,11 +181,13 @@ export class JSORMBase {
   static readonly isJSORMModel : boolean = true
 
 
-  id : string;
-  temp_id : string;
+  id? : string;
+  temp_id? : string;
   _attributes : Record<string, any>
   _originalAttributes : Record<string, any>
-  protected klass : typeof JSORMBase//# = JSORMBase
+  __meta__ : any
+  relationships : Record<string, any> = {}
+  klass : typeof JSORMBase
   private _persisted : boolean = false;
   private _markedForDestruction: boolean = false;
   private _markedForDisassociation: boolean = false;
@@ -193,7 +197,7 @@ export class JSORMBase {
 
     if (attrs) {
       for(let k in attrs) {
-        if (Object.keys((<any>this.constructor).attributeList).indexOf(k) < 0) {
+        if (Object.keys((<any>this.constructor).attributeList).indexOf(k) < 0 && k != 'id') {
           throw new Error(`Unknown attribute: ${k}`)
         }
         (<any>this)[k] = attrs[k]
@@ -202,7 +206,7 @@ export class JSORMBase {
   }
 
   static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
-    // return deserialize(resource, payload);
+    return deserialize(this.typeRegistry, resource, payload);
   }
 
   static inherited(subclass : typeof JSORMBase) : void {
@@ -273,10 +277,6 @@ export class JSORMBase {
     return Subclass
   }
 
-  get attributes() {
-    return this._attributes
-  }
-
   // Define getter/setters 
   private _initializeAttributes() {
     this._attributes = {}
@@ -313,6 +313,61 @@ export class JSORMBase {
   }
   set isMarkedForDisassociation(val : boolean) {
     this._markedForDisassociation = val
+  }
+
+  get attributes() {
+    return this._attributes
+  }
+
+  set attributes(attrs : Object) {
+    this._attributes = {};
+    this.assignAttributes(attrs);
+  }
+
+  assignAttributes(attrs? : Record<string, any>) : void {
+    if (!attrs) { return }
+    for(var key in attrs) {
+      let attributeName = key;
+
+      if (this.klass.camelizeKeys) {
+        attributeName = camelize(key, false);
+      }
+      
+      if (key == 'id' || this.klass.attributeList[attributeName]) {
+        (<any>this)[attributeName] = attrs[key];
+      }
+    }
+  }
+
+  fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc, includeDirective: Object = {}) : any {
+    return deserializeInstance(this, resource, payload, includeDirective);
+  }
+
+  get resourceIdentifier() : Object {
+    return { type: this.klass.jsonapiType, id: this.id };
+  }
+
+  get hasError() {
+    return Object.keys(this.errors).length > 1;
+  }
+
+  isDirty(relationships?: Object | Array<any> | string) : boolean {
+    let dc = new DirtyChecker(this);
+    return dc.check(relationships);
+  }
+
+  changes() : Object {
+    let dc = new DirtyChecker(this);
+    return dc.dirtyAttributes();
+  }
+
+  hasDirtyRelation(relationName: string, relatedModel: Model) : boolean {
+    let dc = new DirtyChecker(this);
+    return dc.checkRelation(relationName, relatedModel);
+  }
+
+  dup() : Model {
+    return cloneDeep(this);
   }
 }; 
 (<any>JSORMBase.prototype).klass = JSORMBase
@@ -399,58 +454,6 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
 //   }
 
 
-//   get resourceIdentifier() : Object {
-//     return { type: this.klass.jsonapiType, id: this.id };
-//   }
-
-//   get attributes() : Object {
-//     return this._attributes;
-//   }
-
-//   set attributes(attrs : Object) {
-//     this._attributes = {};
-//     this.assignAttributes(attrs);
-//   }
-
-//   assignAttributes(attrs: Object) {
-//     for(var key in attrs) {
-//       let attributeName = key;
-
-//       if (this.klass.camelizeKeys) {
-//         attributeName = camelize(key);
-//       }
-      
-//       if (key == 'id' || this.klass.attributeList[attributeName]) {
-//         this[attributeName] = attrs[key];
-//       }
-//     }
-//   }
-//   fromJsonapi(resource: japiResource, payload: japiDoc, includeDirective: Object = {}) : any {
-//     return deserializeInstance(this, resource, payload, includeDirective);
-//   }
-
-//   get hasError() {
-//     return Object.keys(this.errors).length > 1;
-//   }
-
-//   isDirty(relationships?: Object | Array<any> | string) : boolean {
-//     let dc = new DirtyChecker(this);
-//     return dc.check(relationships);
-//   }
-
-//   changes() : Object {
-//     let dc = new DirtyChecker(this);
-//     return dc.dirtyAttributes();
-//   }
-
-//   hasDirtyRelation(relationName: string, relatedModel: Model) : boolean {
-//     let dc = new DirtyChecker(this);
-//     return dc.checkRelation(relationName, relatedModel);
-//   }
-
-//   dup() : Model {
-//     return cloneDeep(this);
-//   }
 
 //   destroy() : Promise<any> {
 //     let url     = this.klass.url(this.id);

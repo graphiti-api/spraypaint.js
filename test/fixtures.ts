@@ -53,12 +53,12 @@ export const Author = Person.extend({
 
   attrs: {
     nilly:        attr(),
-    // multiWords:   hasMany({type: MultiWord}),
-    // specialBooks: hasMany({type: Book}),
+    multiWords:   hasMany({type: MultiWord}),
+    specialBooks: hasMany({type: Book}),
     books:        hasMany(),
     tags:         hasMany(),
-    // genre:        belongsTo({type: Genre}),
-    // bio:          hasOne({type: Bio})
+    genre:        belongsTo({type: Genre}),
+    bio:          hasOne({type: Bio})
   }
 })
 
@@ -81,6 +81,7 @@ export const NonFictionAuthor = Author.extend({
   }
 });
 
+@Model()
 export class Book extends ApplicationRecord {
   static jsonapiType = 'books';
 
@@ -90,6 +91,7 @@ export class Book extends ApplicationRecord {
   @HasOne({type: Author}) author : any
 }
 
+@Model()
 export class Genre extends ApplicationRecord {
   static jsonapiType = 'genres';
 
@@ -97,23 +99,24 @@ export class Genre extends ApplicationRecord {
   @HasMany('authors') authors: any
 }
 
+@Model()
 export class Bio extends ApplicationRecord {
   static jsonapiType = 'bios';
 
   @Attr description : string 
 }
 
+@Model()
 export class Tag extends ApplicationRecord {
   static jsonapiType = 'tags';
 
   @Attr name: string 
 }
 
+@Model()
 export class MultiWord extends ApplicationRecord {
   static jsonapiType = 'multi_words';
 }
-
-
 
 const TestJWTSubclass = ApplicationRecord.extend({});
 

@@ -1,19 +1,22 @@
 interface JsonapiDoc {
   data: Array<JsonapiResource> | JsonapiResource
   included?: Array<JsonapiResource>;
-  meta?: Object;
+  meta?: object;
 }
 
 interface JsonapiResourceIdentifier {
-  id: string;
-  type: string;
+  id? : string;
+  temp_id? : string
+  'temp-id'? : string;
+  type : string;
 }
 
+
 interface JsonapiResource extends JsonapiResourceIdentifier {
-  attributes?: Object;
-  relationships?: Object;
-  meta?: Object;
-  links?: Object;
+  attributes?: object;
+  relationships?: object;
+  meta?: object;
+  links?: object;
 }
 
 // interface IResultProxy<T> {

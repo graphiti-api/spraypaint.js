@@ -84,10 +84,11 @@ describe('Model', () => {
 
       it('correctly instantiates the model', () => {
         let theAuthor = new Person()
-        let post  = new Post({title: 'The Title', author: theAuthor})
+        let post  = new Post({title: 'The Title', author: theAuthor, id: '1234'})
 
         expect(post.author).to.equal(theAuthor)
         expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
+        expect(post.id).to.equal('1234')
       })
 
       it('sets up attribute getters/setters', () => {
@@ -118,6 +119,7 @@ describe('Model', () => {
         it('sets up expected inheritance hierarchy', () => {
           expect(FrontPagePost.currentClass).to.equal(FrontPagePost)
           expect(FrontPagePost.parentClass).to.equal(Post)
+          expect(FrontPagePost.isBaseClass).to.be.false
           let instance = new FrontPagePost()
 
           expect((<any>instance).klass).to.eq(FrontPagePost)
@@ -195,6 +197,9 @@ describe('Model', () => {
       })
 
       const Post = BaseModel.extend({
+        config: {
+          jsonapiType: 'posts'
+        },
         attrs: {
           title: attr({ type: String }),
           author: hasOne({ type: Person })
@@ -218,17 +223,27 @@ describe('Model', () => {
       it('sets up expected inheritance hierarchy', () => {
         expect(Post.currentClass).to.equal(Post)
         expect(Post.parentClass).to.equal(BaseModel)
+        expect(Post.isBaseClass).to.be.false
         let instance = new Post()
 
         expect((<any>instance).klass).to.eq(Post)
       })
 
+      it('obeys explicit jsonapi type', () => {
+        expect(Post.jsonapiType).to.eq('posts')
+      })
+
+      it('adds the instance to the type registry', () => {
+        expect(BaseModel.typeRegistry.get('posts')).to.equal(Post)
+      })
+
       it('correctly instantiates the model', () => {
         let theAuthor = new Person()
-        let post = new Post({title: 'The Title', author: theAuthor})
+        let post = new Post({title: 'The Title', author: theAuthor, id: '1234'})
 
         expect(post.author).to.equal(theAuthor)
         expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
+        expect(post.id).to.equal('1234')
       })
 
       it('sets up attribute getters/setters', () => {
@@ -261,6 +276,7 @@ describe('Model', () => {
         it('sets up expected inheritance hierarchy', () => {
           expect(FrontPagePost.currentClass).to.equal(FrontPagePost)
           expect(FrontPagePost.parentClass).to.equal(Post)
+          expect(Post.isBaseClass).to.be.false
           let instance = new FrontPagePost()
 
           expect((<any>instance).klass).to.eq(FrontPagePost)
@@ -310,7 +326,6 @@ describe('Model', () => {
           describe(`config prop is "${prop}"`, () => {
             let config = {
               apiNamespace: 'api/v1',
-              jsonapiType: 'test_types',
               jwt: 'abc123', 
             }
 
@@ -325,13 +340,11 @@ describe('Model', () => {
 
             it('correctly assigns options', () => {
               expect(MyModel.apiNamespace).to.eq(config.apiNamespace)
-              expect(MyModel.jsonapiType).to.eq(config.jsonapiType)
               expect(MyModel.jwt).to.eq(config.jwt)
             })
 
             it('does not override parent class options', () => {
               expect(BaseModel.apiNamespace).not.to.eq(config.apiNamespace)
-              expect(BaseModel.jsonapiType).not.to.eq(config.jsonapiType)
               expect(BaseModel.jwt).not.to.eq(config.jwt)
             })
           })
@@ -596,41 +609,249 @@ describe('Model', () => {
     })
 
     it('skips relationships without data', () => {
-      let instance = JSORMBase.fromJsonapi(doc.data, doc)
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
       expect(instance.tags).to.eql([])
     });
 
-    // it('preserves other properties on the object', () => {
-    //   let instance = new Author({ id: '1' });
-    //   instance['foJSORMBase'bar';
-    //   let same = instance.fromJsonapi(doc.data, doc);
-    //   expect(same).to.eq(instance);
+    it('preserves other properties on the object', () => {
+      let instance : any = new Author({ id: '1' });
+      instance['fooble'] = 'bar';
+      let same = instance.fromJsonapi(doc.data, doc);
+      expect(same).to.eq(instance);
 
-    //   expect(instance.id).to.eq('1');
-    //   expect(instance.firstName).to.eq('Donald Budge');
-    //   expect(instance['fooble']).to.eq('bar');
-    // });
-// // 
-    // it('preserves other properties on relationships', function() {
-    //   let genre = new Genre({ id: '1' });
-    //   genre['bar'] = 'baz';
-    //   let book = new Book({ id: '1', genre: genre });
-    //   book['foo'] = 'bar';
-    //   let instance = new Author({ id: '1', books: [book] });
-    //   instance.fromJsonapi(doc.data, doc);
- // //
-    //   expect(instance.books[0]).to.eq(book);
-    //   expect(instance.books[0].genre).to.eq(genre);
- // //
-    //   expect(book.title).to.eq("Where's My Butt?");
-    //   expect(book['foo']).to.eq('bar');
-    //   expect(genre['bar']).to.eq('baz');
-    // } 
-  }) //
+      expect(instance.id).to.eq('1');
+      expect(instance.firstName).to.eq('Donald Budge');
+      expect(instance['fooble']).to.eq('bar');
+    });
+ 
+    it('preserves other properties on relationships', () => {
+      let genre : any = new Genre({ id: '1' });
+      genre['bar'] = 'baz'
+      let book : any = new Book({ id: '1', genre: genre });
+      book['foo'] = 'bar'
+      let instance : any= new Author({ id: '1', books: [book] });
+      instance.fromJsonapi(doc.data, doc);
 
-  //// scribe('relationshipResourceIdentifiers', function() {
+      expect(instance.books[0]).to.eq(book);
+      expect(instance.books[0].genre).to.eq(genre);
+
+      expect(book.title).to.eq("Where's My Butt?");
+      expect(book['foo']).to.eq('bar');
+      expect(genre['bar']).to.eq('baz');
+    })
+  describe('changes', function() {
+    describe('when unpersisted', function() {
+      it('counts everything but nulls', function() {
+        let instance = new Author({ firstName: 'foo' });
+        expect(instance.changes()).to.deep.equal({
+          firstName: [null, 'foo']
+        });
+      });
+    });
+
+    describe('when persisted', function() {
+      it('only counts dirty attrs', function() {
+        let instance = new Author({ firstName: 'foo' });
+        instance.isPersisted = true
+        expect(instance.changes()).to.deep.equal({});
+        instance.firstName = 'bar'
+        expect(instance.changes()).to.deep.equal({
+          firstName: ['foo', 'bar']
+        });
+        instance.isPersisted = true
+        expect(instance.changes()).to.deep.equal({});
+      });
+    });
+  });
+
+  describe('isDirty', function() {
+    describe('when an attribute changes', function() {
+      it('is marked as dirty', function() {
+        let instance = new Author();
+        instance.isPersisted = true
+        expect(instance.isDirty()).to.eq(false);
+        instance.firstName = 'Joe';
+        expect(instance.isDirty()).to.eq(true);
+        instance.isPersisted = true
+      });
+    });
+
+    describe('when not persisted', function() {
+      describe('and no attributes', function() {
+        it('is not dirty', function() {
+          let instance = new Author();
+          expect(instance.isDirty()).to.eq(false);
+        });
+      });
+
+      describe('and has attributes', function() {
+        it('is dirty', function() {
+          let instance = new Author({ firstName: 'Stephen' });
+          expect(instance.isDirty()).to.eq(true);
+          instance.isPersisted = true
+          expect(instance.isDirty()).to.eq(false);
+        });
+      });
+    });
+
+    describe('when dirty, then persisted', function() {
+      it('is no longer dirty', function() {
+        let instance = new Author();
+        instance.firstName = 'foo';
+        expect(instance.isDirty()).to.eq(true);
+      });
+    });
+
+    describe('when marked for destruction', function() {
+      it('is dirty', function() {
+        let instance = new Author();
+        instance.isPersisted = true
+        expect(instance.isDirty()).to.eq(false);
+        instance.isMarkedForDestruction(true);
+        expect(instance.isDirty()).to.eq(true);
+      });
+    });
+
+    describe('when marked for disassociation', function() {
+      it('is dirty', function() {
+        let instance = new Author();
+        instance.isPersisted = true
+        expect(instance.isDirty()).to.eq(false);
+        instance.isMarkedForDisassociation(true);
+        expect(instance.isDirty()).to.eq(true);
+      });
+    });
+
+    describe('when passed relationships', function() {
+      let instance : Author
+      beforeEach(function() {
+        let book = new Book({ id: 1, title: 'original' });
+        let instance = new Author({ books: [book] });
+      });
+
+      it('works with string/object/array include graph', function() {
+        instance.books[0].isPersisted = true
+        let authorGenre = new Genre({ id: 1 })
+        let bookGenre = new Genre({ id: 2 })
+        authorGenre.isPersisted = true
+        bookGenre.isPersisted = true
+        instance.books[0].genre = bookGenre
+        instance.genre = authorGenre
+        instance.books[0].isPersisted = true
+        instance.isPersisted = true
+
+        let check = () => {
+          return instance.isDirty(['genre', { books: 'genre' }]);
+        }
+
+        expect(check()).to.eq(false);
+        instance.genre.name = 'changed';
+        expect(check()).to.eq(true);
+        instance.genre.isPersisted = true
+
+        expect(check()).to.eq(false);
+        instance.books[0].title = 'changed';
+        expect(check()).to.eq(true);
+        instance.books[0].isPersisted = true
+
+        expect(check()).to.eq(false);
+        instance.books[0].genre.name = 'changed';
+        expect(check()).to.eq(true);
+      });
+
+      it('is not dirty when relationship not passed, even if relationship is dirty', function() {
+        instance.books[0].isPersisted = true
+        instance.isPersisted = true
+
+        expect(instance.isDirty('genre')).to.eq(false);
+        expect(instance.isDirty('books')).to.eq(false);
+        instance.books[0].title = 'dirty';
+        expect(instance.isDirty('books')).to.eq(true);
+        expect(instance.isDirty('genre')).to.eq(false);
+      });
+
+      describe('when a hasMany relationship adds a new unpersisted member', function() {
+        it('is dirty', function() {
+          instance.books = [];
+          instance.isPersisted = true
+          expect(instance.isDirty('books')).to.eq(false);
+          instance.books.push(new Book({ title: 'asdf' }));
+          expect(instance.isDirty('books')).to.eq(true);
+        });
+      });
+
+      describe('when a hasMany relationship adds a new persisted member', function() {
+        it('is dirty', function() {
+          let instance = new Author({ id: 1 });
+          instance.isPersisted = true
+          instance.books = [];
+          instance.isPersisted = true
+          expect(instance.isDirty('books')).to.eq(false);
+          let book = new Book({ id: 99 });
+          book.isPersisted = true
+          instance.books.push(book);
+
+          expect(instance.isDirty('books')).to.eq(true);
+          instance.isPersisted = true
+          expect(instance.isDirty('books')).to.eq(false);
+        });
+      });
+
+      describe('when a belongsTo changes a persisted member', function() {
+        it('is dirty', function() {
+          let instance = new Author();
+          let genre = new Genre({ id: 1 });
+          genre.isPersisted(true);
+          let otherGenre = new Genre({ id: 2 });
+          otherGenre.isPersisted = true
+
+          instance.genre = genre
+          instance.isPersisted = true
+
+          expect(instance.isDirty()).to.eq(false);
+          instance.genre = otherGenre;
+          expect(instance.isDirty('genre')).to.eq(true);
+          expect(instance.isDirty()).to.eq(false);
+
+          instance.isPersisted = true
+          expect(instance.isDirty('genre')).to.eq(false);
+        });
+      });
+
+      describe('when a hasMany relationship has a member marked for destruction', function() {
+        it('is dirty', function() {
+          let book = new Book({ id: 1 });
+          book.isPersisted = true
+          instance.books = [book];
+          instance.isPersisted = true
+
+          expect(instance.isDirty('books')).to.eq(false);
+          book.isMarkedForDestruction(true);
+          expect(instance.isDirty('books')).to.eq(true);
+          expect(instance.isDirty()).to.eq(false);
+        });
+      });
+
+      describe('when a hasMany relationship has a member marked for disassociation', function() {
+        it('is dirty', function() {
+          let book = new Book({ id: 1 });
+          book.isPersisted = true
+          instance.books = [book];
+          instance.isPersisted = true
+
+          expect(instance.isDirty('books')).to.eq(false);
+          book.isMarkedForDisassociation(true);
+          expect(instance.isDirty('books')).to.eq(true);
+          expect(instance.isDirty()).to.eq(false);
+        });
+      });
+    });
+  });
+  })
+
+  // describe('relationshipResourceIdentifiers', function() {
   //// @Model()
-  //// c ass RelationGraph extends ApplicationRecord {
+  //// class RelationGraph extends ApplicationRecord {
   //   
   //     @HasMany({type: Book}) books : Book
   //     @HasOne({type: Bio}) bio : Bio
@@ -650,11 +871,11 @@ describe('Model', () => {
   //   describe('when relations set', function() {
   //     it('returns correct object', function() {
   //       let author = new Author({ id: 1 });
-  //       author.isPersisted(true);
+  //       author.isPersisted = true
   //       let book = new Book({ id: 1 });
-  //       book.isPersisted(true);
+  //       book.isPersisted = true
   //       let bio = new Bio({ id: 1 });
-  //       bio.isPersisted(true);
+  //       bio.isPersisted = true
   //       instance = new RelationGraph({ author, bio, books: [book] })
   //       let relationNames = Object.keys(instance.relationships);
   //       expect(instance.relationshipResourceIdentifiers(relationNames)).to.deep.equal({
@@ -667,7 +888,7 @@ describe('Model', () => {
   //     it('does not contain identifiers without ids', function() {
   //       let book1 = new Book({ id: 1 });
   //       let book2 = new Book();
-  //       book1.isPersisted(true);
+  //       book1.isPersisted = true
   //       instance = new RelationGraph({ books: [book1, book2] });
   //       let relationNames = Object.keys(instance.relationships);
   //       expect(instance.relationshipResourceIdentifiers(relationNames)).to.deep.equal({
@@ -784,7 +1005,7 @@ describe('Model', () => {
 
 //       beforeEach(function() {
 //         book = new Book({ id: '1' });
-//         book.isPersisted(true);
+//         book.isPersisted = true
 //         book.isMarkedForDestruction(true);
 
 //         instance = new Author({ books: [book] });
@@ -819,7 +1040,7 @@ describe('Model', () => {
 
 //       beforeEach(function() {
 //         book = new Book({ id: '1' });
-//         book.isPersisted(true);
+//         book.isPersisted = true
 //         book.isMarkedForDisassociation(true);
 
 //         instance = new Author({ books: [book] });
@@ -854,11 +1075,11 @@ describe('Model', () => {
 
 //       beforeEach(function() {
 //         let genre = new Genre({ id: '1' });
-//         genre.isPersisted(true);
+//         genre.isPersisted = true
 //         genre.isMarkedForDestruction(true);
 
 //         book = new Book({ id: '1', genre: genre });
-//         book.isPersisted(true);
+//         book.isPersisted = true
 
 //         instance = new Author({ books: [book] });
 
@@ -907,11 +1128,11 @@ describe('Model', () => {
 
 //       beforeEach(function() {
 //         let genre = new Genre({ id: '1' });
-//         genre.isPersisted(true);
+//         genre.isPersisted = true
 //         genre.isMarkedForDisassociation(true);
 
 //         book = new Book({ id: '1', genre: genre });
-//         book.isPersisted(true);
+//         book.isPersisted = true
 
 //         instance = new Author({ books: [book] });
 
@@ -957,211 +1178,4 @@ describe('Model', () => {
 //   });
 
 
-//   describe('changes', function() {
-//     describe('when unpersisted', function() {
-//       it('counts everything but nulls', function() {
-//         instance = new Author({ firstName: 'foo' });
-//         expect(instance.changes()).to.deep.equal({
-//           firstName: [null, 'foo']
-//         });
-//       });
-//     });
-
-//     describe('when persisted', function() {
-//       it('only counts dirty attrs', function() {
-//         instance = new Author({ firstName: 'foo' });
-//         instance.isPersisted(true);
-//         expect(instance.changes()).to.deep.equal({});
-//         instance.firstName = 'bar'
-//         expect(instance.changes()).to.deep.equal({
-//           firstName: ['foo', 'bar']
-//         });
-//         instance.isPersisted(true);
-//         expect(instance.changes()).to.deep.equal({});
-//       });
-//     });
-//   });
-
-//   describe('isDirty', function() {
-//     describe('when an attribute changes', function() {
-//       it('is marked as dirty', function() {
-//         instance = new Author();
-//         instance.isPersisted(true);
-//         expect(instance.isDirty()).to.eq(false);
-//         instance.firstName = 'Joe';
-//         expect(instance.isDirty()).to.eq(true);
-//         instance.isPersisted(true);
-//       });
-//     });
-
-//     describe('when not persisted', function() {
-//       describe('and no attributes', function() {
-//         it('is not dirty', function() {
-//           instance = new Author();
-//           expect(instance.isDirty()).to.eq(false);
-//         });
-//       });
-
-//       describe('and has attributes', function() {
-//         it('is dirty', function() {
-//           instance = new Author({ firstName: 'Stephen' });
-//           expect(instance.isDirty()).to.eq(true);
-//           instance.isPersisted(true);
-//           expect(instance.isDirty()).to.eq(false);
-//         });
-//       });
-//     });
-
-//     describe('when dirty, then persisted', function() {
-//       it('is no longer dirty', function() {
-//         instance = new Author();
-//         instance.firstName = 'foo';
-//         expect(instance.isDirty()).to.eq(true);
-//       });
-//     });
-
-//     describe('when marked for destruction', function() {
-//       it('is dirty', function() {
-//         instance = new Author();
-//         instance.isPersisted(true);
-//         expect(instance.isDirty()).to.eq(false);
-//         instance.isMarkedForDestruction(true);
-//         expect(instance.isDirty()).to.eq(true);
-//       });
-//     });
-
-//     describe('when marked for disassociation', function() {
-//       it('is dirty', function() {
-//         instance = new Author();
-//         instance.isPersisted(true);
-//         expect(instance.isDirty()).to.eq(false);
-//         instance.isMarkedForDisassociation(true);
-//         expect(instance.isDirty()).to.eq(true);
-//       });
-//     });
-
-//     describe('when passed relationships', function() {
-//       beforeEach(function() {
-//         let book = new Book({ id: 1, title: 'original' });
-//         instance = new Author({ books: [book] });
-//       });
-
-//       it('works with string/object/array include graph', function() {
-//         instance.books[0].isPersisted(true);
-//         let authorGenre = new Genre({ id: 1 });
-//         let bookGenre = new Genre({ id: 2 });
-//         authorGenre.isPersisted(true);
-//         bookGenre.isPersisted(true);
-//         instance.books[0].genre = bookGenre;
-//         instance.genre = authorGenre;
-//         instance.books[0].isPersisted(true);
-//         instance.isPersisted(true);
-
-//         let check = () => {
-//           return instance.isDirty(['genre', { books: 'genre' }]);
-//         }
-
-//         expect(check()).to.eq(false);
-//         instance.genre.name = 'changed';
-//         expect(check()).to.eq(true);
-//         instance.genre.isPersisted(true);
-
-//         expect(check()).to.eq(false);
-//         instance.books[0].title = 'changed';
-//         expect(check()).to.eq(true);
-//         instance.books[0].isPersisted(true);
-
-//         expect(check()).to.eq(false);
-//         instance.books[0].genre.name = 'changed';
-//         expect(check()).to.eq(true);
-//       });
-
-//       it('is not dirty when relationship not passed, even if relationship is dirty', function() {
-//         instance.books[0].isPersisted(true);
-//         instance.isPersisted(true);
-
-//         expect(instance.isDirty('genre')).to.eq(false);
-//         expect(instance.isDirty('books')).to.eq(false);
-//         instance.books[0].title = 'dirty';
-//         expect(instance.isDirty('books')).to.eq(true);
-//         expect(instance.isDirty('genre')).to.eq(false);
-//       });
-
-//       describe('when a hasMany relationship adds a new unpersisted member', function() {
-//         it('is dirty', function() {
-//           instance.books = [];
-//           instance.isPersisted(true);
-//           expect(instance.isDirty('books')).to.eq(false);
-//           instance.books.push(new Book({ title: 'asdf' }));
-//           expect(instance.isDirty('books')).to.eq(true);
-//         });
-//       });
-
-//       describe('when a hasMany relationship adds a new persisted member', function() {
-//         it('is dirty', function() {
-//           instance = new Author({ id: 1 });
-//           instance.isPersisted(true);
-//           instance.books = [];
-//           instance.isPersisted(true);
-//           expect(instance.isDirty('books')).to.eq(false);
-//           let book = new Book({ id: 99 });
-//           book.isPersisted(true);
-//           instance.books.push(book);
-
-//           expect(instance.isDirty('books')).to.eq(true);
-//           instance.isPersisted(true);
-//           expect(instance.isDirty('books')).to.eq(false);
-//         });
-//       });
-
-//       describe('when a belongsTo changes a persisted member', function() {
-//         it('is dirty', function() {
-//           instance = new Author();
-//           let genre = new Genre({ id: 1 });
-//           genre.isPersisted(true);
-//           let otherGenre = new Genre({ id: 2 });
-//           otherGenre.isPersisted(true);
-
-//           instance.genre = genre
-//           instance.isPersisted(true);
-
-//           expect(instance.isDirty()).to.eq(false);
-//           instance.genre = otherGenre;
-//           expect(instance.isDirty('genre')).to.eq(true);
-//           expect(instance.isDirty()).to.eq(false);
-
-//           instance.isPersisted(true);
-//           expect(instance.isDirty('genre')).to.eq(false);
-//         });
-//       });
-
-//       describe('when a hasMany relationship has a member marked for destruction', function() {
-//         it('is dirty', function() {
-//           let book = new Book({ id: 1 });
-//           book.isPersisted(true);
-//           instance.books = [book];
-//           instance.isPersisted(true);
-
-//           expect(instance.isDirty('books')).to.eq(false);
-//           book.isMarkedForDestruction(true);
-//           expect(instance.isDirty('books')).to.eq(true);
-//           expect(instance.isDirty()).to.eq(false);
-//         });
-//       });
-
-//       describe('when a hasMany relationship has a member marked for disassociation', function() {
-//         it('is dirty', function() {
-//           let book = new Book({ id: 1 });
-//           book.isPersisted(true);
-//           instance.books = [book];
-//           instance.isPersisted(true);
-
-//           expect(instance.isDirty('books')).to.eq(false);
-//           book.isMarkedForDisassociation(true);
-//           expect(instance.isDirty('books')).to.eq(true);
-//           expect(instance.isDirty()).to.eq(false);
-//         });
-//       });
-//     });
-//   });
 // });

@@ -63,18 +63,18 @@ export class Attribute<T=any> {
   }
 
   // This returns the getters/setters for use on the *model*
-  descriptor(): PropertyDescriptor {
+  descriptor() : PropertyDescriptor {
     let attr = this;
 
     return {
       enumerable: true,
       get() : any {
-        return attr.getter(this);
+        return attr.getter(<any>this);
       },
 
       set(value) : void {
         if (!value || !value.hasOwnProperty('isAttr')) {
-          attr.setter(this, value);
+          attr.setter(<any>this, value);
         }
       }
     }
