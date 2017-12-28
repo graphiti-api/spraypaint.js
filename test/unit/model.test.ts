@@ -31,7 +31,7 @@ describe('Model', () => {
           @Model()
           class TestBase extends JSORMBase {}
 
-          expect(JSORMBase.typeRegistry).to.be.undefined
+          expect((<any>JSORMBase)._typeRegistry).to.be.undefined
           expect(TestBase.isBaseClass).to.be.true
           expect(TestBase.typeRegistry).to.be.instanceOf(TypeRegistry)
         })

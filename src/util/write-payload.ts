@@ -22,7 +22,7 @@ export default class WritePayload {
     this._eachAttribute((key, value) => {
       let snakeKey    = snakeCase(key);
 
-      if (!this.model.isPersisted() || this.model.changes()[key]) {
+      if (!this.model.isPersisted || this.model.changes()[key]) {
         attrs[snakeKey] = value;
       }
     });
@@ -38,7 +38,7 @@ export default class WritePayload {
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
-            if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
+            if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
               model[key].splice(index, 1);
             } else {
               this.removeDeletions(relatedObject, nested);
@@ -46,7 +46,7 @@ export default class WritePayload {
           });
         } else {
           let relatedObject = relatedObjects;
-          if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
+          if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
             model[key] = null;
           } else {
             this.removeDeletions(relatedObject, nested);
@@ -96,7 +96,9 @@ export default class WritePayload {
   }
 
   asJSON() : Object {
-    let data = {}
+    let data : JsonapiResource = {
+      type: this.model.klass.jsonapiType
+    }
 
     this.model.clearErrors();
 
@@ -107,8 +109,6 @@ export default class WritePayload {
     if (this.model.temp_id) {
       data['temp-id'] = this.model.temp_id;
     }
-
-    data['type'] = this.model.klass.jsonapiType;
 
     let _attributes = this.attributes()
     if (Object.keys(_attributes).length > 0) {
@@ -133,7 +133,7 @@ export default class WritePayload {
   private _processRelatedModel(model: Model, nested: Object) {
     model.clearErrors();
 
-    if (!model.isPersisted()) {
+    if (!model.isPersisted) {
       model.temp_id = tempId.generate()
     }
 
@@ -161,10 +161,10 @@ export default class WritePayload {
     }
 
     let method;
-    if (model.isPersisted()) {
-      if (model.isMarkedForDestruction()) {
+    if (model.isPersisted) {
+      if (model.isMarkedForDestruction) {
         method = 'destroy';
-      } else if (model.isMarkedForDisassociation()) {
+      } else if (model.isMarkedForDisassociation) {
         method = 'disassociate';
       } else {
         method = 'update';

@@ -118,6 +118,8 @@ function extendModel<
         attr.name = key
       }
 
+      attr.owner = <any>Subclass
+
       attrs[key] = attr
     }
   }
@@ -174,7 +176,7 @@ export class JSORMBase {
   static extendOptions : any
   static parentClass : typeof JSORMBase
   static currentClass : typeof JSORMBase = JSORMBase
-  static typeRegistry : TypeRegistry
+  private static _typeRegistry : TypeRegistry
 
   // This is to allow for sane type checking in collaboration with the 
   // isModelClass function exported below.  It is very hard to find out whether
@@ -182,7 +184,6 @@ export class JSORMBase {
   // (as opposed to an instance of that class), so we set a magic prop on this
   // for use around the code.
   static readonly isJSORMModel : boolean = true
-
 
   id? : string;
   temp_id? : string;
@@ -234,6 +235,32 @@ export class JSORMBase {
     }
 
     return false
+  }
+
+  static get baseClass() {
+    let current = this.currentClass
+
+    while(current) {
+      if (current.isBaseClass) {
+        return current
+      }
+
+      current = current.parentClass
+    }
+
+    throw new Error(`No Base Class for ${this}`)
+  }
+
+  static get typeRegistry() : TypeRegistry {
+    return this.baseClass._typeRegistry
+  }
+
+  static set typeRegistry(registry: TypeRegistry) {
+    if (!this.isBaseClass) {
+      throw new Error('Cannot set a registry on a non-base class')
+    }
+
+    this._typeRegistry = registry
   }
 
   static registerType() : void {
@@ -385,18 +412,22 @@ export class JSORMBase {
   dup() : JSORMBase {
     return cloneDeep(this);
   }
+  
+  /*
+   *
+   * Model Persistence Methods
+   * 
+   */
+  static scope(): Scope {
+    return this._scope || new Scope(this);
+  }
+
+  static first<M extends typeof JSORMBase>(this: M) : Promise<M> {
+    // return this.scope().first();
+    return Promise.resolve(this)
+  }
 }; 
 (<any>JSORMBase.prototype).klass = JSORMBase
-
-export function isModelClass(arg: any) : arg is typeof JSORMBase {
-  if (!arg) { return false }
-  return arg.currentClass && arg.currentClass.isJSORMModel
-}
-
-export function isModelInstance(arg: any) : arg is JSORMBase {
-  if (!arg) { return false }
-  return isModelClass(arg.constructor.currentClass)
-}
 
 // export abstract class OldModel {
 
@@ -474,7 +505,7 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
 
 //     let requestPromise = request.delete(url, this._fetchOptions());
 //     return this._writeRequest(requestPromise, () => {
-//       this.isPersisted(false);
+//       this.isPersisted = false;
 //     });
 //   }
 
@@ -484,7 +515,7 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
 //     let request = new Request();
 //     let payload = new WritePayload(this, options['with']);
 
-//     if (this.isPersisted()) {
+//     if (this.isPersisted) {
 //       url  = this.klass.url(this.id);
 //       verb = 'put';
 //     }
@@ -493,7 +524,7 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
 //     let requestPromise = request[verb](url, json, this._fetchOptions());
 //     return this._writeRequest(requestPromise, (response) => {
 //       this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
-//       //this.isPersisted(true);
+//       //this.isPersisted = true;
 //       payload.postProcess();
 //     });
 //   }
@@ -532,10 +563,6 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
 
 //   static find(id : string | number) : Promise<RecordProxy<Model>> {
 //     return this.scope().find(id);
-//   }
-
-//   static first() : Promise<RecordProxy<Model>> {
-//     return this.scope().first();
 //   }
 
 //   static where(clause: Object) : Scope {
@@ -588,6 +615,13 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
 //   static fullBasePath() : string {
 //     return `${this.baseUrl}${this.apiNamespace}`;
 //   }
-  // static scope(): Scope {
-  //   return this._scope || new Scope(this);
-  // }
+
+export function isModelClass(arg: any) : arg is typeof JSORMBase {
+  if (!arg) { return false }
+  return arg.currentClass && arg.currentClass.isJSORMModel
+}
+
+export function isModelInstance(arg: any) : arg is JSORMBase {
+  if (!arg) { return false }
+  return isModelClass(arg.constructor.currentClass)
+}

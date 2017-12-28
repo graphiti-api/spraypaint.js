@@ -33,6 +33,7 @@ export class Attribute<T=any> {
   public name : string | symbol
   public type? : T = undefined
   public persist : boolean = true
+  public owner : typeof JSORMBase
 
   constructor(options: AttrRecord<T>) {
     if (!options) {

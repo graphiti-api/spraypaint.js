@@ -139,6 +139,7 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) 
       }
     
       extend(<any>target.constructor).attributeList[propertyKey] = attrDefinition
+      attrDefinition.owner = target.constructor
 
       attrDefinition.descriptor()
     }
