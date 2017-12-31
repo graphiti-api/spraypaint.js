@@ -1,21 +1,32 @@
 {
   "compilerOptions": {
+    "allowJs": false,
+    "allowUnreachableCode": false,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
     "moduleResolution": "node",
-    "module": "es6",
+    "outDir": "lib/",
     "target": "es5",
-    "lib": [ "es2015", "dom" ],
-    "outDir": "lib",
+    "module": "esnext",
+    "lib": ["es2015", "dom"],
     "noEmitHelpers": true,
-    "allowSyntheticDefaultImports": true,
-    "suppressImplicitAnyIndexErrors": true,
     "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noLib": false,
+    "removeComments": false,
+    "strict": true,
     "sourceMap": true,
     "declaration": true,
-    "jsx": "react"
+    "declarationDir": "lib/",
+    "inlineSourceMap": false
   },
-  "files": [
-    "./src/index.ts"
-  ],
-  "compileOnSave": false,
-  "buildOnSave": false
+  "formatCodeOptions": {
+    "indentSize": 2,
+    "tabSize": 2
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "types/**/*.d.ts"
+  ]
 }

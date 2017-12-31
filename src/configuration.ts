@@ -1,32 +1,33 @@
 /// <reference path="../types/index.d.ts" />
 
-import Model from './model';
+import { JSORMBase } from './model';
 import Attribute from './attribute';
 import Logger from './logger';
-import * as _cloneDeep from './util/clonedeep';
-let cloneDeep: any = (<any>_cloneDeep).default || _cloneDeep;
-if (cloneDeep.default) {
-  cloneDeep = cloneDeep.default;
+import cloneDeep from './util/clonedeep';
+
+export interface IConfigOptions {
+  jwtOwners? : Array<typeof Model>
+  jwtLocalStorage? : string | false
 }
 
-let ctx = this;
-
 export default class Config {
-  static models: Array<typeof Model> = [];
-  static typeMapping: Object = {};
+  static models : Array<typeof Model> = [];
+  static typeMapping : Record<string, typeof Model>
   static logger: Logger = new Logger();
   static jwtLocalStorage: string | false = 'jwt';
   static localStorage;
 
-  static setup(options? : Object) : void {
+  static setup(options? : IConfigOptions) : void {
     if (!options) options = {};
 
-    this.jwtLocalStorage = options['jwtLocalStorage'];
+    if (options.jwtLocalStorage) {
+      this.jwtLocalStorage = options.jwtLocalStorage
+    }
 
     for (let model of this.models) {
       this.typeMapping[model.jsonapiType] = model;
 
-      if (options['jwtOwners'] && options['jwtOwners'].indexOf(model) !== -1) {
+      if (options.jwtOwners && options.jwtOwners.indexOf(model) !== -1) {
         model.isJWTOwner = true;
 
         if (this.jwtLocalStorage) {

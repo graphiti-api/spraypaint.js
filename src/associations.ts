@@ -1,26 +1,37 @@
-import Attribute from './attribute';
-import Model from './model';
-// Not sure why this is needed, already patching in main..
-import patchExtends from './custom-extend';
-patchExtends();
+import { Attribute, AttrRecord, Attr } from './attribute';
+import { JSORMBase, ModelConstructor } from './model';
 
-export class Base extends Attribute {
-  klass: typeof Model;
-  isRelationship = true;
-  jsonapiType: string;
+export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
+  type? : Attr<T>
+  jsonapiType? : string
+}
 
-  constructor(...args) {
-    super();
-    this.jsonapiType = args[0];
+export interface Association {
+  isRelationship : true
+  klass: typeof JSORMBase
+  jsonapiType: string
+}
+
+export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> implements Association {
+  isRelationship : true = true
+  klass : typeof JSORMBase
+  jsonapiType : string
+
+  constructor(options: AssociationRecord<T>) {
+    super(options);
+
+    if (options.jsonapiType) {
+      this.jsonapiType = options.jsonapiType
+    }
   }
 
-  getter(context: Model) {
+  getter(context: JSORMBase) {
     return context.relationships[this.name];
   }
 
-  setter(context: Model, val: any) : void {
+  setter(context: JSORMBase, val: any) : void {
     if (val && !val.hasOwnProperty('isRelationship')) {
-      if (!(val instanceof Model) && !(Array.isArray(val))) {
+      if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
         val = new this.klass(val);
       }
       context.relationships[this.name] = val;
@@ -30,34 +41,94 @@ export class Base extends Attribute {
   }
 }
 
-export class HasMany extends Base {
-  getter(context: Model) {
-    let gotten = super.getter(context);
+export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements Association {
+  isRelationship : true = true
+  klass : typeof JSORMBase
+  jsonapiType : string
+
+  constructor(options: AssociationRecord<T>) {
+    super(options as any);
+
+    if (options.jsonapiType) {
+      this.jsonapiType = options.jsonapiType
+    }
+  }
+
+  getter(context: JSORMBase) {
+    let gotten = context.relationships[this.name]
     if (!gotten) {
       this.setter(context, []);
-      return super.getter(context);
+      return context.relationships[this.name]
     } else {
       return gotten;
     }
   }
+
+  setter(context: JSORMBase, val: any) : void {
+    if (val && !val.hasOwnProperty('isRelationship')) {
+      if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
+        val = new this.klass(val);
+      }
+      context.relationships[this.name] = val;
+    } else if (val === null || val === undefined) {
+      context.relationships[this.name] = val;
+    }
+  }
 }
 
-export class HasOne extends Base {
+export class HasOne<T extends JSORMBase> extends SingleAssociationBase<T> {
 }
 
-export class BelongsTo extends Base {
+export class BelongsTo<T extends JSORMBase> extends SingleAssociationBase<T> {
 }
 
-const hasMany = function(...args) : HasMany {
-  return new HasMany(...args);
+export interface AssociationFactoryOpts<T extends JSORMBase> {
+  type? : string | Attr<T>
+  persist? : boolean
+  name? : string
 }
 
-const hasOne = function(...args) : HasOne {
-  return new HasOne(...args);
+export type AssociationFactoryArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string
+
+export function hasOne<T extends JSORMBase>(options?: AssociationFactoryOpts<T>) : HasOne<T> {
+  let opts = extractAssocOpts(options)
+
+  return new HasOne(opts)
 }
 
-const belongsTo = function(...args) : BelongsTo {
-  return new BelongsTo(...args);
+export function belongsTo<T extends JSORMBase>(options?: AssociationFactoryArgs<T>) : BelongsTo<T> {
+  let opts = extractAssocOpts(options)
+
+  return new BelongsTo(opts)
 }
 
-export { hasMany, hasOne, belongsTo };
+export function hasMany<T extends JSORMBase>(options?: AssociationFactoryArgs<T>) : HasMany<T> {
+  let opts = extractAssocOpts(options)
+
+  return new HasMany(opts)
+}
+
+function extractAssocOpts<T extends JSORMBase>(options?: AssociationFactoryArgs<T> | string) {
+  let associationOpts : AssociationRecord<T> = {}
+
+  if (options !== undefined) {
+    if(typeof options === 'string') {
+      associationOpts = {
+        jsonapiType: options
+      }
+    } else {
+      associationOpts = {
+        persist: options.persist,
+        name: options.name,
+      }
+
+      if (typeof options.type === 'string') {
+        associationOpts.jsonapiType = options.type
+      } else {
+        associationOpts.type = options.type as any
+      }
+    }
+  }
+  
+  return associationOpts
+}

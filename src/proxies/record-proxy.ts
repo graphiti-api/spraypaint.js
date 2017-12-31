@@ -2,7 +2,7 @@ import Model from '../model';
 
 class RecordProxy<T> implements IResultProxy<T> {
   private _raw_json : japiDoc;
-  private _model : T;
+  private _model : T | null;
 
   constructor (raw_json : japiDoc = { data: [] }) {
     this.setRaw(raw_json);
@@ -12,7 +12,7 @@ class RecordProxy<T> implements IResultProxy<T> {
     return this._raw_json;
   }
 
-  get data () : T {
+  get data () : T | null {
     return this._model;
   }
 
