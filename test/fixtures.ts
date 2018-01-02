@@ -28,8 +28,8 @@ export class Person extends ApplicationRecord {
   static endpoint = '/v1/people';
   static jsonapiType = 'people';
 
-  @Attr firstName : string
-  @Attr lastName : string
+  @Attr firstName? : string
+  @Attr lastName? : string
 }
 
 @Model()

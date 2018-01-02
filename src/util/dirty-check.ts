@@ -1,5 +1,5 @@
 import { JSORMBase } from '../model';
-import { IncludeDirective, IncludeArg } from './include-directive';
+import { IncludeDirective, IncludeScopeArg } from './include-directive';
 
 class DirtyChecker {
   model: JSORMBase;
@@ -30,7 +30,7 @@ class DirtyChecker {
   // * marked for destruction / disassociation
   // * not persisted (and thus must be send to server)
   // * not itself dirty, but has nested relations that are dirty
-  check(relationships: IncludeArg = {}) : boolean {
+  check(relationships: IncludeScopeArg = {}) : boolean {
     let includeDirective = new IncludeDirective(relationships);
     let includeHash = includeDirective.toScopeObject();
 

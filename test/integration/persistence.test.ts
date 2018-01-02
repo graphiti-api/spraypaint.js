@@ -1,17 +1,16 @@
 import { expect, fetchMock } from '../test-helper';
 import { Person, PersonWithExtraAttr } from '../fixtures';
 
-let fetchMock = require('fetch-mock');
-
 after(function () {
   fetchMock.restore();
 });
 
-let instance;
-let payloads;
-let putPayloads;
-let deletePayloads;
-let serverResponse;
+let instance : Person
+let payloads : Array<JsonapiDoc>
+let putPayloads : Array<JsonapiDoc>
+let deletePayloads : Array<JsonapiDoc>
+let serverResponse : JsonapiDoc
+
 beforeEach(function() {
   payloads = [];
   putPayloads = [];
@@ -29,36 +28,36 @@ beforeEach(function() {
 const resetMocks = function() {
   fetchMock.restore();
 
-  fetchMock.post('http://example.com/api/v1/people', function(url, payload) {
+  fetchMock.post('http://example.com/api/v1/people', function(url, payload : any) {
     payloads.push(JSON.parse(payload.body));
     return serverResponse;
   });
 
-  fetchMock.put('http://example.com/api/v1/people/1', function(url, payload) {
+  fetchMock.put('http://example.com/api/v1/people/1', function(url, payload : any) {
     putPayloads.push(JSON.parse(payload.body));
     return serverResponse;
   });
 
-  fetchMock.delete('http://example.com/api/v1/people/1', function(url, payload) {
+  fetchMock.delete('http://example.com/api/v1/people/1', function(url, payload : any) {
     deletePayloads.push({});
     return serverResponse;
   });
 }
 
-describe('Model persistence', function() {
+describe.only('Model persistence', function() {
   beforeEach(function () {
     resetMocks();
   });
 
   describe('#save()', function() {
     describe('when an unpersisted attr', function() {
-      it('does not send the attr to server', function(done) {
+      it('does not send the attr to server', async function() {
         instance = new PersonWithExtraAttr({ extraThing: 'foo' });
-        expect(instance.extraThing).to.eq('foo');
-        instance.save().then(() => {
-          expect(payloads[0]['data']['attributes']).to.eq(undefined);
-          done()
-        });
+        expect((<PersonWithExtraAttr>instance).extraThing).to.eq('foo');
+
+        await instance.save()
+
+        expect(payloads[0]['data']['attributes']).to.eq(undefined);
       });
     });
 
@@ -68,29 +67,28 @@ describe('Model persistence', function() {
         instance.isPersisted = true;
       });
 
-      it('updates instead of creates', function(done) {
+      it('updates instead of creates', async function() {
         instance.firstName = 'Joe';
-        instance.save().then(() => {
-          expect(putPayloads[0]).to.deep.equal({
-            data: {
-              id: '1',
-              type: 'people',
-              attributes: {
-                first_name: 'Joe',
-              }
+        await instance.save()
+
+        expect(putPayloads[0]).to.deep.equal({
+          data: {
+            id: '1',
+            type: 'people',
+            attributes: {
+              first_name: 'Joe',
             }
-          });
-          done();
+          }
         });
       });
 
-      it('preserves persistence data', function() {
+      it('preserves persistence data', async function() {
         instance.firstName = 'Joe';
-        instance.save().then((bool) => {
-          expect(bool).to.eq(true);
-          expect(instance.id).to.eq('1');
-          expect(instance.isPersisted).to.eq(true);
-        });
+        let bool = await instance.save()
+
+        expect(bool).to.eq(true);
+        expect(instance.id).to.eq('1');
+        expect(instance.isPersisted).to.eq(true);
       });
 
       describe('when no dirty attributes', function() {
@@ -99,62 +97,58 @@ describe('Model persistence', function() {
           instance.isPersisted = true;
         });
 
-        it('does not send attributes to the server', function(done) {
-          instance.save().then(() => {
-            console.log(putPayloads[0])
-            expect(putPayloads[0]).to.deep.equal({
-              data: {
-                id: '1',
-                type: 'people'
-              }
-            });
-            done();
+        it('does not send attributes to the server', async function() {
+          await instance.save()
+
+          expect(putPayloads[0]).to.deep.equal({
+            data: {
+              id: '1',
+              type: 'people'
+            }
           });
         });
       })
     });
 
     describe('when the model is not already persisted', function() {
-      it('makes the correct HTTP call', function(done) {
+      it('makes the correct HTTP call', async function() {
         instance.firstName = 'Joe';
-        instance.save().then(() => {
-          expect(payloads[0]).to.deep.equal({
-            data: {
-              type: 'people',
-              attributes: {
-                first_name: 'Joe',
-              }
+        await instance.save()
+
+        expect(payloads[0]).to.deep.equal({
+          data: {
+            type: 'people',
+            attributes: {
+              first_name: 'Joe',
             }
-          });
-          done();
+          }
         });
       });
 
       describe('when the response is 200', function() {
-        it('marks the instance as persisted', function(done) {
+        it('marks the instance as persisted', async function() {
           expect(instance.isPersisted).to.eq(false);
-          instance.save().then(() => {
-            expect(instance.isPersisted).to.eq(true);
-            done();
-          });
+
+          await instance.save()
+
+          expect(instance.isPersisted).to.eq(true);
         });
 
-        it('sets the id of the record', function(done) {
+        it('sets the id of the record', async function() {
           expect(instance.isPersisted).to.eq(false);
-          instance.save().then(() => {
-            expect(instance.id).to.eq('1');
-            done();
-          });
+
+          await instance.save()
+
+          expect(instance.id).to.eq('1');
         });
 
-        it('resolve the promise to true', function(done) {
-          instance.save().then((bool) => {
-            expect(bool).to.eq(true);
-            done();
-          });
+        it('resolve the promise to true', async function() {
+          let bool = await instance.save()
+
+          expect(bool).to.eq(true);
         });
 
-        it('updates attributes set by the server', function(done) {
+        it('updates attributes set by the server', async function() {
           serverResponse = {
             data: {
               id: '1',
@@ -165,10 +159,10 @@ describe('Model persistence', function() {
             }
           }
           instance.firstName = 'From Client';
-          instance.save().then(() => {
-            expect(instance.firstName).to.eq('From Server');
-            done();
-          });
+
+          await instance.save()
+
+          expect(instance.firstName).to.eq('From Server');
         });
       });
 
@@ -186,11 +180,12 @@ describe('Model persistence', function() {
           resetMocks();
         });
 
-        it('rejects the promise', function(done) {
-          instance.save().catch((err) => {
+        it('rejects the promise', async function() {
+          try {
+            await instance.save()
+          } catch(err) {
             expect(err).to.eq('Server Error');
-            done();
-          });
+          }
         });
       });
 
@@ -208,38 +203,34 @@ describe('Model persistence', function() {
           resetMocks();
         });
 
-        it('does not mark the instance as persisted', function(done) {
-          instance.save().then((bool) => {
-            expect(instance.isPersisted).to.eq(false);
-            done();
-          });
+        it('does not mark the instance as persisted', async function() {
+          await instance.save()
+
+          expect(instance.isPersisted).to.eq(false);
         });
 
-        it('resolves the promise to false', function(done) {
-          instance.save().then((bool) => {
-            expect(bool).to.eq(false);
-            done();
-          });
+        it('resolves the promise to false', async function() {
+          let bool = await instance.save()
+
+          expect(bool).to.eq(false);
         });
       });
 
       describe('when an attribute is explicitly set as null', function() {
-        it('sends the attribute as part of the payload', function(done) {
+        it('sends the attribute as part of the payload', async function() {
           instance.firstName = 'Joe';
-          instance.lastName = null;
+          instance.lastName = undefined;
 
-          instance.save().then(() => {
+          await instance.save()
 
-            expect(payloads[0]).to.deep.equal({
-              data: {
-                type: 'people',
-                attributes: {
-                  first_name: 'Joe',
-                  last_name: null
-                }
+          expect(payloads[0]).to.deep.equal({
+            data: {
+              type: 'people',
+              attributes: {
+                first_name: 'Joe',
+                last_name: null
               }
-            });
-            done();
+            }
           });
         });
       });
@@ -252,19 +243,17 @@ describe('Model persistence', function() {
       instance.isPersisted = true;
     });
 
-    it('makes correct DELETE request', function(done) {
-      instance.destroy().then(() => {
-        expect(deletePayloads.length).to.eq(1);
-        done();
-      });
+    it('makes correct DELETE request', async function() {
+      await instance.destroy()
+
+      expect(deletePayloads.length).to.eq(1);
     });
 
-    it('marks object as not persisted', function(done) {
+    it('marks object as not persisted', async function() {
       expect(instance.isPersisted).to.eq(true);
-      instance.destroy().then(() => {
-        expect(instance.isPersisted).to.eq(false);
-        done();
-      });
+      await instance.destroy()
+
+      expect(instance.isPersisted).to.eq(false);
     });
 
     describe('when the server returns 422', function() {
@@ -281,10 +270,10 @@ describe('Model persistence', function() {
         resetMocks();
       });
 
-      it('does not mark the object as unpersisted', function() {
-        instance.destroy().then(() => {
-          expect(instance.isPersisted).to.eq(true);
-        });
+      it('does not mark the object as unpersisted', async function() {
+        await instance.destroy()
+
+        expect(instance.isPersisted).to.eq(true);
       });
     });
 
@@ -302,10 +291,12 @@ describe('Model persistence', function() {
         resetMocks();
       });
 
-      it('rejects the promise', function() {
-        instance.destroy().catch((err) => {
+      it('rejects the promise', async function() {
+        try {
+          await instance.destroy()
+        } catch(err) {
           expect(err).to.eq('Server Error');
-        });
+        }
       });
     });
   });

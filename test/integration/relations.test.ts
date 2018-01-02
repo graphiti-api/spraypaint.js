@@ -1,11 +1,12 @@
 import { expect, fetchMock } from '../test-helper';
 import { Author, NonFictionAuthor } from '../fixtures';
+import { IResultProxy } from '../../src/proxies/index';
 
-let resultData = function(promise) {
+let resultData = function<T>(promise : Promise<IResultProxy<T>>) : Promise<any> {
   return promise.then(function(proxyObject) {
-    return proxyObject.data;
-  });
-};
+    return proxyObject.data
+  })
+}
 
 let generateMockResponse = function(type: string) {
   return {
@@ -51,7 +52,7 @@ let generateMockResponse = function(type: string) {
   };
 };
 
-describe.skip('Relations', function() {
+describe('Relations', function() {
   describe('#find()', function() {
     beforeEach(function() {
       fetchMock.get('http://example.com/api/v1/authors/1?include=books,multi_words', generateMockResponse('authors'));

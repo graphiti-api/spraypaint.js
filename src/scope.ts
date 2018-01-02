@@ -29,14 +29,14 @@ export type AnyRecord = Record<string, any>
 
 export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   model: T
-  private _associations : Record<string, Scope<any>>
-  private _pagination: { number?: number, size?: number } = {};
-  private _filter: WhereClause = {};
-  private _sort: Record<string, SortDir> = {};
-  private _fields: FieldScope = {};
-  private _extra_fields: FieldScope = {};
-  private _include: IncludeScopeHash = {};
-  private _stats: StatsScope = {};
+  private _associations : Record<string, Scope<any>> = {}
+  private _pagination: { number?: number, size?: number } = {}
+  private _filter: WhereClause = {}
+  private _sort: Record<string, SortDir> = {}
+  private _fields: FieldScope = {}
+  private _extra_fields: FieldScope = {}
+  private _include: IncludeScopeHash = {}
+  private _stats: StatsScope = {}
 
   constructor(model : T) {
     this.model = model;
@@ -45,25 +45,20 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   async all() : Promise<CollectionProxy<T['prototype']>> {
     let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
 
-    let collection = new CollectionProxy<T['prototype']>(response);
-    return collection;
+    return this._buildCollectionResult(response)
   }
 
   async find(id : string | number) : Promise<RecordProxy<T['prototype']>> {
     let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
 
-    return new RecordProxy<T['prototype']>(json);
+    return this._buildRecordResult(json)
   }
 
-  async first() : Promise<RecordProxy<T['prototype']> | null> {
+  async first() : Promise<RecordProxy<T['prototype']>> {
     let newScope = this.per(1);
-    let { data, included, meta } = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
+    let rawResult = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
 
-    return new RecordProxy<T['prototype']>({
-      data: data[0],
-      included,
-      meta,
-    });
+    return this._buildRecordResult(rawResult)
   }
 
   merge(obj : Record<string, Scope>) : Scope<T> {
@@ -218,7 +213,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return `${associationName}.${param}`;
   }
 
-  private _sortParam(clause: SortScope | undefined) {
+  private _sortParam(clause: Record<string, SortDir> | undefined) {
     if (clause && Object.keys(clause).length > 0) {
       let params = [];
 
@@ -245,5 +240,34 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     let response = await request.get(url, fetchOpts)
     refreshJWT(this.model, response);
     return response['jsonPayload'];
+  }
+
+  private _buildRecordResult(jsonResult : JsonapiDoc) {
+    let record : T['prototype'] | null = null
+
+    if (jsonResult.data) {
+      let rawRecord : JsonapiResource
+      if (jsonResult.data instanceof Array) {
+        rawRecord = jsonResult.data[0]
+      } else {
+        rawRecord = jsonResult.data
+      }
+
+      if (rawRecord) {
+        record = this.model.fromJsonapi(rawRecord, jsonResult)
+      }
+    }
+
+    return new RecordProxy(record, jsonResult)
+  }
+
+  private _buildCollectionResult(jsonResult : JsonapiCollectionDoc) {
+    let recordArray : Array<T['prototype']> = []
+
+    jsonResult.data.forEach((record) => {
+      recordArray.push(this.model.fromJsonapi(record, jsonResult))
+    })
+
+    return new CollectionProxy(recordArray, jsonResult)
   }
 }

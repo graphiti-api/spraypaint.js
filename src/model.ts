@@ -101,12 +101,7 @@ function extendModel<
   Superclass: ModelConstructor<M, Attrs>, 
   options : ExtendOptions<M, ExtendedAttrs, Methods>
 ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-  class Subclass extends (<ModelConstructor<JSORMBase, Attrs>>Superclass) {
-    // constructor(attrs?: Partial<Attrs & ExtendedAttrs>) {
-    // constructor(attrs?: Record<string, any>) {
-    //   super(attrs)
-    // }
-  }
+  class Subclass extends (<ModelConstructor<JSORMBase, Attrs>>Superclass) { }
 
   Superclass.inherited(<any>Subclass)
   

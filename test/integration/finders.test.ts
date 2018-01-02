@@ -12,7 +12,7 @@ let resultData = function<T>(promise : Promise<IResultProxy<T>>) : Promise<any> 
   })
 }
 
-describe.only('Model finders', function() {
+describe('Model finders', function() {
   describe('#find()', function() {
     before(function () {
       fetchMock.get('http://example.com/api/v1/people/1', {
@@ -110,9 +110,10 @@ describe.only('Model finders', function() {
         });
       });
 
-      it('includes meta payload in the resulting collection', function() {
-        return expect(Person.all()).to.eventually
-          .have.deep.property('meta.stats.total.count', 45)
+      it('includes meta payload in the resulting collection', async function() {
+        let result = await Person.all()
+
+        expect(result).to.have.nested.property('meta.stats.total.count', 45)
       });
     });
   });
