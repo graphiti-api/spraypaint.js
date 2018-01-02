@@ -1,22 +1,22 @@
 // import Config from '../configuration';
-import { CollectionProxy, RecordProxy } from '../proxies';
+import { CollectionProxy, RecordProxy } from './proxies';
 // import _extend from '../util/extend';
 // import { camelize } from '../util/string';
 // import WritePayload from '../util/write-payload';
 // import IncludeDirective from '../util/include-directive';
 // import ValidationErrors from '../util/validation-errors';
 // import refreshJWT from '../util/refresh-jwt';
-import relationshipIdentifiersFor from '../util/relationship-identifiers';
+import relationshipIdentifiersFor from './util/relationship-identifiers';
 // import Request from '../request';
 
-import cloneDeep from '../util/clonedeep';
-import { deserialize, deserializeInstance } from '../util/deserialize';
-import { Attribute } from '../attribute';
-import DirtyChecker from '../util/dirty-check';
-import { Scope, WhereClause, SortScope, FieldScope, StatsScope } from '../scope';
-import { TypeRegistry } from '../type-registry'
+import cloneDeep from './util/clonedeep';
+import { deserialize, deserializeInstance } from './util/deserialize';
+import { Attribute } from './attribute';
+import DirtyChecker from './util/dirty-check';
+import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope';
+import { TypeRegistry } from './type-registry'
 import { camelize } from 'inflected'
-import { IncludeArg } from '../util/include-directive';
+import { logger } from './logger';
 
 export interface ModelConfiguration {
   baseUrl : string
@@ -188,15 +188,16 @@ export class JSORMBase {
 
   id? : string;
   temp_id? : string;
-  _attributes : Record<string, any>
-  _originalAttributes : Record<string, any>
-  __meta__ : any
   relationships : Record<string, JSORMBase | JSORMBase[]> = {}
-  _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
   klass : typeof JSORMBase
   private _persisted : boolean = false;
   private _markedForDestruction: boolean = false;
   private _markedForDisassociation: boolean = false;
+  private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
+  private _attributes : Record<string, any>
+  private _originalAttributes : Record<string, any>
+  private __meta__ : any
+  private _errors : object = {}
 
   static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
     return deserialize(this.typeRegistry, resource, payload);
@@ -248,11 +249,13 @@ export class JSORMBase {
 
       current = current.parentClass
     }
-
-    throw new Error(`No Base Class for ${this}`)
   }
 
   static get typeRegistry() : TypeRegistry {
+    if (this.baseClass  === undefined) {
+      throw new Error(`No base class for ${this.name}`)
+    }
+
     return this.baseClass._typeRegistry
   }
 
@@ -372,6 +375,10 @@ export class JSORMBase {
     }
   }
 
+  setMeta(metaObj : object | undefined) {
+    this.__meta__ = metaObj
+  }
+
   relationshipResourceIdentifiers(relationNames: Array<string>) {
     return relationshipIdentifiersFor(this, relationNames);
   }
@@ -391,11 +398,23 @@ export class JSORMBase {
      }
   }
 
-  get hasError() {
-    return Object.keys(this.errors).length > 1;
+  get errors() {
+    return this._errors
   }
 
-  isDirty(relationships?: IncludeArg) : boolean {
+  set errors(errs : object) {
+    this._errors = errs
+  }
+
+  get hasError() {
+    return Object.keys(this._errors).length > 1;
+  }
+
+  clearErrors() {
+    this._errors = {};
+  }
+
+  isDirty(relationships?: IncludeScope) : boolean {
     let dc = new DirtyChecker(this);
     return dc.check(relationships);
   }
@@ -449,7 +468,7 @@ export class JSORMBase {
     return `${this.baseUrl}${this.apiNamespace}`;
   }
 
-  static scope<I extends JSORMBase>(this: JSORMPersistenceConstructor<I>) : Scope<I> {
+  static scope<I extends typeof JSORMBase>(this: I) : Scope<I> {
     return new Scope(this)
     // return this._scope || new Scope(this);
   }
@@ -478,7 +497,7 @@ export class JSORMBase {
     return this.scope().per(size);
   }
 
-  static order(clause: SortScope) : Scope {
+  static order(clause: SortScope | string) : Scope {
     return this.scope().order(clause);
   }
 
@@ -494,16 +513,24 @@ export class JSORMBase {
     return this.scope().stats(clause);
   }
 
-  static includes(clause: IncludeArg) : Scope {
+  static includes(clause: IncludeScope) : Scope {
     return this.scope().includes(clause);
   }
 
-  static merge(obj : Scope) : Scope {
+  static merge(obj : Record<string, Scope>) : Scope {
     return this.scope().merge(obj);
   }
 
+  static setJWT(token: string) : void {
+    if (this.baseClass === undefined) {
+      throw new Error(`Cannot set JWT on ${this.name}: No base class present.`)
+    }
+
+    this.baseClass.jwt = token;
+  }
+
   static getJWT() : string | undefined {
-    let owner = this.getJWTOwner();
+    let owner = this.baseClass
 
     if (owner) {
       return owner.jwt;
@@ -511,53 +538,13 @@ export class JSORMBase {
   }
 
   static getJWTOwner() : typeof JSORMBase | undefined {
-    if (this.isJWTOwner) {
-      return this
-    } else {
-      if (this.parentClass) {
-        return this.parentClass.getJWTOwner()
-      } else {
-        return
-      }
-    }
+    logger.warn('JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead')
+
+    return this.baseClass
   }
-}; 
+} 
 
-(<any>JSORMBase.prototype).klass = JSORMBase
-
-// Break up types to remove the generics we don't need for the
-// persistence stuff
-export type JSORMPersistenceConstructor<C extends JSORMBase> = { 
-  new(...args: any[]) : C 
-  fetchOptions() : RequestInit
-  url(id?: string | number) : string
-  scope() : Scope<C>
-}
-
-let validate : JSORMPersistenceConstructor<JSORMBase> = JSORMBase
-
-// export abstract class OldModel {
-
-//   _originalRelationships: Object = {};
-//   relationships: Object = {};
-//   errors: Object = {};
-//   __meta__: Object | null = null;
-
-//   private static _scope: Scope;
-
-//   static extend(obj : any) : any {
-//     return _extend(this, obj);
-//   }
-
-
-//   static setJWT(token: string) : void {
-//     this.getJWTOwner().jwt = token;
-//   }
-
-
-//   clearErrors() {
-//     this.errors = {};
-//   }
+;(<any>JSORMBase.prototype).klass = JSORMBase
 
 //   // Todo:
 //   // * needs to recurse the directive
@@ -567,7 +554,6 @@ let validate : JSORMPersistenceConstructor<JSORMBase> = JSORMBase
 //   resetRelationTracking(includeDirective: Object) {
 //     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
 //   }
-
 
 
 //   destroy() : Promise<any> {

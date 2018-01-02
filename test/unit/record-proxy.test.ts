@@ -2,7 +2,7 @@ import { expect } from '../test-helper';
 import { Person } from '../fixtures';
 import { RecordProxy } from '../../src/proxies/record-proxy'
 
-describe.only('RecordProxy', function() {
+describe('RecordProxy', function() {
   let personData : JsonapiResourceDoc = {
     data: {
       id: '1',
@@ -37,7 +37,7 @@ describe.only('RecordProxy', function() {
 
     context('data is null', function() {
       let personData = {
-        data: null
+        data: undefined
       }
 
       it('should assign data to null', function() {

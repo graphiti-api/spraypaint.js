@@ -2,7 +2,7 @@ import { expect, sinon } from '../test-helper'
 import { Scope } from '../../src/scope'
 import { Author } from '../fixtures'
 
-let scope : Scope<Author>
+let scope : Scope<typeof Author>
 let scopeImpl : any
 
 beforeEach(function() {

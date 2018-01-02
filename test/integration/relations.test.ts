@@ -51,7 +51,7 @@ let generateMockResponse = function(type: string) {
   };
 };
 
-describe('Relations', function() {
+describe.skip('Relations', function() {
   describe('#find()', function() {
     beforeEach(function() {
       fetchMock.get('http://example.com/api/v1/authors/1?include=books,multi_words', generateMockResponse('authors'));

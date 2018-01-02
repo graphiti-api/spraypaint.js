@@ -23,18 +23,75 @@ import {
   BelongsTo, 
 } from '../../src/decorators'
 
+// Accessing private property in unit tests so we need a type-loose conversion function
+const modelAttrs = (model : JSORMBase) : Record<string, any> => (<any>model)._attributes 
+
 describe('Model', () => {
   describe('Class Creation/Initialization', () => {
     describe('Typescript Classes + Decorators API', () => {
       describe('Base Class', () => {
-        it('creates a new model types registry and assigns to the base class', () => {
+        let BaseClass : typeof JSORMBase
+        let SubClass : typeof JSORMBase
+
+        beforeEach(() => {
           @Model()
           class TestBase extends JSORMBase {}
+          BaseClass = TestBase
 
-          expect((<any>JSORMBase)._typeRegistry).to.be.undefined
-          expect(TestBase.isBaseClass).to.be.true
-          expect(TestBase.typeRegistry).to.be.instanceOf(TypeRegistry)
+          @Model()
+          class ChildModel extends BaseClass {}
+          SubClass = ChildModel
         })
+
+        it('creates a new model types registry', () => {
+          expect((<any>JSORMBase)._typeRegistry).to.be.undefined
+          expect(BaseClass.typeRegistry).to.be.instanceOf(TypeRegistry)
+        })
+        
+        it('sets the model as a new base class', () => {
+          expect(BaseClass.isBaseClass).to.be.true
+          expect(BaseClass.baseClass).to.eq(BaseClass)
+        })
+        
+        it('allows child classes to get a reference to their base', () => {
+
+          expect(SubClass.isBaseClass).to.be.false
+          expect(SubClass.baseClass).to.eq(BaseClass)
+        })
+
+        describe('#getJWT', () => {
+          beforeEach(() => {
+            BaseClass.jwt = 'g3tm3';
+          });
+
+          it('it grabs jwt from top-most parent', () => {
+            expect(SubClass.getJWT()).to.eq('g3tm3');
+          });
+
+          describe('when no JWT owner', () => {
+            it('returns undefined', () => {
+              @Model()
+              class NoJWT extends JSORMBase {}
+
+              expect(NoJWT.getJWT()).to.eq(undefined);
+            });
+          });
+        });
+
+        describe('#setJWT', () => {
+          it('it sets jwt on the base class', () => {
+            SubClass.setJWT('n3wt0k3n');
+            expect(BaseClass.jwt).to.eq('n3wt0k3n');
+          });
+          
+          context('when user attempts to set jwt on JSORMBase', () => {
+            it('throws an error', () => {
+              expect(() => {
+                JSORMBase.setJWT('foobar')
+              }).to.throw(/Cannot set JWT on JSORMBase/)
+            })
+          })
+        });
       })
 
       @Model()
@@ -95,13 +152,13 @@ describe('Model', () => {
       it('sets up attribute getters/setters', () => {
         let post  = new Post({title: 'The Title'})
 
-        expect(post._attributes).to.deep.equal({
+        expect(modelAttrs(post)).to.deep.equal({
           title: 'The Title'
         })
 
         post.title = 'new title'
 
-        expect(post._attributes).to.deep.equal({
+        expect(modelAttrs(post)).to.deep.equal({
           title: 'new title'
         })
         expect(post.screamTitle(3)).to.equal('NEW TITLE!!!')
@@ -136,7 +193,7 @@ describe('Model', () => {
         it('does not modify the parent attributes', () => { 
           let post = new Post({title: 'The Title' , pageOrder: 1})
 
-          expect(post._attributes['pageOrder']).to.be.undefined
+          expect(modelAttrs(post).pageOrder).to.be.undefined
         })
       })
 
@@ -226,13 +283,13 @@ describe('Model', () => {
       it('sets up attribute getters/setters', () => {
         let post  = new Post({title: 'The Title'})
 
-        expect(post._attributes).to.deep.equal({
+        expect(modelAttrs(post)).to.deep.equal({
           title: 'The Title'
         })
 
         post.title = 'new title'
 
-        expect(post._attributes).to.deep.equal({
+        expect(modelAttrs(post)).to.deep.equal({
           title: 'new title'
         })
         expect(post.screamTitle(3)).to.equal('NEW TITLE!!!')
@@ -269,7 +326,7 @@ describe('Model', () => {
         it('does not modify the parent attributes', () => { 
           let post = new Post({title: 'The Title' , pageOrder: 1})
 
-          expect(post._attributes['pageOrder']).to.be.undefined
+          expect(modelAttrs(post)['pageOrder']).to.be.undefined
         })
       })
 
@@ -292,7 +349,7 @@ describe('Model', () => {
         it('does not modify the parent attributes', () => { 
           let post = new Post({title: 'The Title' , pageOrder: 1})
 
-          expect(post._attributes['pageOrder']).to.be.undefined
+          expect(modelAttrs(post)['pageOrder']).to.be.undefined
         })
       })
 
@@ -1068,21 +1125,6 @@ describe('Model', () => {
 
 // describe('Model', () => {
 
-//   describe('.getJWTOwner', () => {
-//     it('it finds the furthest ancestor where isJWTOwner', () => {
-//       expect(Author.getJWTOwner()).to.eq(ApplicationRecord);
-//       expect(Person.getJWTOwner()).to.eq(ApplicationRecord);
-//       expect(ApplicationRecord.getJWTOwner()).to.eq(ApplicationRecord);
-//       expect(TestJWTSubclass.getJWTOwner()).to.eq(TestJWTSubclass);
-//     });
-
-//     describe('when no owner', () => {
-//       it('returns null', () => {
-//         expect(NonJWTOwner.getJWTOwner()).to.eq(undefined)
-//       });
-//     });
-//   });
-
 //   describe('.url', () => {
 //     context('Default base URL generation method', () => {
 //       it('should append the baseUrl, apiNamespace, and jsonapi type', () => {
@@ -1109,37 +1151,6 @@ describe('Model', () => {
 //       })
 //     })
 //   })
-
-//   describe('#getJWT', () => {
-//     beforeEach(() => {
-//       ApplicationRecord.jwt = 'g3tm3';
-//     });
-
-//     afterEach(() => {
-//       ApplicationRecord.jwt = null;
-//     });
-
-//     it('it grabs jwt from top-most parent', () => {
-//       expect(Author.getJWT()).to.eq('g3tm3');
-//     });
-
-//     describe('when no JWT owner', () => {
-//       it('returns null', () => {
-//         expect(NonJWTOwner.getJWT()).to.eq(undefined);
-//       });
-//     });
-//   });
-
-//   describe('#setJWT', () => {
-//     afterEach(() => {
-//       ApplicationRecord.jwt = null;
-//     });
-
-//     it('it sets jwt on the top-most parent', () => {
-//       Author.setJWT('n3wt0k3n');
-//       expect(ApplicationRecord.jwt).to.eq('n3wt0k3n');
-//     });
-//   });
 
 //   describe('#fetchOptions', () => {
 //     context('jwt is set', () => {

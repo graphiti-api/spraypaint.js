@@ -10,7 +10,7 @@ interface JsonapiCollectionDoc extends JsonapiDocMeta {
 }
 
 interface JsonapiResourceDoc extends JsonapiDocMeta {
-  data?: JsonapiResource | null
+  data?: JsonapiResource | undefined
 }
 
 interface JsonapiResourceIdentifier {

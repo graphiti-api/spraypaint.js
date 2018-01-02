@@ -1,17 +1,18 @@
 import { expect, fetchMock } from '../test-helper';
 import { Person, Author, Book } from '../fixtures';
+import { IResultProxy } from '../../src/proxies/index';
 
 after(function () {
   fetchMock.restore();
 });
 
-let resultData = function(promise) {
+let resultData = function<T>(promise : Promise<IResultProxy<T>>) : Promise<any> {
   return promise.then(function(proxyObject) {
     return proxyObject.data
   })
 }
 
-describe('Model finders', function() {
+describe.only('Model finders', function() {
   describe('#find()', function() {
     before(function () {
       fetchMock.get('http://example.com/api/v1/people/1', {
@@ -25,19 +26,15 @@ describe('Model finders', function() {
       });
     });
 
-    it('returns a promise that resolves the correct instance', function(done) {
-      resultData(Person.find(1)).then((data) => {
-        expect(data).to.be.instanceof(Person).and
-          .have.property('id', '1');
-        done();
-      });
+    it('returns a promise that resolves the correct instance', async function() {
+      let data = await resultData(Person.find(1))
+      expect(data).to.be.instanceof(Person).and
+        .have.property('id', '1');
     });
 
-    it('assigns attributes correctly', function(done) {
-      resultData(Person.find(1)).then((data) => {
-        expect(data).to.have.property('firstName', 'John');
-        done();
-      });
+    it('assigns attributes correctly', async function() {
+      let data = await resultData(Person.find(1))
+      expect(data).to.have.property('firstName', 'John');
     });
 
     describe('when API response returns a different type than the caller', function() {
@@ -88,13 +85,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('returns a promise that resolves the correct instances', function(done) {
-      resultData(Person.all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        expect(data[0]).to.have.property('id', '1');
-        done();
-      });
+    it('returns a promise that resolves the correct instances', async function() {
+      let data = await resultData(Person.all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
+      expect(data[0]).to.have.property('id', '1');
     });
 
     describe('response includes a meta payload', function() {
@@ -130,13 +126,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function(done) {
-      resultData(Person.page(2).all()).then((data) => {
-        expect(data.length).to.eq(1)
-        expect(data[0]).to.be.instanceof(Person);
-        expect(data[0]).to.have.property('id', '2');
-        done();
-      });
+    it('queries correctly', async function() {
+      let data = await resultData(Person.page(2).all())
+
+      expect(data.length).to.eq(1)
+      expect(data[0]).to.be.instanceof(Person);
+      expect(data[0]).to.have.property('id', '2');
     });
 
     describe('when merging association #page', function() {
@@ -149,14 +144,13 @@ describe('Model finders', function() {
         });
       });
 
-      it('queries correctly', function(done) {
+      it('queries correctly', async function() {
         let bookScope = Book.page(10);
         let personScope = Person.page(5).merge({ books: bookScope });
-        resultData(personScope.all()).then((data) => {
-          expect(data.length).to.eq(1);
-          expect(data[0]).to.be.instanceof(Person);
-          done();
-        });
+        let data = await resultData(personScope.all())
+
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
       });
     });
   });
@@ -170,12 +164,11 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function(done) {
-      resultData(Author.per(5).all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        done();
-      });
+    it('queries correctly', async function() {
+      let data = await resultData(Author.per(5).all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
     });
 
     describe('when merging association #per', function() {
@@ -188,14 +181,13 @@ describe('Model finders', function() {
         });
       });
 
-      it('queries correctly', function(done) {
+      it('queries correctly', async function() {
         let bookScope = Book.per(2);
         let personScope = Person.per(5).merge({ books: bookScope });
-        resultData(personScope.all()).then((data) => {
-          expect(data.length).to.eq(1);
-          expect(data[0]).to.be.instanceof(Person);
-          done();
-        });
+        let data = (await resultData(personScope.all()))
+
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
       });
     });
   });
@@ -209,13 +201,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function(done) {
-      resultData(Person.order('foo').order({ bar: 'desc' }).all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        expect(data[0]).to.have.property('id', '2');
-        done();
-      });
+    it('queries correctly', async function() {
+      let data = await resultData(Person.order('foo').order({ bar: 'desc' }).all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
+      expect(data[0]).to.have.property('id', '2');
     });
 
     describe('when merging association #order', function() {
@@ -228,16 +219,15 @@ describe('Model finders', function() {
         });
       });
 
-      it('queries correctly', function(done) {
+      it('queries correctly', async function() {
         let bookScope = Book.order('title').order({ pages: 'desc' });
         let scope = Person.order('foo');
         scope = scope.merge({ books: bookScope })
-        resultData(scope.all()).then((data) => {
-          expect(data.length).to.eq(1);
-          expect(data[0]).to.be.instanceof(Person);
-          expect(data[0]).to.have.property('id', '2');
-          done();
-        });
+        let data = await resultData(scope.all())
+
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
       });
     });
   });
@@ -251,13 +241,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function(done) {
-      resultData(Person.where({ id: 2 }).where({ a: 'b' }).all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        expect(data[0]).to.have.property('id', '2');
-        done();
-      });
+    it('queries correctly', async function() {
+      let data = await resultData(Person.where({ id: 2 }).where({ a: 'b' }).all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
+      expect(data[0]).to.have.property('id', '2');
     });
 
     describe('when value is false', function() {
@@ -270,13 +259,12 @@ describe('Model finders', function() {
         });
       });
 
-      it('still queries correctly', function(done) {
-        resultData(Person.where({ id: 2 }).where({ a: false }).all()).then((data) => {
-          expect(data.length).to.eq(1);
-          expect(data[0]).to.be.instanceof(Person);
-          expect(data[0]).to.have.property('id', '2');
-          done();
-        });
+      it('still queries correctly', async function() {
+        let data = await resultData(Person.where({ id: 2 }).where({ a: false }).all())
+
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
+        expect(data[0]).to.have.property('id', '2');
       });
     });
 
@@ -290,15 +278,14 @@ describe('Model finders', function() {
         });
       });
 
-      it('queries correctly', function(done) {
+      it('queries correctly', async function() {
         let bookScope = Book.where({ title: 'It' });
         let personScope = Person.where({id : 1 }).merge({ books: bookScope });
 
-        resultData(personScope.all()).then((data) => {
-          expect(data.length).to.eq(1);
-          expect(data[0]).to.be.instanceof(Person);
-          done();
-        });
+        let data = await resultData(personScope.all())
+
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
       });
     });
   });
@@ -312,14 +299,13 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function(done) {
+    it('queries correctly', async function() {
       let scope = Person.stats({ total: ['count', 'sum'] });
 
-      resultData(scope.all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        done();
-      });
+      let data = await resultData(scope.all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
     });
 
     describe('when merging association #stats', function() {
@@ -332,16 +318,15 @@ describe('Model finders', function() {
         });
       });
 
-      it('queries correctly', function(done) {
+      it('queries correctly', async function() {
         let bookScope = Book.stats({ pages: ['average'] });
         let scope     = Person.stats({ total: ['count', 'sum'] });
         scope         = scope.merge({ books: bookScope });
 
-        resultData(scope.all()).then((data) => {
-          expect(data.length).to.eq(1);
-          expect(data[0]).to.be.instanceof(Person);
-          done();
-        });
+        let data = await resultData(scope.all())
+
+        expect(data.length).to.eq(1);
+        expect(data[0]).to.be.instanceof(Person);
       });
     });
   });
@@ -355,13 +340,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function(done) {
-      resultData(Person.select({ people: ['name', 'age'] }).all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        expect(data[0]).to.have.property('id', '2');
-        done();
-      });
+    it('queries correctly', async function() {
+      let data = await resultData(Person.select({ people: ['name', 'age'] }).all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
+      expect(data[0]).to.have.property('id', '2');
     });
   });
 
@@ -374,13 +358,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function(done) {
-      resultData(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        expect(data[0]).to.have.property('id', '2');
-        done();
-      });
+    it('queries correctly', async function() {
+      let data = await resultData(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
+      expect(data[0]).to.have.property('id', '2');
     });
   });
 
@@ -396,12 +379,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('queries correctly', function() {
-      resultData(Person.includes({ a: ['b', { c: 'd' }] }).all()).then((data) => {
-        expect(data.length).to.eq(1);
-        expect(data[0]).to.be.instanceof(Person);
-        expect(data[0]).to.have.property('id', '2');
-      });
+    it('queries correctly', async function() {
+      let data = await resultData(Person.includes({ a: ['b', { c: 'd' }] }).all())
+
+      expect(data.length).to.eq(1);
+      expect(data[0]).to.be.instanceof(Person);
+      expect(data[0]).to.have.property('id', '2');
     });
   });
 });

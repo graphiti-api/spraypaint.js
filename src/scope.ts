@@ -1,7 +1,7 @@
-import { JSORMBase, JSORMPersistenceConstructor } from './model';
+import { JSORMBase } from './model';
 import Config from './configuration';
 import parameterize from './util/parameterize';
-import { IncludeDirective, IncludeScopeArg, IncludeScope } from './util/include-directive';
+import { IncludeDirective, IncludeArgHash, IncludeScopeHash } from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies'; 
 import Request from './request';
 import colorize from './util/colorize';
@@ -19,53 +19,54 @@ export interface JsonapiQueryParams {
 }
 
 export type SortDir = 'asc' | 'desc'
-export type SortScope = Record<string, SortDir> 
+export type SortScope = Record<string, SortDir> | string
 export type FieldScope = Record<string, Array<string>>
-export type WhereClause = Record<string, string>
-export type StatsScope = Record<string, string>
+export type WhereClause = Record<string, string | number | boolean>
+export type StatsScope = Record<string, string | string[]>
+export type IncludeScope = string | IncludeArgHash | Array<string | IncludeArgHash>
 
 export type AnyRecord = Record<string, any>
 
-export class Scope<M extends JSORMBase=JSORMBase> {
-  model: JSORMPersistenceConstructor<M>
+export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
+  model: T
   private _associations : Record<string, Scope<any>>
   private _pagination: { number?: number, size?: number } = {};
   private _filter: WhereClause = {};
-  private _sort: SortScope = {};
+  private _sort: Record<string, SortDir> = {};
   private _fields: FieldScope = {};
   private _extra_fields: FieldScope = {};
-  private _include: IncludeScope = {};
+  private _include: IncludeScopeHash = {};
   private _stats: StatsScope = {};
 
-  constructor(model : JSORMPersistenceConstructor<M>) {
+  constructor(model : T) {
     this.model = model;
   }
 
-  async all() : Promise<CollectionProxy<M>> {
+  async all() : Promise<CollectionProxy<T['prototype']>> {
     let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
 
-    let collection = new CollectionProxy<M>(response);
+    let collection = new CollectionProxy<T['prototype']>(response);
     return collection;
   }
 
-  async find(id : string | number) : Promise<RecordProxy<M>> {
+  async find(id : string | number) : Promise<RecordProxy<T['prototype']>> {
     let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
 
-    return new RecordProxy<M>(json);
+    return new RecordProxy<T['prototype']>(json);
   }
 
-  async first() : Promise<RecordProxy<M> | null> {
+  async first() : Promise<RecordProxy<T['prototype']> | null> {
     let newScope = this.per(1);
     let { data, included, meta } = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
 
-    return new RecordProxy<M>({
+    return new RecordProxy<T['prototype']>({
       data: data[0],
       included,
       meta,
     });
   }
 
-  merge(obj : Scope) : Scope<M> {
+  merge(obj : Record<string, Scope>) : Scope<T> {
     let copy = this.copy();
 
     Object.keys(obj).forEach((k) => {
@@ -75,21 +76,21 @@ export class Scope<M extends JSORMBase=JSORMBase> {
     return copy;
   }
 
-  page(pageNumber : number) : Scope<M> {
+  page(pageNumber : number) : Scope<T> {
     let copy = this.copy();
 
     copy._pagination.number = pageNumber;
     return copy;
   }
 
-  per(size : number) : Scope<M> {
+  per(size : number) : Scope<T> {
     let copy = this.copy();
 
     copy._pagination.size = size;
     return copy;
   }
 
-  where(clause: WhereClause) : Scope<M> {
+  where(clause: WhereClause) : Scope<T> {
     let copy = this.copy();
 
     for (let key in clause) {
@@ -98,7 +99,7 @@ export class Scope<M extends JSORMBase=JSORMBase> {
     return copy;
   }
 
-  stats(clause: StatsScope) : Scope<M> {
+  stats(clause: StatsScope) : Scope<T> {
     let copy = this.copy();
 
     for (let key in clause) {
@@ -107,7 +108,7 @@ export class Scope<M extends JSORMBase=JSORMBase> {
     return copy;
   }
 
-  order(clause: SortScope | string) : Scope<M> {
+  order(clause: SortScope | string) : Scope<T> {
     let copy = this.copy();
 
     if (typeof clause === "object") {
@@ -141,7 +142,7 @@ export class Scope<M extends JSORMBase=JSORMBase> {
     return copy;
   }
 
-  includes(clause: IncludeScopeArg) : Scope<M> {
+  includes(clause: IncludeScope) : Scope<T> {
     let copy = this.copy();
 
     let directive = new IncludeDirective(clause);
@@ -157,7 +158,7 @@ export class Scope<M extends JSORMBase=JSORMBase> {
   // The `Model` class has a `scope()` method to return the scope for it.
   // This method makes it possible for methods to expect either a model or
   // a scope and reliably cast them to a scope for use via `scope()`
-  scope() : Scope<M> {
+  scope() : Scope<T> {
     return this;
   }
 
@@ -185,7 +186,7 @@ export class Scope<M extends JSORMBase=JSORMBase> {
     }
   }
 
-  copy() : Scope<M> {
+  copy() : Scope<T> {
     let newScope = cloneDeep(this);
 
     return newScope;

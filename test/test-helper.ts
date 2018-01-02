@@ -8,7 +8,7 @@ es6Promise.polyfill();
 
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import chaiThings = require('chai-things');
+const chaiThings = require('chai-things');
 
 import { Config } from '../src/index';
 

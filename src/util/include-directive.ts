@@ -1,7 +1,7 @@
-export type IncludeScopeArg = string |  IncludeArgHash | Array<string | IncludeArgHash>
+import { IncludeScope } from '../scope'
 
 export interface IncludeArgHash {
-  [key : string] : IncludeScopeArg
+  [key : string] : IncludeScope
 }
 
 interface IncludeHash {
@@ -10,14 +10,14 @@ interface IncludeHash {
 
 type NestedInclude = Record<string, IncludeDirective>
 
-export interface IncludeScope {
-  [key : string] : IncludeScope
+export interface IncludeScopeHash {
+  [key : string] : IncludeScopeHash
 }
 
 export class IncludeDirective {
   private dct : NestedInclude = {};
 
-  constructor(arg: IncludeScopeArg) {
+  constructor(arg: IncludeScope) {
     let includeHash = this._parseIncludeArgs(arg);
 
     for (let key in includeHash) {
@@ -25,8 +25,8 @@ export class IncludeDirective {
     }
   }
 
-  toScopeObject() : IncludeScope {
-    let hash : IncludeScope = {};
+  toScopeObject() : IncludeScopeHash {
+    let hash : IncludeScopeHash = {};
     for (let key in this.dct) {
       hash[key] = this.dct[key].toScopeObject();
     }
@@ -51,7 +51,7 @@ export class IncludeDirective {
     return stringArray.join(',');
   }
 
-  private _parseIncludeArgs(includeArgs : IncludeScopeArg) : IncludeHash {
+  private _parseIncludeArgs(includeArgs : IncludeScope) : IncludeHash {
     if (Array.isArray(includeArgs)) {
       return this._parseArray(includeArgs);
     } else if (typeof includeArgs === "string") {

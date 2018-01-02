@@ -1,7 +1,7 @@
-import Model from '../model';
+import { JSORMBase } from '../model';
 import Config from '../configuration';
 
-export default function refreshJWT(klass: typeof Model, serverResponse: Response) : void {
+export default function refreshJWT(klass: typeof JSORMBase, serverResponse: Response) : void {
   let jwt = serverResponse.headers.get('X-JWT');
   let localStorage = Config.localStorage;
 
