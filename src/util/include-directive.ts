@@ -17,7 +17,7 @@ export interface IncludeScopeHash {
 export class IncludeDirective {
   private dct : NestedInclude = {};
 
-  constructor(arg: IncludeScope) {
+  constructor(arg?: IncludeScope) {
     let includeHash = this._parseIncludeArgs(arg);
 
     for (let key in includeHash) {
@@ -51,7 +51,7 @@ export class IncludeDirective {
     return stringArray.join(',');
   }
 
-  private _parseIncludeArgs(includeArgs : IncludeScope) : IncludeHash {
+  private _parseIncludeArgs(includeArgs? : IncludeScope) : IncludeHash {
     if (Array.isArray(includeArgs)) {
       return this._parseArray(includeArgs);
     } else if (typeof includeArgs === "string") {

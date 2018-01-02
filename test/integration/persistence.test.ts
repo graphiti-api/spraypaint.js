@@ -44,7 +44,7 @@ const resetMocks = function() {
   });
 }
 
-describe.only('Model persistence', function() {
+describe('Model persistence', function() {
   beforeEach(function () {
     resetMocks();
   });
@@ -184,7 +184,7 @@ describe.only('Model persistence', function() {
           try {
             await instance.save()
           } catch(err) {
-            expect(err).to.eq('Server Error');
+            expect(err.message).to.eq('Server Error');
           }
         });
       });
@@ -219,7 +219,7 @@ describe.only('Model persistence', function() {
       describe('when an attribute is explicitly set as null', function() {
         it('sends the attribute as part of the payload', async function() {
           instance.firstName = 'Joe';
-          instance.lastName = undefined;
+          instance.lastName = null;
 
           await instance.save()
 
@@ -295,7 +295,7 @@ describe.only('Model persistence', function() {
         try {
           await instance.destroy()
         } catch(err) {
-          expect(err).to.eq('Server Error');
+          expect(err.message).to.eq('Server Error');
         }
       });
     });

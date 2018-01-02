@@ -1,18 +1,19 @@
-import Model from '../model';
-import IncludeDirective from './include-directive';
+import { JSORMBase } from '../model';
+import { IncludeDirective } from './include-directive';
 import * as _snakeCase from './snakecase';
 import tempId from './temp-id';
+import { IncludeScope } from '../scope';
 let snakeCase: any = (<any>_snakeCase).default || _snakeCase;
 snakeCase = snakeCase['default'] || snakeCase;
 
-export default class WritePayload {
-  model: Model;
+export class WritePayload {
+  model: JSORMBase;
   includeDirective: Object;
   included: Array<Object> = [];
 
-  constructor(model : Model, relationships: string | Array<any> | Object) {
+  constructor(model : JSORMBase, relationships?: IncludeScope) {
     let includeDirective = new IncludeDirective(relationships);
-    this.includeDirective = includeDirective.toObject();
+    this.includeDirective = includeDirective.toScopeObject();
     this.model = model;
   }
 
@@ -30,7 +31,7 @@ export default class WritePayload {
     return attrs;
   }
 
-  removeDeletions(model: Model, includeDirective: Object) {
+  removeDeletions(model: JSORMBase, includeDirective: Object) {
     Object.keys(includeDirective).forEach((key) => {
       let nested = includeDirective[key];
 
@@ -130,7 +131,7 @@ export default class WritePayload {
 
   // private
 
-  private _processRelatedModel(model: Model, nested: Object) {
+  private _processRelatedModel(model: JSORMBase, nested: Object) {
     model.clearErrors();
 
     if (!model.isPersisted) {
@@ -148,7 +149,7 @@ export default class WritePayload {
     return resourceIdentifier;
   }
 
-  private _resourceIdentifierFor(model: Model) {
+  private _resourceIdentifierFor(model: JSORMBase) {
     let identifier = {};
     identifier['type'] = model.klass.jsonapiType;
 

@@ -48,9 +48,10 @@ describe('Model finders', function() {
         });
       });
 
-      it('resolves to the correct class', function() {
-        return expect(resultData(Person.find(1))).to.eventually
-          .be.instanceof(Author);
+      it('resolves to the correct class', async function() {
+        let result = await resultData(Person.find(1))
+
+        expect(result).to.be.instanceof(Author)
       });
     });
   });
@@ -68,10 +69,12 @@ describe('Model finders', function() {
       });
     });
 
-    it('returns a promise that resolves the correct instances', function() {
-      return expect(resultData(Person.first())).to.eventually
-        .be.instanceof(Person)
-        .have.property('id', '1');
+    it('returns a promise that resolves the correct instances', async function() {
+        let result = await resultData(Person.first())
+
+        expect(result).to
+          .be.instanceof(Person)
+          .have.property('id', '1');
     });
   });
 

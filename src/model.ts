@@ -1,13 +1,11 @@
-// import Config from '../configuration';
 import { CollectionProxy, RecordProxy } from './proxies';
-// import _extend from '../util/extend';
-// import { camelize } from '../util/string';
-// import WritePayload from '../util/write-payload';
-// import IncludeDirective from '../util/include-directive';
-// import ValidationErrors from '../util/validation-errors';
-// import refreshJWT from '../util/refresh-jwt';
+// import { camelize } from './util/string';
+// import ValidationErrors from './util/validation-errors';
+import { IncludeDirective } from './util/include-directive'
+import { refreshJWT } from './util/refresh-jwt';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
-// import Request from '../request';
+import { Request, RequestVerbs } from './request';
+import { WritePayload } from './util/write-payload';
 
 import cloneDeep from './util/clonedeep';
 import { deserialize, deserializeInstance } from './util/deserialize';
@@ -17,19 +15,22 @@ import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } f
 import { TypeRegistry } from './type-registry'
 import { camelize } from 'inflected'
 import { logger } from './logger';
+import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
 
 export interface ModelConfiguration {
   baseUrl : string
   apiNamespace : string
   jsonapiType : string
   endpoint : string;
-  isJWTOwner : boolean
   jwt : string
   camelizeKeys : boolean
   strictAttributes : boolean
 }
-
 export type ModelConfigurationOptions = Partial<ModelConfiguration> 
+
+export interface SaveOptions {
+  with? : IncludeScope
+}
 
 export type ExtendedModel<
   Subclass extends JSORMBase, 
@@ -80,12 +81,12 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
   isJSORMModel : boolean
   isBaseClass : boolean
   typeRegistry : TypeRegistry
+  middlewareStack : MiddlewareStack
 
   baseUrl : string
   apiNamespace : string
   jsonapiType? : string
   endpoint : string;
-  isJWTOwner : boolean
   jwt? : string;
   camelizeKeys : boolean
   strictAttributes : boolean
@@ -163,7 +164,6 @@ export class JSORMBase {
   static jsonapiType? : string
   static endpoint : string
   static isBaseClass : boolean
-  static isJWTOwner : boolean = false
   static jwt? : string;
   static camelizeKeys : boolean = true
   static strictAttributes : boolean = false
@@ -172,7 +172,11 @@ export class JSORMBase {
   static extendOptions : any
   static parentClass : typeof JSORMBase
   static currentClass : typeof JSORMBase = JSORMBase
+  static beforeFetch : BeforeFilter | undefined
+  static afterFetch : AfterFilter | undefined
+
   private static _typeRegistry : TypeRegistry
+  private static _middlewareStack : MiddlewareStack
 
   // This is to allow for sane type checking in collaboration with the 
   // isModelClass function exported below.  It is very hard to find out whether
@@ -217,6 +221,10 @@ export class JSORMBase {
 
     if (!this.typeRegistry) {
       this.typeRegistry = new TypeRegistry(this)
+    }
+
+    if (!this.middlewareStack) {
+      this._middlewareStack = new MiddlewareStack()
     }
   }
 
@@ -463,6 +471,31 @@ export class JSORMBase {
     return `${this.baseUrl}${this.apiNamespace}`;
   }
 
+  static get middlewareStack() : MiddlewareStack {
+    if (this.baseClass) {
+      let stack = this.baseClass._middlewareStack
+
+      // Normally we want to use the middleware stack defined on the baseClass, but in the event
+      // that our subclass has overridden one or the other, we create a middleware stack that 
+      // replaces the normal filters with the class override.
+      if (this.beforeFetch || this.afterFetch) {
+        let before = this.beforeFetch ? [this.beforeFetch] : stack.beforeFilters
+        let after = this.afterFetch ? [this.afterFetch] : stack.afterFilters
+
+        return new MiddlewareStack(before, after)
+      } else {
+        return stack
+      }
+    } else {
+      // Shouldn't ever get here, as this should only happen on JSORMBase
+      return new MiddlewareStack()
+    }
+  }
+
+  static set middlewareStack(stack : MiddlewareStack) {
+    this._middlewareStack = stack
+  }
+
   static scope<I extends typeof JSORMBase>(this: I) : Scope<I> {
     return new Scope(this)
     // return this._scope || new Scope(this);
@@ -537,79 +570,82 @@ export class JSORMBase {
 
     return this.baseClass
   }
+
+  async destroy() : Promise<boolean> {
+    let url     = this.klass.url(this.id);
+    let verb    = 'delete';
+    let request = new Request(this._middleware());
+    let response : any
+
+    try {
+      response = await request.delete(url, this._fetchOptions());
+    } catch (err) {
+      throw(err)
+    }
+     
+    return await this._handleResponse(response, () => {
+      this.isPersisted = false;
+    });
+  }
+
+
+  async save(options: SaveOptions = {}) : Promise<boolean> {
+    let url     = this.klass.url()
+    let verb : RequestVerbs = 'post'
+    let request = new Request(this._middleware())
+    let payload = new WritePayload(this, options['with'])
+    let response : any
+
+    if (this.isPersisted) {
+      url  = this.klass.url(this.id)
+      verb = 'put'
+    }
+
+    let json = payload.asJSON();
+    
+    try {
+      response = await request[verb](url, json, this._fetchOptions())
+    } catch (err) {
+      throw(err)
+    }
+
+    return await this._handleResponse(response, () => {
+      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
+      payload.postProcess();
+    });
+  }
+
+  private async _handleResponse(response: any, callback: () => void) : Promise<boolean>  {
+    refreshJWT(this.klass, response);
+
+    if (response.status == 422) {
+      // ValidationErrors.apply(this, response['jsonPayload']);
+      return false
+    } else {
+      callback();
+      return true
+    }
+  }
+
+  private _fetchOptions() : RequestInit {
+    return this.klass.fetchOptions()
+  }
+
+  private _middleware() : MiddlewareStack {
+    return this.klass.middlewareStack
+  }
+  
+  // Todo:
+  // * needs to recurse the directive
+  // * remove the corresponding code from isPersisted and handle here (likely
+  // only an issue with test setup)
+  // * Make all calls go through resetRelationTracking();
+  resetRelationTracking(includeDirective: Object) {
+    this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
+  }
 } 
 
 ;(<any>JSORMBase.prototype).klass = JSORMBase
-
-//   // Todo:
-//   // * needs to recurse the directive
-//   // * remove the corresponding code from isPersisted and handle here (likely
-//   // only an issue with test setup)
-//   // * Make all calls go through resetRelationTracking();
-//   resetRelationTracking(includeDirective: Object) {
-//     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
-//   }
-
-
-//   destroy() : Promise<any> {
-//     let url     = this.klass.url(this.id);
-//     let verb    = 'delete';
-//     let request = new Request();
-
-//     let requestPromise = request.delete(url, this._fetchOptions());
-//     return this._writeRequest(requestPromise, () => {
-//       this.isPersisted = false;
-//     });
-//   }
-
-//   save(options: Object = {}) : Promise<any> {
-//     let url     = this.klass.url();
-//     let verb    = 'post';
-//     let request = new Request();
-//     let payload = new WritePayload(this, options['with']);
-
-//     if (this.isPersisted) {
-//       url  = this.klass.url(this.id);
-//       verb = 'put';
-//     }
-
-//     let json = payload.asJSON();
-//     let requestPromise = request[verb](url, json, this._fetchOptions());
-//     return this._writeRequest(requestPromise, (response) => {
-//       this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
-//       //this.isPersisted = true;
-//       payload.postProcess();
-//     });
-//   }
-
-//   private _writeRequest(requestPromise : Promise<any>, callback: Function) : Promise<any> {
-//     return new Promise((resolve, reject) => {
-//       requestPromise.catch((e) => { throw(e) });
-//       return requestPromise.then((response) => {
-//         this._handleResponse(response, resolve, reject, callback);
-//       });
-//     });
-//   }
-
-//   private _handleResponse(response: any, resolve: Function, reject: Function, callback: Function) : void {
-//     refreshJWT(this.klass, response);
-
-//     if (response.status == 422) {
-//       ValidationErrors.apply(this, response['jsonPayload']);
-//       resolve(false);
-//     } else if (response.status >= 500) {
-//       reject('Server Error');
-//     } else {
-//       callback(response);
-//       resolve(true);
-//     }
-//   }
-
-//   private _fetchOptions() : RequestInit {
-//     return this.klass.fetchOptions()
-//   }
-// }
-
 
 
 export function isModelClass(arg: any) : arg is typeof JSORMBase {

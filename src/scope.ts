@@ -3,9 +3,9 @@ import Config from './configuration';
 import parameterize from './util/parameterize';
 import { IncludeDirective, IncludeArgHash, IncludeScopeHash } from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies'; 
-import Request from './request';
+import { Request } from './request';
 import colorize from './util/colorize';
-import refreshJWT from './util/refresh-jwt';
+import { refreshJWT } from './util/refresh-jwt';
 import cloneDeep from './util/clonedeep';
 
 export interface JsonapiQueryParams {
@@ -234,7 +234,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     if (qp) {
       url = `${url}?${qp}`;
     }
-    let request = new Request();
+    let request = new Request(this.model.middlewareStack);
     let fetchOpts = this.model.fetchOptions()
 
     let response = await request.get(url, fetchOpts)
