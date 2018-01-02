@@ -1,74 +1,95 @@
-import Model from './model';
+import { JSORMBase, JSORMPersistenceConstructor } from './model';
 import Config from './configuration';
 import parameterize from './util/parameterize';
-import IncludeDirective from './util/include-directive';
-import { CollectionProxy, RecordProxy } from './proxies';
+import { IncludeDirective, IncludeScopeArg, IncludeScope } from './util/include-directive';
+import { CollectionProxy, RecordProxy } from './proxies'; 
 import Request from './request';
 import colorize from './util/colorize';
 import refreshJWT from './util/refresh-jwt';
 import cloneDeep from './util/clonedeep';
 
-export default class Scope {
-  model: typeof Model;
-  _associations: Object = {};
-  _pagination: { number?: number, size?: number } = {};
-  _filter: Object = {};
-  _sort: Object = {};
-  _fields: Object = {};
-  _extra_fields: Object = {};
-  _include: Object = {};
-  _stats: Object = {};
+export interface JsonapiQueryParams {
+  page: AnyRecord,
+  filter: AnyRecord,
+  sort: string[], 
+  fields: AnyRecord,
+  extra_fields: AnyRecord,
+  stats: AnyRecord,
+  include?: string,
+}
 
-  constructor(model : typeof Model) {
+export type SortDir = 'asc' | 'desc'
+export type SortScope = Record<string, SortDir> 
+export type FieldScope = Record<string, Array<string>>
+export type WhereClause = Record<string, string>
+export type StatsScope = Record<string, string>
+
+export type AnyRecord = Record<string, any>
+
+export class Scope<M extends JSORMBase=JSORMBase> {
+  model: JSORMPersistenceConstructor<M>
+  private _associations : Record<string, Scope<any>>
+  private _pagination: { number?: number, size?: number } = {};
+  private _filter: WhereClause = {};
+  private _sort: SortScope = {};
+  private _fields: FieldScope = {};
+  private _extra_fields: FieldScope = {};
+  private _include: IncludeScope = {};
+  private _stats: StatsScope = {};
+
+  constructor(model : JSORMPersistenceConstructor<M>) {
     this.model = model;
   }
 
-  all() : Promise<CollectionProxy<Model>> {
-    return this._fetch(this.model.url()).then((json : japiDoc) => {
-      let collection = new CollectionProxy<Model>(json);
-      return collection;
-    });
+  async all() : Promise<CollectionProxy<M>> {
+    let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
+
+    let collection = new CollectionProxy<M>(response);
+    return collection;
   }
 
-  find(id : string | number) : Promise<RecordProxy<Model>> {
-    return this._fetch(this.model.url(id)).then((json : japiDoc) => {
-      return new RecordProxy<Model>(json);
-    });
+  async find(id : string | number) : Promise<RecordProxy<M>> {
+    let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
+
+    return new RecordProxy<M>(json);
   }
 
-  first() : Promise<RecordProxy<Model>> {
+  async first() : Promise<RecordProxy<M> | null> {
     let newScope = this.per(1);
-    return newScope._fetch(newScope.model.url()).then((json : japiDoc) => {
-      json.data = json.data[0];
-      return new RecordProxy<Model>(json);
+    let { data, included, meta } = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
+
+    return new RecordProxy<M>({
+      data: data[0],
+      included,
+      meta,
     });
   }
 
-  merge(obj : Object) : Scope {
+  merge(obj : Scope) : Scope<M> {
     let copy = this.copy();
 
     Object.keys(obj).forEach((k) => {
-      copy._associations[k] = obj[k];
+      copy._associations[k] = (obj as any)[k]
     })
 
     return copy;
   }
 
-  page(pageNumber : number) : Scope {
+  page(pageNumber : number) : Scope<M> {
     let copy = this.copy();
 
     copy._pagination.number = pageNumber;
     return copy;
   }
 
-  per(size : number) : Scope {
+  per(size : number) : Scope<M> {
     let copy = this.copy();
 
     copy._pagination.size = size;
     return copy;
   }
 
-  where(clause: Object) : Scope {
+  where(clause: WhereClause) : Scope<M> {
     let copy = this.copy();
 
     for (let key in clause) {
@@ -77,7 +98,7 @@ export default class Scope {
     return copy;
   }
 
-  stats(clause: Object) : Scope {
+  stats(clause: StatsScope) : Scope<M> {
     let copy = this.copy();
 
     for (let key in clause) {
@@ -86,10 +107,10 @@ export default class Scope {
     return copy;
   }
 
-  order(clause: Object | string) : Scope {
+  order(clause: SortScope | string) : Scope<M> {
     let copy = this.copy();
 
-    if (typeof clause == "object") {
+    if (typeof clause === "object") {
       for (let key in clause) {
         copy._sort[key] = clause[key];
       }
@@ -100,7 +121,7 @@ export default class Scope {
     return copy;
   }
 
-  select(clause: Object) {
+  select(clause: FieldScope) {
     let copy = this.copy();
 
     for (let key in clause) {
@@ -110,7 +131,7 @@ export default class Scope {
     return copy;
   }
 
-  selectExtra(clause: Object) {
+  selectExtra(clause: FieldScope) {
     let copy = this.copy();
 
     for (let key in clause) {
@@ -120,11 +141,11 @@ export default class Scope {
     return copy;
   }
 
-  includes(clause: Object | string | Array<any>) : Scope {
+  includes(clause: IncludeScopeArg) : Scope<M> {
     let copy = this.copy();
 
     let directive = new IncludeDirective(clause);
-    let directiveObject = directive.toObject();
+    let directiveObject = directive.toScopeObject();
 
     for (let key in directiveObject) {
       copy._include[key] = directiveObject[key];
@@ -136,27 +157,27 @@ export default class Scope {
   // The `Model` class has a `scope()` method to return the scope for it.
   // This method makes it possible for methods to expect either a model or
   // a scope and reliably cast them to a scope for use via `scope()`
-  scope() : Scope {
+  scope() : Scope<M> {
     return this;
   }
 
-  asQueryParams() : Object {
-    let qp = {};
-
-    qp['page']          = this._pagination;
-    qp['filter']        = this._filter;
-    qp['sort']          = this._sortParam(this._sort) || [];
-    qp['fields']        = this._fields;
-    qp['extra_fields']  = this._extra_fields;
-    qp['stats']         = this._stats;
-    qp['include']       = new IncludeDirective(this._include).toString();
+  asQueryParams() : JsonapiQueryParams {
+    let qp : JsonapiQueryParams = {
+      page:         this._pagination,
+      filter:       this._filter,
+      sort:         this._sortParam(this._sort) || [],
+      fields:       this._fields,
+      extra_fields: this._extra_fields,
+      stats:        this._stats,
+      include:      new IncludeDirective(this._include).toString(),
+    };
 
     this._mergeAssociationQueryParams(qp, this._associations);
 
     return qp;
   }
 
-  toQueryParams() : string | void {
+  toQueryParams() : string | undefined {
     let paramString = parameterize(this.asQueryParams());
 
     if (paramString !== '') {
@@ -164,7 +185,7 @@ export default class Scope {
     }
   }
 
-  copy() : Scope {
+  copy() : Scope<M> {
     let newScope = cloneDeep(this);
 
     return newScope;
@@ -172,7 +193,7 @@ export default class Scope {
 
   // private
 
-  private _mergeAssociationQueryParams(queryParams, associations) {
+  private _mergeAssociationQueryParams(queryParams : JsonapiQueryParams, associations : Record<string, Scope<any>>) {
     for (let key in associations) {
       let associationScope = associations[key];
       let associationQueryParams = associationScope.asQueryParams();
@@ -196,7 +217,7 @@ export default class Scope {
     return `${associationName}.${param}`;
   }
 
-  private _sortParam(clause: Object | void) {
+  private _sortParam(clause: SortScope | undefined) {
     if (clause && Object.keys(clause).length > 0) {
       let params = [];
 
@@ -212,7 +233,7 @@ export default class Scope {
     }
   }
 
-  private _fetch(url : string) : Promise<Object> {
+  private async _fetch(url : string) : Promise<JsonapiDoc> {
     let qp = this.toQueryParams();
     if (qp) {
       url = `${url}?${qp}`;
@@ -220,9 +241,8 @@ export default class Scope {
     let request = new Request();
     let fetchOpts = this.model.fetchOptions()
 
-    return request.get(url, fetchOpts).then((response) => {
-      refreshJWT(this.model, response);
-      return response['jsonPayload'];
-    });
+    let response = await request.get(url, fetchOpts)
+    refreshJWT(this.model, response);
+    return response['jsonPayload'];
   }
 }

@@ -66,6 +66,7 @@ export class Book extends ApplicationRecord {
   @HasOne({type: Author}) author : any
 }
 
+
 export const NonFictionAuthor = Author.extend({
   static: {
     endpoint: '/v1/non_fiction_authors',

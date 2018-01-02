@@ -1,14 +1,15 @@
-import Model from '../model';
+import { JSORMBase } from '../model'
+import { IResultProxy } from './index'
 
-class RecordProxy<T> implements IResultProxy<T> {
-  private _raw_json : japiDoc;
+export class RecordProxy<T> implements IResultProxy<T> {
+  private _raw_json : JsonapiResourceDoc;
   private _model : T | null;
 
-  constructor (raw_json : japiDoc = { data: [] }) {
+  constructor (raw_json : JsonapiResourceDoc = { data: undefined }) {
     this.setRaw(raw_json);
   }
 
-  get raw () : japiDoc {
+  get raw () : JsonapiResourceDoc {
     return this._raw_json;
   }
 
@@ -20,15 +21,13 @@ class RecordProxy<T> implements IResultProxy<T> {
     return this.raw.meta || {};
   }
 
-  private setRaw = (json_payload : japiDoc) => {
+  private setRaw = (json_payload : JsonapiResourceDoc) => {
     this._raw_json = json_payload;
 
     if (this.raw.data) {
-      this._model = Model.fromJsonapi(this.raw.data, this.raw);
+      this._model = JSORMBase.fromJsonapi(this.raw.data, this.raw);
     } else {
       this._model = null
     }
   }
 }
-
-export default RecordProxy;

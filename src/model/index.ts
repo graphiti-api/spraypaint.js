@@ -1,5 +1,5 @@
 // import Config from '../configuration';
-// import { CollectionProxy, RecordProxy } from '../proxies';
+import { CollectionProxy, RecordProxy } from '../proxies';
 // import _extend from '../util/extend';
 // import { camelize } from '../util/string';
 // import WritePayload from '../util/write-payload';
@@ -13,9 +13,10 @@ import cloneDeep from '../util/clonedeep';
 import { deserialize, deserializeInstance } from '../util/deserialize';
 import { Attribute } from '../attribute';
 import DirtyChecker from '../util/dirty-check';
-import Scope from '../scope';
+import { Scope, WhereClause, SortScope, FieldScope, StatsScope } from '../scope';
 import { TypeRegistry } from '../type-registry'
 import { camelize } from 'inflected'
+import { IncludeArg } from '../util/include-directive';
 
 export interface ModelConfiguration {
   baseUrl : string
@@ -394,7 +395,7 @@ export class JSORMBase {
     return Object.keys(this.errors).length > 1;
   }
 
-  isDirty(relationships?: Object | Array<any> | string) : boolean {
+  isDirty(relationships?: IncludeArg) : boolean {
     let dc = new DirtyChecker(this);
     return dc.check(relationships);
   }
@@ -418,16 +419,122 @@ export class JSORMBase {
    * Model Persistence Methods
    * 
    */
-  static scope(): Scope {
-    return this._scope || new Scope(this);
+  static fetchOptions() : RequestInit {
+    let options = {
+      headers: {
+        Accept: 'application/json',
+        ['Content-Type']: 'application/json'
+      } as any
+    }
+
+    if (this.getJWT()) {
+      options.headers.Authorization = `Token token="${this.getJWT()}"`;
+    }
+
+    return options
   }
 
-  static first<M extends typeof JSORMBase>(this: M) : Promise<M> {
-    // return this.scope().first();
-    return Promise.resolve(this)
+  static url(id?: string | number) : string {
+    let endpoint = this.endpoint || `/${this.jsonapiType}`;
+    let base = `${this.fullBasePath()}${endpoint}`;
+
+    if (id) {
+      base = `${base}/${id}`;
+    }
+
+    return base;
+  }
+
+  static fullBasePath() : string {
+    return `${this.baseUrl}${this.apiNamespace}`;
+  }
+
+  static scope<I extends JSORMBase>(this: JSORMPersistenceConstructor<I>) : Scope<I> {
+    return new Scope(this)
+    // return this._scope || new Scope(this);
+  }
+
+  static first() {
+    return this.scope().first();
+    // return Promise.resolve(this)
+  }
+  static all() {
+    return this.scope().all();
+  }
+
+  static find(id : string | number) {
+    return this.scope().find(id);
+  }
+
+  static where(clause: WhereClause) : Scope {
+    return this.scope().where(clause);
+  }
+
+  static page(number: number) : Scope {
+    return this.scope().page(number);
+  }
+
+  static per(size: number) : Scope {
+    return this.scope().per(size);
+  }
+
+  static order(clause: SortScope) : Scope {
+    return this.scope().order(clause);
+  }
+
+  static select(clause: FieldScope) : Scope {
+    return this.scope().select(clause);
+  }
+
+  static selectExtra(clause: FieldScope) : Scope {
+    return this.scope().selectExtra(clause);
+  }
+
+  static stats(clause: StatsScope) : Scope {
+    return this.scope().stats(clause);
+  }
+
+  static includes(clause: IncludeArg) : Scope {
+    return this.scope().includes(clause);
+  }
+
+  static merge(obj : Scope) : Scope {
+    return this.scope().merge(obj);
+  }
+
+  static getJWT() : string | undefined {
+    let owner = this.getJWTOwner();
+
+    if (owner) {
+      return owner.jwt;
+    }
+  }
+
+  static getJWTOwner() : typeof JSORMBase | undefined {
+    if (this.isJWTOwner) {
+      return this
+    } else {
+      if (this.parentClass) {
+        return this.parentClass.getJWTOwner()
+      } else {
+        return
+      }
+    }
   }
 }; 
+
 (<any>JSORMBase.prototype).klass = JSORMBase
+
+// Break up types to remove the generics we don't need for the
+// persistence stuff
+export type JSORMPersistenceConstructor<C extends JSORMBase> = { 
+  new(...args: any[]) : C 
+  fetchOptions() : RequestInit
+  url(id?: string | number) : string
+  scope() : Scope<C>
+}
+
+let validate : JSORMPersistenceConstructor<JSORMBase> = JSORMBase
 
 // export abstract class OldModel {
 
@@ -445,41 +552,6 @@ export class JSORMBase {
 
 //   static setJWT(token: string) : void {
 //     this.getJWTOwner().jwt = token;
-//   }
-
-//   static getJWT() : string | undefined {
-//     let owner = this.getJWTOwner();
-
-//     if (owner) {
-//       return owner.jwt;
-//     }
-//   }
-
-//   static fetchOptions() : RequestInit {
-//     let options = {
-//       headers: {
-//         Accept: 'application/json',
-//         ['Content-Type']: 'application/json'
-//       } as any
-//     }
-
-//     if (this.getJWT()) {
-//       options.headers.Authorization = `Token token="${this.getJWT()}"`;
-//     }
-
-//     return options
-//   }
-
-//   static getJWTOwner() : typeof Model {
-//     if (this.isJWTOwner) {
-//       return this;
-//     } else {
-//       if (this.parentClass) {
-//         return this.parentClass.getJWTOwner();
-//       } else {
-//         return;
-//       }
-//     }
 //   }
 
 
@@ -557,64 +629,7 @@ export class JSORMBase {
 //   }
 // }
 
-//   static all() : Promise<CollectionProxy<Model>> {
-//     return this.scope().all();
-//   }
 
-//   static find(id : string | number) : Promise<RecordProxy<Model>> {
-//     return this.scope().find(id);
-//   }
-
-//   static where(clause: Object) : Scope {
-//     return this.scope().where(clause);
-//   }
-
-//   static page(number: number) : Scope {
-//     return this.scope().page(number);
-//   }
-
-//   static per(size: number) : Scope {
-//     return this.scope().per(size);
-//   }
-
-//   static order(clause: Object | string) : Scope {
-//     return this.scope().order(clause);
-//   }
-
-//   static select(clause: Object) : Scope {
-//     return this.scope().select(clause);
-//   }
-
-//   static selectExtra(clause: Object) : Scope {
-//     return this.scope().selectExtra(clause);
-//   }
-
-//   static stats(clause: Object) : Scope {
-//     return this.scope().stats(clause);
-//   }
-
-//   static includes(clause: string | Object | Array<any>) : Scope {
-//     return this.scope().includes(clause);
-//   }
-
-//   static merge(obj : Object) : Scope {
-//     return this.scope().merge(obj);
-//   }
-
-//   static url(id?: string | number) : string {
-//     let endpoint = this.endpoint || `/${this.jsonapiType}`;
-//     let base = `${this.fullBasePath()}${endpoint}`;
-
-//     if (id) {
-//       base = `${base}/${id}`;
-//     }
-
-//     return base;
-//   }
-
-//   static fullBasePath() : string {
-//     return `${this.baseUrl}${this.apiNamespace}`;
-//   }
 
 export function isModelClass(arg: any) : arg is typeof JSORMBase {
   if (!arg) { return false }

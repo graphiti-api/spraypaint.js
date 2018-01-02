@@ -4,11 +4,13 @@ import tempId from '../../src/util/temp-id';
 
 let fetchMock = require('fetch-mock');
 
-let instance;
-let payloads;
-let putPayloads;
-let deletePayloads;
-let serverResponse;
+let instance : Author
+let payloads : Array<JsonapiDoc>
+let putPayloads : Array<JsonapiDoc>
+let deletePayloads : Array<JsonapiDoc>
+let serverResponse : JsonapiDoc
+
+type method = 'update' | 'destroy' | 'disassociate'
 
 const resetMocks = function() {
   fetchMock.restore();
@@ -29,7 +31,7 @@ const resetMocks = function() {
   });
 }
 
-let expectedCreatePayload =  {
+let expectedCreatePayload : JsonapiDoc = {
   data: {
     type: 'authors',
     attributes: { first_name: 'Stephen' },
@@ -72,7 +74,7 @@ let expectedCreatePayload =  {
   ]
 };
 
-let expectedUpdatePayload = function(method) {
+let expectedUpdatePayload = function(method : method) : JsonapiDoc {
   return {
     data: {
       id: '1',

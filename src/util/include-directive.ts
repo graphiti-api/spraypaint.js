@@ -1,18 +1,34 @@
-export default class IncludeDirective {
-  dct: Object = {};
+export type IncludeScopeArg = string |  IncludeArgHash | Array<string | IncludeArgHash>
 
-  constructor(obj: string | Array<any> | Object) {
-    let includeHash = this.parseIncludeArgs(obj);
+export interface IncludeArgHash {
+  [key : string] : IncludeScopeArg
+}
+
+interface IncludeHash {
+  [key : string] : string | IncludeHash
+}
+
+type NestedInclude = Record<string, IncludeDirective>
+
+export interface IncludeScope {
+  [key : string] : IncludeScope
+}
+
+export class IncludeDirective {
+  private dct : NestedInclude = {};
+
+  constructor(arg: IncludeScopeArg) {
+    let includeHash = this._parseIncludeArgs(arg);
 
     for (let key in includeHash) {
       this.dct[key] = new IncludeDirective(includeHash[key]);
     }
   }
 
-  toObject() : Object {
-    let hash = {};
+  toScopeObject() : IncludeScope {
+    let hash : IncludeScope = {};
     for (let key in this.dct) {
-      hash[key] = this.dct[key].toObject();
+      hash[key] = this.dct[key].toScopeObject();
     }
     return hash;
   }
@@ -25,43 +41,43 @@ export default class IncludeDirective {
       if (stringValue === '') {
         stringArray.push(key);
       } else {
-        stringValue = stringValue.split(',');
-        stringValue = stringValue.map((x) => { return `${key}.${x}` });
-        stringArray.push(stringValue.join(','));
+        let split = stringValue.split(',');
+        split = split.map((x) => { return `${key}.${x}` });
+
+        stringArray.push(split.join(','));
       }
     }
 
     return stringArray.join(',');
   }
 
-  parseIncludeArgs(includeArgs : string | Object | Array<any>) : Object {
+  private _parseIncludeArgs(includeArgs : IncludeScopeArg) : IncludeHash {
     if (Array.isArray(includeArgs)) {
       return this._parseArray(includeArgs);
-    } else if (typeof includeArgs == "string") {
-      let obj = {};
+    } else if (typeof includeArgs === "string") {
+      let obj : IncludeHash = {};
       obj[includeArgs] = {};
       return obj;
-    } else if (typeof includeArgs == "object") {
+    } else if (typeof includeArgs === "object") {
       return this._parseObject(includeArgs);
     } else {
       return {};
     }
   }
 
-  // private
+  private _parseObject(includeObj : IncludeArgHash) : IncludeHash {
+    let parsed : IncludeHash = {};
 
-  private _parseObject(includeObj : Object) : Object {
-    let parsed = {};
     for (let key in includeObj) {
-      parsed[key] = this.parseIncludeArgs(includeObj[key]);
+      parsed[key] = this._parseIncludeArgs(includeObj[key]);
     }
     return parsed;
   }
 
-  private _parseArray(includeArray: Array<any>) : Object {
-    let parsed = {};
+  private _parseArray(includeArray: Array<any>) : IncludeHash {
+    let parsed : IncludeHash = {};
     for (let value of includeArray) {
-      let parsedEl = this.parseIncludeArgs(value);
+      let parsedEl = this._parseIncludeArgs(value);
       for (let key in parsedEl) {
         parsed[key] = parsedEl[key];
       }

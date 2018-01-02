@@ -1,14 +1,15 @@
-import Model from '../model';
+import { JSORMBase } from '../model'
+import { IResultProxy } from './index'
 
-class CollectionProxy<T> implements IResultProxy<T> {
-  private _raw_json : japiDoc;
+export class CollectionProxy<T> implements IResultProxy<T> {
+  private _raw_json : JsonapiCollectionDoc;
   private _array : Array<T>;
 
-  constructor (raw_json : japiDoc = { data: [] }) {
+  constructor (raw_json : JsonapiCollectionDoc = { data: [] }) {
     this.setRaw(raw_json);
   }
 
-  get raw () : japiDoc {
+  get raw () : JsonapiCollectionDoc {
     return this._raw_json;
   }
 
@@ -20,15 +21,13 @@ class CollectionProxy<T> implements IResultProxy<T> {
     return this.raw.meta || {};
   }
 
-  private setRaw = (json_payload : japiDoc) => {
+  private setRaw = (json_payload : JsonapiCollectionDoc) => {
     this._raw_json = json_payload;
 
     this._array = [];
 
-    this.raw.data.map((datum : japiResource) => {
-      this._array.push(Model.fromJsonapi(datum, this.raw));
+    this.raw.data.map((datum : JsonapiResource) => {
+      this._array.push(JSORMBase.fromJsonapi(datum, this.raw));
     });
   }
 }
-
-export default CollectionProxy;
