@@ -501,51 +501,51 @@ export class JSORMBase {
     // return this._scope || new Scope(this);
   }
 
-  static first() {
+  static first<I extends typeof JSORMBase>(this: I) {
     return this.scope().first();
     // return Promise.resolve(this)
   }
-  static all() {
+  static all<I extends typeof JSORMBase>(this: I) {
     return this.scope().all();
   }
 
-  static find(id : string | number) {
+  static find<I extends typeof JSORMBase>(this: I, id : string | number) {
     return this.scope().find(id);
   }
 
-  static where(clause: WhereClause) : Scope {
+  static where<I extends typeof JSORMBase>(this: I, clause: WhereClause) {
     return this.scope().where(clause);
   }
 
-  static page(number: number) : Scope {
+  static page<I extends typeof JSORMBase>(this: I, number: number) {
     return this.scope().page(number);
   }
 
-  static per(size: number) : Scope {
+  static per<I extends typeof JSORMBase>(this: I, size: number) {
     return this.scope().per(size);
   }
 
-  static order(clause: SortScope | string) : Scope {
+  static order<I extends typeof JSORMBase>(this: I, clause: SortScope | string) {
     return this.scope().order(clause);
   }
 
-  static select(clause: FieldScope) : Scope {
+  static select<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
     return this.scope().select(clause);
   }
 
-  static selectExtra(clause: FieldScope) : Scope {
+  static selectExtra<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
     return this.scope().selectExtra(clause);
   }
 
-  static stats(clause: StatsScope) : Scope {
+  static stats<I extends typeof JSORMBase>(this: I, clause: StatsScope) {
     return this.scope().stats(clause);
   }
 
-  static includes(clause: IncludeScope) : Scope {
+  static includes<I extends typeof JSORMBase>(this: I, clause: IncludeScope) {
     return this.scope().includes(clause);
   }
 
-  static merge(obj : Record<string, Scope>) : Scope {
+  static merge<I extends typeof JSORMBase>(this: I, obj : Record<string, Scope>) {
     return this.scope().merge(obj);
   }
 
