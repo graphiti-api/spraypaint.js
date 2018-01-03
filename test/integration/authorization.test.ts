@@ -6,6 +6,20 @@ after(function () {
   fetchMock.restore();
 });
 
+let authorResponse = {
+  id: '1',
+  type: 'people',
+  attributes: {
+    name: 'John'
+  }
+}
+let stubFind =  {
+  data: authorResponse
+}
+let stubAll =  {
+  data: [authorResponse]
+}
+
 describe('authorization headers', function() {
   describe('when header is set on model class', function() {
     beforeEach(function() {
@@ -21,9 +35,10 @@ describe('authorization headers', function() {
       fetchMock.mock((url : string, opts : any) => {
         expect(opts.headers.Authorization).to.eq('Token token="myt0k3n"')
         done();
-        return true;
-      }, 200);
-      Author.find(1);
+        return true
+      }, { status: 200, body: stubFind, sendAsJson: true });
+      Author.find(1).catch(done)
+      let foo = Author.scope()
     });
   });
 
@@ -83,11 +98,11 @@ describe('authorization headers', function() {
           expect(opts.headers.Authorization).to.eq('Token token="somet0k3n"')
           done();
           return true;
-        }, 200);
+        }, { status: 200, body: stubAll, sendAsJson: true });
         expect(Author.getJWT()).to.eq('somet0k3n');
         expect(ApplicationRecord.jwt).to.eq('somet0k3n');
-        Author.all();
-      });
+        return Author.all()
+      }).catch(done)
     });
 
     describe('local storage', function() {
@@ -122,11 +137,11 @@ describe('authorization headers', function() {
               expect(opts.headers.Authorization).to.eq('Token token="somet0k3n"')
               done();
               return true;
-            }, 200);
+            }, { status: 200, body: stubAll, sendAsJson: true })
             expect(Author.getJWT()).to.eq('somet0k3n');
             expect(ApplicationRecord.jwt).to.eq('somet0k3n');
-            Author.all();
-          });
+            return Author.all();
+          }).catch(done)
         });
 
         describe('when JWT is already in localStorage', function() {
@@ -140,14 +155,14 @@ describe('authorization headers', function() {
             // configSetup();
           });
 
-          it('sends it in initial request', function(done) {
+          xit('sends it in initial request', function(done) {
             fetchMock.mock((url : string , opts : any) => {
               expect(opts.headers.Authorization).to.eq('Token token="myt0k3n"')
               done();
               return true;
             }, 200);
 
-            Author.find(1);
+            Author.find(1).catch(done)
           });
         });
       });

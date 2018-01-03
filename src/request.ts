@@ -48,19 +48,14 @@ export class Request {
   private async _fetchWithLogging(url: string, options: RequestInit) : Promise<any> {
     this._logRequest(options.method || 'UNDEFINED METHOD', url);
 
-    try {
-      let response = await this._fetch(url, options);
+    let response = await this._fetch(url, options);
 
-      this._logResponse(response['jsonPayload']);
+    this._logResponse(response['jsonPayload']);
 
-      return response
-    } catch(e) {
-      throw e
-    }
+    return response
   }
 
   private async _fetch(url: string, options: RequestInit) : Promise<any> {
-    // return new Promise((resolve, reject) => {
     try {
       this.middleware.beforeFetch(url, options)
     } catch(e) {

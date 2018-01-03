@@ -1,6 +1,7 @@
 require("ts-node").register({
   compilerOptions: {
     noEmitHelpers: false,
+    importHelpers: true,
     module: "commonjs"
   }
 });
