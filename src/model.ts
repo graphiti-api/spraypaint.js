@@ -1,5 +1,4 @@
 import { CollectionProxy, RecordProxy } from './proxies';
-// import { camelize } from './util/string';
 import { ValidationErrors } from './util/validation-errors';
 import { IncludeDirective } from './util/include-directive'
 import { refreshJWT } from './util/refresh-jwt';
@@ -7,7 +6,6 @@ import relationshipIdentifiersFor from './util/relationship-identifiers';
 import { Request, RequestVerbs } from './request';
 import { WritePayload } from './util/write-payload';
 
-import cloneDeep from './util/clonedeep';
 import { deserialize, deserializeInstance } from './util/deserialize';
 import { Attribute } from './attribute';
 import DirtyChecker from './util/dirty-check';
@@ -16,6 +14,9 @@ import { TypeRegistry } from './type-registry'
 import { camelize } from 'inflected'
 import { logger } from './logger';
 import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
+
+import cloneDeep from './util/clonedeep';
+import { nonenumerable } from './util/decorators'
 
 export interface ModelConfiguration {
   baseUrl : string
@@ -187,16 +188,18 @@ export class JSORMBase {
 
   id? : string;
   temp_id? : string;
-  relationships : Record<string, JSORMBase | JSORMBase[]> = {}
-  klass : typeof JSORMBase
-  private _persisted : boolean = false;
-  private _markedForDestruction: boolean = false;
-  private _markedForDisassociation: boolean = false;
-  private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
-  private _attributes : Record<string, any>
-  private _originalAttributes : Record<string, any>
-  private __meta__ : any
-  private _errors : object = {}
+
+  @nonenumerable relationships : Record<string, JSORMBase | JSORMBase[]> = {}
+  @nonenumerable klass : typeof JSORMBase
+
+  @nonenumerable private _persisted : boolean = false;
+  @nonenumerable private _markedForDestruction: boolean = false;
+  @nonenumerable private _markedForDisassociation: boolean = false;
+  @nonenumerable private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
+  @nonenumerable private _attributes : Record<string, any>
+  @nonenumerable private _originalAttributes : Record<string, any>
+  @nonenumerable private __meta__ : any
+  @nonenumerable private _errors : object = {}
 
   static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
     return deserialize(this.typeRegistry, resource, payload);
