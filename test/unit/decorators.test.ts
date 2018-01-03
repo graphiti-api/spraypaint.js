@@ -76,12 +76,12 @@ describe('Decorators', () => {
       it('can be used without args', () => {
         @Model()
         class TestClass extends BaseModel {
-          @Attr() testField : string
+          @Attr({type: String}) testField : string
         }
 
         expect(TestClass.attributeList['testField']).to.include({
           persist: true,
-          type: undefined,
+          type: String,
           name: 'testField'
         })
       })
@@ -96,6 +96,22 @@ describe('Decorators', () => {
 
         expect(TestClass.attributeList['testField']).to.include({
           persist: true,
+          type: undefined,
+          name: 'testField'
+        })
+      })
+    })
+
+    context('when used directly against a model without decorator syntax', () => {
+      it('sets up the attribute correctly', () => {
+        @Model()
+        class TestClass extends BaseModel {
+          
+        }
+        Attr(TestClass, 'testField', {persist : false })
+
+        expect(TestClass.attributeList['testField']).to.include({
+          persist: false,
           type: undefined,
           name: 'testField'
         })
@@ -186,6 +202,22 @@ describe('Decorators', () => {
           let assoc = TestClass.attributeList['testAssociation'] 
 
           expect(assoc.owner).to.equal(TestClass)
+        })
+      })
+
+      context('when used without decorator syntax', () => {
+        it('allows the class, field, and options to be passed directly', () => {
+          @Model()
+          class TestClass extends BaseModel {
+          }
+
+          Assoc(TestClass, 'testField', {type: AssociationModel})
+
+          expect(TestClass.attributeList['testField']).to.include({
+            persist: true,
+            type: AssociationModel,
+            name: 'testField'
+          })
         })
       })
     })
