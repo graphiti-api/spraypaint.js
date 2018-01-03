@@ -1,16 +1,16 @@
-import Model from '../model';
-import { camelize } from './string'
+import { JSORMBase } from '../model';
+import { camelize } from 'inflected'
 
-export default class ValidationErrors {
-  model: Model;
+export class ValidationErrors {
+  model: JSORMBase;
   payload: Array<Object> = [];
 
-  constructor(model: Model, payload: Array<Object>) {
+  constructor(model: JSORMBase, payload: Array<Object>) {
     this.model = model;
     this.payload = payload;
   }
 
-  static apply(model: Model, payload: Array<Object>) {
+  static apply(model: JSORMBase, payload: Array<Object>) {
     let instance = new ValidationErrors(model, payload);
     let errors = instance.apply();
   }
@@ -36,13 +36,13 @@ export default class ValidationErrors {
     let attribute = meta['attribute']
 
     if (this.model.klass.camelizeKeys) {
-      attribute = camelize(attribute)
+      attribute = camelize(attribute, false)
     }
 
     errorsAccumulator[attribute] = meta['message'];
   }
 
-  private _processRelationship(model: Model, meta: Object) {
+  private _processRelationship(model: JSORMBase, meta: Object) {
     let relatedObject = model[meta['name']];
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find((r) => {

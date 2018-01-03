@@ -4,3 +4,7 @@ require("ts-node").register({
     module: "commonjs"
   }
 });
+
+process.on('unhandledRejection', (reason, p) => {
+  console.log(`UNHANDLED PROMISE REJECTION: ${reason.stack}`)
+})

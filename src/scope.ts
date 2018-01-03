@@ -43,20 +43,34 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   async all() : Promise<CollectionProxy<T['prototype']>> {
-    let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
+    try {
+      let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
 
-    return this._buildCollectionResult(response)
+      return this._buildCollectionResult(response)
+    } catch(e) {
+      throw e
+    }
   }
 
   async find(id : string | number) : Promise<RecordProxy<T['prototype']>> {
-    let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
+    try {
+      let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
 
-    return this._buildRecordResult(json)
+      return this._buildRecordResult(json)
+    } catch(e) {
+      throw e
+    }
   }
 
   async first() : Promise<RecordProxy<T['prototype']>> {
     let newScope = this.per(1);
-    let rawResult = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
+    let rawResult 
+
+    try {
+     rawResult = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
+    } catch (err) {
+      throw err
+    }
 
     return this._buildRecordResult(rawResult)
   }
@@ -237,9 +251,13 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     let request = new Request(this.model.middlewareStack);
     let fetchOpts = this.model.fetchOptions()
 
-    let response = await request.get(url, fetchOpts)
-    refreshJWT(this.model, response);
-    return response['jsonPayload'];
+    try {
+      let response = await request.get(url, fetchOpts)
+      refreshJWT(this.model, response);
+      return response['jsonPayload'];
+    } catch (e) {
+      throw e
+    }
   }
 
   private _buildRecordResult(jsonResult : JsonapiDoc) {

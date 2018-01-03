@@ -6,7 +6,7 @@ after(function () {
   fetchMock.restore();
 });
 
-describe.skip('authorization headers', function() {
+describe('authorization headers', function() {
   describe('when header is set on model class', function() {
     beforeEach(function() {
       ApplicationRecord.jwt = 'myt0k3n';
@@ -49,7 +49,7 @@ describe.skip('authorization headers', function() {
       ApplicationRecord.jwt = undefined;
     });
 
-    it('does not override the JWT', async function(done) {
+    it('does not override the JWT', async function() {
       await Author.all()
 
       expect(ApplicationRecord.jwt).to.eq('dont change me');
@@ -106,13 +106,12 @@ describe.skip('authorization headers', function() {
           Config.jwtLocalStorage = 'jwt';
         });
 
-        it('updates localStorage on server response', function(done) {
-          Author.all().then((response) => {
-            let called = Config.localStorage.setItem
-              .calledWith('jwt', 'somet0k3n');
-            expect(called).to.eq(true);
-            done();
-          });
+        it('updates localStorage on server response', async function() {
+          await Author.all()
+
+          let called = Config.localStorage.setItem
+            .calledWith('jwt', 'somet0k3n');
+          expect(called).to.eq(true);
         });
 
         it('uses the new jwt in subsequent requests', function(done) {
@@ -141,14 +140,14 @@ describe.skip('authorization headers', function() {
             // configSetup();
           });
 
-          it('sends it in initial request', async function() {
+          it('sends it in initial request', function(done) {
             fetchMock.mock((url : string , opts : any) => {
               expect(opts.headers.Authorization).to.eq('Token token="myt0k3n"')
-              // done();
+              done();
               return true;
             }, 200);
 
-            await Author.find(1);
+            Author.find(1);
           });
         });
       });

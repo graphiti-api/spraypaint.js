@@ -1,6 +1,6 @@
 import { CollectionProxy, RecordProxy } from './proxies';
 // import { camelize } from './util/string';
-// import ValidationErrors from './util/validation-errors';
+import { ValidationErrors } from './util/validation-errors';
 import { IncludeDirective } from './util/include-directive'
 import { refreshJWT } from './util/refresh-jwt';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
@@ -619,7 +619,7 @@ export class JSORMBase {
     refreshJWT(this.klass, response);
 
     if (response.status == 422) {
-      // ValidationErrors.apply(this, response['jsonPayload']);
+      ValidationErrors.apply(this, response['jsonPayload']);
       return false
     } else {
       callback();

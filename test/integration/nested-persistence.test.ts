@@ -2,8 +2,6 @@ import { sinon, expect, fetchMock } from '../test-helper';
 import { Author, Book, Genre } from '../fixtures';
 import tempId from '../../src/util/temp-id';
 
-let fetchMock = require('fetch-mock');
-
 let instance : Author
 let payloads : Array<JsonapiDoc>
 let putPayloads : Array<JsonapiDoc>
@@ -15,17 +13,17 @@ type method = 'update' | 'destroy' | 'disassociate'
 const resetMocks = function() {
   fetchMock.restore();
 
-  fetchMock.post('http://example.com/api/v1/authors', function(url, payload) {
+  fetchMock.post('http://example.com/api/v1/authors', function(url, payload : any) {
     payloads.push(JSON.parse(payload.body));
     return serverResponse;
   });
 
-  fetchMock.put('http://example.com/api/v1/authors/1', function(url, payload) {
+  fetchMock.put('http://example.com/api/v1/authors/1', function(url, payload : any) {
     putPayloads.push(JSON.parse(payload.body));
     return serverResponse;
   });
 
-  fetchMock.delete('http://example.com/api/v1/authors/1', function(url, payload) {
+  fetchMock.delete('http://example.com/api/v1/authors/1', function(url, payload : any) {
     deletePayloads.push({});
     return serverResponse;
   });
@@ -193,8 +191,8 @@ describe('nested persistence', function() {
   });
 
   afterEach(function() {
-    tempIdIndex = 0;
-    tempId.generate['restore']();
+    tempIdIndex = 0
+    ;(<any>tempId.generate)['restore']()
   });
 
   describe('basic nested create', function() {
@@ -207,38 +205,34 @@ describe('nested persistence', function() {
     // todo test on the way back - id set, attrs updated, isPersisted
     // todo remove #destroy? and just save when markwithpersisted? combo? for ombined payload
     // todo test unique includes/circular relationshio
-    it('sends the correct payload', function(done) {
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(payloads[0]).to.deep.equal(expectedCreatePayload);
-        done();
-      });
+    it('sends the correct payload', async function() {
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(payloads[0]).to.deep.equal(expectedCreatePayload);
     });
 
-    it('assigns ids from the response', function(done) {
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(instance.id).to.eq('1');
-        expect(instance.books[0].id).to.eq('10');
-        expect(instance.books[0].genre.id).to.eq('20');
-        done();
-      });
+    it('assigns ids from the response', async function() {
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(instance.id).to.eq('1');
+      expect(instance.books[0].id).to.eq('10');
+      expect(instance.books[0].genre.id).to.eq('20');
     });
 
-    xit('removes old temp ids', function(done) {
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(instance.id).to.eq('1');
-        expect(instance.books[0].temp_id).to.eq(null);
-        expect(instance.books[0].genre.temp_id).to.eq(null);
-        done();
-      });
+    xit('removes old temp ids', async function() {
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(instance.id).to.eq('1');
+      expect(instance.books[0].temp_id).to.eq(null);
+      expect(instance.books[0].genre.temp_id).to.eq(null);
     });
 
-    it('updates attributes with data from server', function(done) {
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(instance.firstName).to.eq('first name from server');
-        expect(instance.books[0].title).to.eq('title from server');
-        expect(instance.books[0].genre.name).to.eq('name from server');
-        done();
-      });
+    it('updates attributes with data from server', async function() {
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(instance.firstName).to.eq('first name from server');
+      expect(instance.books[0].title).to.eq('title from server');
+      expect(instance.books[0].genre.name).to.eq('name from server');
     });
 
     describe('when a hasMany relationship has no dirty members', function() {
@@ -246,11 +240,9 @@ describe('nested persistence', function() {
         instance.books[0] = new Book();
       });
 
-      it('should not be sent in the payload', function(done) {
-        instance.save({ with: { books: 'genre' } }).then((response) => {
-          expect(payloads[0]['data']['relationships']).to.eq(undefined)
-          done();
-        });
+      it('should not be sent in the payload', async function() {
+        await instance.save({ with: { books: 'genre' } })
+        expect((<any>payloads)[0].data.relationships).to.eq(undefined)
       });
     });
   });

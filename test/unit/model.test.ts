@@ -91,6 +91,25 @@ describe('Model', () => {
               }).to.throw(/Cannot set JWT on JSORMBase/)
             })
           })
+
+          describe('when localStorage is configured', function() {
+            beforeEach(function() {
+              Config.jwtLocalStorage = 'jwt'
+              Config.localStorage = { setItem: sinon.spy() }
+            })
+
+            afterEach(function() {
+              Config.jwtLocalStorage = undefined
+              Config.localStorage = undefined
+            })
+
+            it('adds to localStorage', function() {
+              Author.setJWT('n3wt0k3n');
+              let called = Config.localStorage.setItem
+                .calledWith('jwt', 'n3wt0k3n');
+              expect(called).to.eq(true);
+            })
+          })
         });
       })
 
