@@ -95,12 +95,12 @@ class Deserializer {
     instance.assignAttributes(datum.attributes);
 
     // assign meta
-    instance.__meta__ = datum.meta;
+    instance.setMeta(datum.meta)
 
     // so we don't double-process the same thing
     // must push before relationships
     this._deserialized.push(instance);
-    this._processRelationships(instance, datum.relationships || {}, includeDirective);
+    this._processRelationships(instance, datum.relationships || {} as any, includeDirective);
 
     // remove objects marked for destruction
     this._removeDeletions(instance, includeDirective);

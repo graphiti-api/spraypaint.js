@@ -1,7 +1,7 @@
 import { sinon, expect } from '../test-helper'
 import { Person, Author, PersonWithoutCamelizedKeys } from '../fixtures'
 
-describe.only('Model attributes', () => {
+describe('Model attributes', () => {
   it('supports direct assignment', () => {
     let person = new Person()
     expect(person.firstName).to.eq(undefined)

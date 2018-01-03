@@ -1,7 +1,16 @@
 import Config from './configuration';
 import colorize from './util/colorize';
+import { MiddlewareStack } from './middleware-stack';
 
-export default class Request {
+export type RequestVerbs = keyof Request
+
+export class Request {
+  middleware: MiddlewareStack
+
+  constructor(middleware: MiddlewareStack) {
+    this.middleware = middleware
+  }
+
   get(url : string, options: RequestInit) : Promise<any> {
     options.method = 'GET';
     return this._fetchWithLogging(url, options);
@@ -36,26 +45,89 @@ export default class Request {
     Config.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)));
   }
 
-  private _fetchWithLogging(url: string, options: RequestInit) : Promise<any> {
-    this._logRequest(options.method, url);
-    let promise = this._fetch(url, options);
-    promise.then((response : any) => {
+  private async _fetchWithLogging(url: string, options: RequestInit) : Promise<any> {
+    this._logRequest(options.method || 'UNDEFINED METHOD', url);
+
+    try {
+      let response = await this._fetch(url, options);
+
       this._logResponse(response['jsonPayload']);
-    });
-    return promise;
+
+      return response
+    } catch(e) {
+      throw e
+    }
   }
 
-  private _fetch(url: string, options: RequestInit) : Promise<any> {
-    return new Promise((resolve, reject) => {
-      let fetchPromise = fetch(url, options);
-      fetchPromise.then((response) => {
-        response.json().then((json) => {
-          response['jsonPayload'] = json;
-          resolve(response);
-        }).catch((e) => { throw(e); });
-      });
+  private async _fetch(url: string, options: RequestInit) : Promise<any> {
+    // return new Promise((resolve, reject) => {
+    try {
+      this.middleware.beforeFetch(url, options)
+    } catch(e) {
+      throw new RequestError('beforeFetch failed; review middleware.beforeFetch stack', url, options, e)
+    }
 
-      fetchPromise.catch(reject);
-    });
+    let response
+
+    try {
+      response = await fetch(url, options)
+    } catch (e) {
+      throw new ResponseError(null, e.message, e)
+    }
+
+    await this._handleResponse(response)
+
+    return response
+  }
+
+  private async _handleResponse(response: Response) {
+    let json
+    try {
+      json = await response.json()
+    } catch(e) {
+      throw new ResponseError(response, 'invalid json', e)
+    }
+
+    try {
+      this.middleware.afterFetch(response, json)
+    } catch(e) {
+      // afterFetch middleware failed
+      throw new ResponseError(response, 'afterFetch failed; review middleware.afterFetch stack', e)
+    }
+
+    if (response.status >= 500) {
+      throw new ResponseError(response, 'Server Error')
+    } else if (response.status !== 422 && json['data'] === undefined) {
+      // Bad JSON, for instance an errors payload
+      // Allow 422 since we specially handle validation errors
+      throw new ResponseError(response, 'invalid json')
+    }
+
+    ;(<any>response)['jsonPayload'] = json;
+  }
+}
+
+class RequestError extends Error {
+  url: string
+  options: RequestInit
+  originalError: Error
+
+  constructor(message: string, url: string, options: RequestInit, originalError: Error) {
+    super(message)
+    this.stack = originalError.stack
+    this.url = url
+    this.options = options
+    this.originalError = originalError
+  }
+}
+
+class ResponseError extends Error {
+  response: Response | null
+  originalError: Error | undefined
+
+  constructor(response: Response | null, message?: string, originalError?: Error) {
+    super(message || 'Invalid Response')
+    this.response = response
+    this.originalError = originalError
   }
 }

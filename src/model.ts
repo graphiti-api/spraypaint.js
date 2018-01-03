@@ -1,34 +1,36 @@
-// import Config from '../configuration';
-// import { CollectionProxy, RecordProxy } from '../proxies';
-// import _extend from '../util/extend';
-// import { camelize } from '../util/string';
-// import WritePayload from '../util/write-payload';
-// import IncludeDirective from '../util/include-directive';
-// import ValidationErrors from '../util/validation-errors';
-// import refreshJWT from '../util/refresh-jwt';
-import relationshipIdentifiersFor from '../util/relationship-identifiers';
-// import Request from '../request';
+import { CollectionProxy, RecordProxy } from './proxies';
+// import { camelize } from './util/string';
+import { ValidationErrors } from './util/validation-errors';
+import { IncludeDirective } from './util/include-directive'
+import { refreshJWT } from './util/refresh-jwt';
+import relationshipIdentifiersFor from './util/relationship-identifiers';
+import { Request, RequestVerbs } from './request';
+import { WritePayload } from './util/write-payload';
 
-import cloneDeep from '../util/clonedeep';
-import { deserialize, deserializeInstance } from '../util/deserialize';
-import { Attribute } from '../attribute';
-import DirtyChecker from '../util/dirty-check';
-import Scope from '../scope';
-import { TypeRegistry } from '../type-registry'
+import cloneDeep from './util/clonedeep';
+import { deserialize, deserializeInstance } from './util/deserialize';
+import { Attribute } from './attribute';
+import DirtyChecker from './util/dirty-check';
+import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope';
+import { TypeRegistry } from './type-registry'
 import { camelize } from 'inflected'
+import { logger } from './logger';
+import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
 
 export interface ModelConfiguration {
   baseUrl : string
   apiNamespace : string
   jsonapiType : string
   endpoint : string;
-  isJWTOwner : boolean
   jwt : string
   camelizeKeys : boolean
   strictAttributes : boolean
 }
-
 export type ModelConfigurationOptions = Partial<ModelConfiguration> 
+
+export interface SaveOptions {
+  with? : IncludeScope
+}
 
 export type ExtendedModel<
   Subclass extends JSORMBase, 
@@ -79,12 +81,12 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
   isJSORMModel : boolean
   isBaseClass : boolean
   typeRegistry : TypeRegistry
+  middlewareStack : MiddlewareStack
 
   baseUrl : string
   apiNamespace : string
   jsonapiType? : string
   endpoint : string;
-  isJWTOwner : boolean
   jwt? : string;
   camelizeKeys : boolean
   strictAttributes : boolean
@@ -100,12 +102,7 @@ function extendModel<
   Superclass: ModelConstructor<M, Attrs>, 
   options : ExtendOptions<M, ExtendedAttrs, Methods>
 ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-  class Subclass extends (<ModelConstructor<JSORMBase, Attrs>>Superclass) {
-    // constructor(attrs?: Partial<Attrs & ExtendedAttrs>) {
-    // constructor(attrs?: Record<string, any>) {
-    //   super(attrs)
-    // }
-  }
+  class Subclass extends (<ModelConstructor<JSORMBase, Attrs>>Superclass) { }
 
   Superclass.inherited(<any>Subclass)
   
@@ -117,6 +114,8 @@ function extendModel<
       if(!attr.name) {
         attr.name = key
       }
+
+      attr.owner = <any>Subclass
 
       attrs[key] = attr
     }
@@ -165,7 +164,6 @@ export class JSORMBase {
   static jsonapiType? : string
   static endpoint : string
   static isBaseClass : boolean
-  static isJWTOwner : boolean = false
   static jwt? : string;
   static camelizeKeys : boolean = true
   static strictAttributes : boolean = false
@@ -174,7 +172,11 @@ export class JSORMBase {
   static extendOptions : any
   static parentClass : typeof JSORMBase
   static currentClass : typeof JSORMBase = JSORMBase
-  static typeRegistry : TypeRegistry
+  static beforeFetch : BeforeFilter | undefined
+  static afterFetch : AfterFilter | undefined
+
+  private static _typeRegistry : TypeRegistry
+  private static _middlewareStack : MiddlewareStack
 
   // This is to allow for sane type checking in collaboration with the 
   // isModelClass function exported below.  It is very hard to find out whether
@@ -183,18 +185,18 @@ export class JSORMBase {
   // for use around the code.
   static readonly isJSORMModel : boolean = true
 
-
   id? : string;
   temp_id? : string;
-  _attributes : Record<string, any>
-  _originalAttributes : Record<string, any>
-  __meta__ : any
   relationships : Record<string, JSORMBase | JSORMBase[]> = {}
-  _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
   klass : typeof JSORMBase
   private _persisted : boolean = false;
   private _markedForDestruction: boolean = false;
   private _markedForDisassociation: boolean = false;
+  private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
+  private _attributes : Record<string, any>
+  private _originalAttributes : Record<string, any>
+  private __meta__ : any
+  private _errors : object = {}
 
   static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
     return deserialize(this.typeRegistry, resource, payload);
@@ -220,6 +222,10 @@ export class JSORMBase {
     if (!this.typeRegistry) {
       this.typeRegistry = new TypeRegistry(this)
     }
+
+    if (!this.middlewareStack) {
+      this._middlewareStack = new MiddlewareStack()
+    }
   }
 
   static isSubclassOf(maybeSuper : typeof JSORMBase) : boolean {
@@ -234,6 +240,34 @@ export class JSORMBase {
     }
 
     return false
+  }
+
+  static get baseClass() {
+    let current = this.currentClass
+
+    while(current) {
+      if (current.isBaseClass) {
+        return current
+      }
+
+      current = current.parentClass
+    }
+  }
+
+  static get typeRegistry() : TypeRegistry {
+    if (this.baseClass  === undefined) {
+      throw new Error(`No base class for ${this.name}`)
+    }
+
+    return this.baseClass._typeRegistry
+  }
+
+  static set typeRegistry(registry: TypeRegistry) {
+    if (!this.isBaseClass) {
+      throw new Error('Cannot set a registry on a non-base class')
+    }
+
+    this._typeRegistry = registry
   }
 
   static registerType() : void {
@@ -344,6 +378,10 @@ export class JSORMBase {
     }
   }
 
+  setMeta(metaObj : object | undefined) {
+    this.__meta__ = metaObj
+  }
+
   relationshipResourceIdentifiers(relationNames: Array<string>) {
     return relationshipIdentifiersFor(this, relationNames);
   }
@@ -363,11 +401,23 @@ export class JSORMBase {
      }
   }
 
-  get hasError() {
-    return Object.keys(this.errors).length > 1;
+  get errors() {
+    return this._errors
   }
 
-  isDirty(relationships?: Object | Array<any> | string) : boolean {
+  set errors(errs : object) {
+    this._errors = errs
+  }
+
+  get hasError() {
+    return Object.keys(this._errors).length > 1;
+  }
+
+  clearErrors() {
+    this._errors = {};
+  }
+
+  isDirty(relationships?: IncludeScope) : boolean {
     let dc = new DirtyChecker(this);
     return dc.check(relationships);
   }
@@ -385,8 +435,218 @@ export class JSORMBase {
   dup() : JSORMBase {
     return cloneDeep(this);
   }
-}; 
-(<any>JSORMBase.prototype).klass = JSORMBase
+  
+  /*
+   *
+   * Model Persistence Methods
+   * 
+   */
+  static fetchOptions() : RequestInit {
+    let options = {
+      headers: {
+        Accept: 'application/json',
+        ['Content-Type']: 'application/json'
+      } as any
+    }
+
+    if (this.getJWT()) {
+      options.headers.Authorization = `Token token="${this.getJWT()}"`;
+    }
+
+    return options
+  }
+
+  static url(id?: string | number) : string {
+    let endpoint = this.endpoint || `/${this.jsonapiType}`;
+    let base = `${this.fullBasePath()}${endpoint}`;
+
+    if (id) {
+      base = `${base}/${id}`;
+    }
+
+    return base;
+  }
+
+  static fullBasePath() : string {
+    return `${this.baseUrl}${this.apiNamespace}`;
+  }
+
+  static get middlewareStack() : MiddlewareStack {
+    if (this.baseClass) {
+      let stack = this.baseClass._middlewareStack
+
+      // Normally we want to use the middleware stack defined on the baseClass, but in the event
+      // that our subclass has overridden one or the other, we create a middleware stack that 
+      // replaces the normal filters with the class override.
+      if (this.beforeFetch || this.afterFetch) {
+        let before = this.beforeFetch ? [this.beforeFetch] : stack.beforeFilters
+        let after = this.afterFetch ? [this.afterFetch] : stack.afterFilters
+
+        return new MiddlewareStack(before, after)
+      } else {
+        return stack
+      }
+    } else {
+      // Shouldn't ever get here, as this should only happen on JSORMBase
+      return new MiddlewareStack()
+    }
+  }
+
+  static set middlewareStack(stack : MiddlewareStack) {
+    this._middlewareStack = stack
+  }
+
+  static scope<I extends typeof JSORMBase>(this: I) : Scope<I> {
+    return new Scope(this)
+    // return this._scope || new Scope(this);
+  }
+
+  static first() {
+    return this.scope().first();
+    // return Promise.resolve(this)
+  }
+  static all() {
+    return this.scope().all();
+  }
+
+  static find(id : string | number) {
+    return this.scope().find(id);
+  }
+
+  static where(clause: WhereClause) : Scope {
+    return this.scope().where(clause);
+  }
+
+  static page(number: number) : Scope {
+    return this.scope().page(number);
+  }
+
+  static per(size: number) : Scope {
+    return this.scope().per(size);
+  }
+
+  static order(clause: SortScope | string) : Scope {
+    return this.scope().order(clause);
+  }
+
+  static select(clause: FieldScope) : Scope {
+    return this.scope().select(clause);
+  }
+
+  static selectExtra(clause: FieldScope) : Scope {
+    return this.scope().selectExtra(clause);
+  }
+
+  static stats(clause: StatsScope) : Scope {
+    return this.scope().stats(clause);
+  }
+
+  static includes(clause: IncludeScope) : Scope {
+    return this.scope().includes(clause);
+  }
+
+  static merge(obj : Record<string, Scope>) : Scope {
+    return this.scope().merge(obj);
+  }
+
+  static setJWT(token: string) : void {
+    if (this.baseClass === undefined) {
+      throw new Error(`Cannot set JWT on ${this.name}: No base class present.`)
+    }
+
+    this.baseClass.jwt = token;
+  }
+
+  static getJWT() : string | undefined {
+    let owner = this.baseClass
+
+    if (owner) {
+      return owner.jwt;
+    }
+  }
+
+  static getJWTOwner() : typeof JSORMBase | undefined {
+    logger.warn('JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead')
+
+    return this.baseClass
+  }
+
+  async destroy() : Promise<boolean> {
+    let url     = this.klass.url(this.id);
+    let verb    = 'delete';
+    let request = new Request(this._middleware());
+    let response : any
+
+    try {
+      response = await request.delete(url, this._fetchOptions());
+    } catch (err) {
+      throw(err)
+    }
+     
+    return await this._handleResponse(response, () => {
+      this.isPersisted = false;
+    });
+  }
+
+
+  async save(options: SaveOptions = {}) : Promise<boolean> {
+    let url     = this.klass.url()
+    let verb : RequestVerbs = 'post'
+    let request = new Request(this._middleware())
+    let payload = new WritePayload(this, options['with'])
+    let response : any
+
+    if (this.isPersisted) {
+      url  = this.klass.url(this.id)
+      verb = 'put'
+    }
+
+    let json = payload.asJSON();
+    
+    try {
+      response = await request[verb](url, json, this._fetchOptions())
+    } catch (err) {
+      throw(err)
+    }
+
+    return await this._handleResponse(response, () => {
+      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
+      payload.postProcess();
+    });
+  }
+
+  private async _handleResponse(response: any, callback: () => void) : Promise<boolean>  {
+    refreshJWT(this.klass, response);
+
+    if (response.status == 422) {
+      ValidationErrors.apply(this, response['jsonPayload']);
+      return false
+    } else {
+      callback();
+      return true
+    }
+  }
+
+  private _fetchOptions() : RequestInit {
+    return this.klass.fetchOptions()
+  }
+
+  private _middleware() : MiddlewareStack {
+    return this.klass.middlewareStack
+  }
+  
+  // Todo:
+  // * needs to recurse the directive
+  // * remove the corresponding code from isPersisted and handle here (likely
+  // only an issue with test setup)
+  // * Make all calls go through resetRelationTracking();
+  resetRelationTracking(includeDirective: Object) {
+    this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
+  }
+} 
+
+;(<any>JSORMBase.prototype).klass = JSORMBase
+
 
 export function isModelClass(arg: any) : arg is typeof JSORMBase {
   if (!arg) { return false }
@@ -397,197 +657,3 @@ export function isModelInstance(arg: any) : arg is JSORMBase {
   if (!arg) { return false }
   return isModelClass(arg.constructor.currentClass)
 }
-
-// export abstract class OldModel {
-
-//   _originalRelationships: Object = {};
-//   relationships: Object = {};
-//   errors: Object = {};
-//   __meta__: Object | null = null;
-
-//   private static _scope: Scope;
-
-//   static extend(obj : any) : any {
-//     return _extend(this, obj);
-//   }
-
-
-//   static setJWT(token: string) : void {
-//     this.getJWTOwner().jwt = token;
-//   }
-
-//   static getJWT() : string | undefined {
-//     let owner = this.getJWTOwner();
-
-//     if (owner) {
-//       return owner.jwt;
-//     }
-//   }
-
-//   static fetchOptions() : RequestInit {
-//     let options = {
-//       headers: {
-//         Accept: 'application/json',
-//         ['Content-Type']: 'application/json'
-//       } as any
-//     }
-
-//     if (this.getJWT()) {
-//       options.headers.Authorization = `Token token="${this.getJWT()}"`;
-//     }
-
-//     return options
-//   }
-
-//   static getJWTOwner() : typeof Model {
-//     if (this.isJWTOwner) {
-//       return this;
-//     } else {
-//       if (this.parentClass) {
-//         return this.parentClass.getJWTOwner();
-//       } else {
-//         return;
-//       }
-//     }
-//   }
-
-
-//   clearErrors() {
-//     this.errors = {};
-//   }
-
-//   // Todo:
-//   // * needs to recurse the directive
-//   // * remove the corresponding code from isPersisted and handle here (likely
-//   // only an issue with test setup)
-//   // * Make all calls go through resetRelationTracking();
-//   resetRelationTracking(includeDirective: Object) {
-//     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
-//   }
-
-
-
-//   destroy() : Promise<any> {
-//     let url     = this.klass.url(this.id);
-//     let verb    = 'delete';
-//     let request = new Request();
-
-//     let requestPromise = request.delete(url, this._fetchOptions());
-//     return this._writeRequest(requestPromise, () => {
-//       this.isPersisted(false);
-//     });
-//   }
-
-//   save(options: Object = {}) : Promise<any> {
-//     let url     = this.klass.url();
-//     let verb    = 'post';
-//     let request = new Request();
-//     let payload = new WritePayload(this, options['with']);
-
-//     if (this.isPersisted()) {
-//       url  = this.klass.url(this.id);
-//       verb = 'put';
-//     }
-
-//     let json = payload.asJSON();
-//     let requestPromise = request[verb](url, json, this._fetchOptions());
-//     return this._writeRequest(requestPromise, (response) => {
-//       this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
-//       //this.isPersisted(true);
-//       payload.postProcess();
-//     });
-//   }
-
-//   private _writeRequest(requestPromise : Promise<any>, callback: Function) : Promise<any> {
-//     return new Promise((resolve, reject) => {
-//       requestPromise.catch((e) => { throw(e) });
-//       return requestPromise.then((response) => {
-//         this._handleResponse(response, resolve, reject, callback);
-//       });
-//     });
-//   }
-
-//   private _handleResponse(response: any, resolve: Function, reject: Function, callback: Function) : void {
-//     refreshJWT(this.klass, response);
-
-//     if (response.status == 422) {
-//       ValidationErrors.apply(this, response['jsonPayload']);
-//       resolve(false);
-//     } else if (response.status >= 500) {
-//       reject('Server Error');
-//     } else {
-//       callback(response);
-//       resolve(true);
-//     }
-//   }
-
-//   private _fetchOptions() : RequestInit {
-//     return this.klass.fetchOptions()
-//   }
-// }
-
-//   static all() : Promise<CollectionProxy<Model>> {
-//     return this.scope().all();
-//   }
-
-//   static find(id : string | number) : Promise<RecordProxy<Model>> {
-//     return this.scope().find(id);
-//   }
-
-//   static first() : Promise<RecordProxy<Model>> {
-//     return this.scope().first();
-//   }
-
-//   static where(clause: Object) : Scope {
-//     return this.scope().where(clause);
-//   }
-
-//   static page(number: number) : Scope {
-//     return this.scope().page(number);
-//   }
-
-//   static per(size: number) : Scope {
-//     return this.scope().per(size);
-//   }
-
-//   static order(clause: Object | string) : Scope {
-//     return this.scope().order(clause);
-//   }
-
-//   static select(clause: Object) : Scope {
-//     return this.scope().select(clause);
-//   }
-
-//   static selectExtra(clause: Object) : Scope {
-//     return this.scope().selectExtra(clause);
-//   }
-
-//   static stats(clause: Object) : Scope {
-//     return this.scope().stats(clause);
-//   }
-
-//   static includes(clause: string | Object | Array<any>) : Scope {
-//     return this.scope().includes(clause);
-//   }
-
-//   static merge(obj : Object) : Scope {
-//     return this.scope().merge(obj);
-//   }
-
-//   static url(id?: string | number) : string {
-//     let endpoint = this.endpoint || `/${this.jsonapiType}`;
-//     let base = `${this.fullBasePath()}${endpoint}`;
-
-//     if (id) {
-//       base = `${base}/${id}`;
-//     }
-
-//     return base;
-//   }
-
-//   static fullBasePath() : string {
-//     return `${this.baseUrl}${this.apiNamespace}`;
-//   }
-  // static scope(): Scope {
-  //   return this._scope || new Scope(this);
-  // }

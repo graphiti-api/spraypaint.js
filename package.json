@@ -9,9 +9,6 @@
   "license": "MIT",
   "homepage": "https://github.com/jsonapi-suite/jsorm",
   "scripts": {
-    "f:clean": "shx rm -rf _bundles lib lib-esm",
-    "f:build": "shx cp es-shims/* src/util/ && npm run clean && tsc && tsc -m es6 --outDir lib-esm && webpack && shx cp node-shims/* src/util/ ",
-    "f:test": "mocha -r test/tshook.js test/**/*.ts || true",
     "prebuild": "tsc -t es5 -m es6 --skipLibCheck -p ./tsconfig.json",
     "build": "npm-run-all --parallel build:dev build:prod",
     "build:dev": "NODE_ENV=development ./node_modules/.bin/rollup -c",
@@ -32,6 +29,7 @@
     "@types/chai": "^4.0.4",
     "@types/chai-as-promised": "^7.1.0",
     "@types/chai-things": "^0.0.32",
+    "@types/fetch-mock": "5.12.2",
     "@types/lodash": "^4.14.62",
     "@types/lodash.snakecase": "^4.1.3",
     "@types/mocha": "^2.2.44",

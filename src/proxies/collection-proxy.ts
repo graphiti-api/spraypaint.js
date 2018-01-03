@@ -1,34 +1,24 @@
-import Model from '../model';
+import { JSORMBase } from '../model'
+import { IResultProxy } from './index'
 
-class CollectionProxy<T> implements IResultProxy<T> {
-  private _raw_json : japiDoc;
-  private _array : Array<T>;
+export class CollectionProxy<T> implements IResultProxy<T> {
+  private _raw_json : JsonapiDoc
+  private _collection : Array<T>
 
-  constructor (raw_json : japiDoc = { data: [] }) {
-    this.setRaw(raw_json);
+  constructor (collection : T[], raw_json : JsonapiDoc = { data: [] }) {
+    this._collection = collection
+    this._raw_json = raw_json
   }
 
-  get raw () : japiDoc {
-    return this._raw_json;
+  get raw () : JsonapiDoc {
+    return this._raw_json
   }
 
   get data () : Array<T> {
-    return this._array;
+    return this._collection
   }
 
   get meta () : Object {
-    return this.raw.meta || {};
-  }
-
-  private setRaw = (json_payload : japiDoc) => {
-    this._raw_json = json_payload;
-
-    this._array = [];
-
-    this.raw.data.map((datum : japiResource) => {
-      this._array.push(Model.fromJsonapi(datum, this.raw));
-    });
+    return this.raw.meta || {}
   }
 }
-
-export default CollectionProxy;

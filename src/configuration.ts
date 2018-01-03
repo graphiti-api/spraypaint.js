@@ -2,7 +2,7 @@
 
 import { JSORMBase } from './model';
 import Attribute from './attribute';
-import Logger from './logger';
+import { Logger } from './logger';
 import cloneDeep from './util/clonedeep';
 
 export interface IConfigOptions {

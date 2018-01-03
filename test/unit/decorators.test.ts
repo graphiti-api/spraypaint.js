@@ -6,6 +6,7 @@ import {
   HasMany, 
   BelongsTo, 
 } from '../../src/decorators'
+import { Association } from '../../src/associations';
 import { JSORMBase } from '../../src/model'
 
 describe('Decorators', () => {
@@ -120,8 +121,6 @@ describe('Decorators', () => {
 
         @Model({jsonapiType: 'test_associations'})
         class MyAssoc extends BaseModel {}
-        beforeEach(() => {
-        })
         AssociationModel = MyAssoc
       })
 
@@ -176,6 +175,17 @@ describe('Decorators', () => {
             jsonapiType: 'test_associations',
             name: 'testAssociation'
           })
+        })
+
+        it('assigns the correct attribute owner', () => {
+          @Model()
+          class TestClass extends BaseModel {
+            @Assoc() testAssociation : any
+          }
+
+          let assoc = TestClass.attributeList['testAssociation'] 
+
+          expect(assoc.owner).to.equal(TestClass)
         })
       })
     })

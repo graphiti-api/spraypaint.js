@@ -1,5 +1,6 @@
 import { Attribute, AttrRecord, Attr } from './attribute';
 import { JSORMBase, ModelConstructor } from './model';
+import { TypeRegistry } from './type-registry';
 
 export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
   type? : Attr<T>
@@ -8,14 +9,15 @@ export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
 
 export interface Association {
   isRelationship : true
-  klass: typeof JSORMBase
+  readonly klass: typeof JSORMBase
   jsonapiType: string
 }
 
 export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> implements Association {
   isRelationship : true = true
-  klass : typeof JSORMBase
   jsonapiType : string
+  typeRegistry : TypeRegistry
+  private _klass : typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {
     super(options);
@@ -23,6 +25,17 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
     if (options.jsonapiType) {
       this.jsonapiType = options.jsonapiType
     }
+
+    if (this.type) {
+      this._klass = <any>this.type
+    }
+  }
+
+  get klass() : typeof JSORMBase {
+    if (!this._klass) { 
+      this._klass = modelForType(this, this.jsonapiType)
+    }
+    return this._klass 
   }
 
   getter(context: JSORMBase) {
@@ -43,8 +56,9 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
 
 export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements Association {
   isRelationship : true = true
-  klass : typeof JSORMBase
   jsonapiType : string
+  typeRegistry : TypeRegistry
+  private _klass : typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {
     super(options as any);
@@ -52,6 +66,17 @@ export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements
     if (options.jsonapiType) {
       this.jsonapiType = options.jsonapiType
     }
+
+    if (this.type) {
+      this._klass = <any>this.type
+    }
+  }
+
+  get klass() : typeof JSORMBase {
+    if (!this._klass) { 
+      this._klass = modelForType(this, this.jsonapiType)
+    }
+    return this._klass 
   }
 
   getter(context: JSORMBase) {
@@ -131,4 +156,15 @@ function extractAssocOpts<T extends JSORMBase>(options?: AssociationFactoryArgs<
   }
   
   return associationOpts
+}
+
+type ModelAssoc = { owner: typeof JSORMBase }
+function modelForType(association : ModelAssoc, jsonapiType : string) : typeof JSORMBase {
+  let klass = association.owner.typeRegistry.get(jsonapiType)
+
+  if (klass) {
+    return klass
+  } else {
+    throw new Error(`Unknown type "${jsonapiType}"`)
+  }
 }

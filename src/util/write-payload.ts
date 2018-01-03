@@ -1,18 +1,19 @@
-import Model from '../model';
-import IncludeDirective from './include-directive';
+import { JSORMBase } from '../model';
+import { IncludeDirective } from './include-directive';
 import * as _snakeCase from './snakecase';
 import tempId from './temp-id';
+import { IncludeScope } from '../scope';
 let snakeCase: any = (<any>_snakeCase).default || _snakeCase;
 snakeCase = snakeCase['default'] || snakeCase;
 
-export default class WritePayload {
-  model: Model;
+export class WritePayload {
+  model: JSORMBase;
   includeDirective: Object;
   included: Array<Object> = [];
 
-  constructor(model : Model, relationships: string | Array<any> | Object) {
+  constructor(model : JSORMBase, relationships?: IncludeScope) {
     let includeDirective = new IncludeDirective(relationships);
-    this.includeDirective = includeDirective.toObject();
+    this.includeDirective = includeDirective.toScopeObject();
     this.model = model;
   }
 
@@ -22,7 +23,7 @@ export default class WritePayload {
     this._eachAttribute((key, value) => {
       let snakeKey    = snakeCase(key);
 
-      if (!this.model.isPersisted() || this.model.changes()[key]) {
+      if (!this.model.isPersisted || this.model.changes()[key]) {
         attrs[snakeKey] = value;
       }
     });
@@ -30,7 +31,7 @@ export default class WritePayload {
     return attrs;
   }
 
-  removeDeletions(model: Model, includeDirective: Object) {
+  removeDeletions(model: JSORMBase, includeDirective: Object) {
     Object.keys(includeDirective).forEach((key) => {
       let nested = includeDirective[key];
 
@@ -38,7 +39,7 @@ export default class WritePayload {
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
-            if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
+            if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
               model[key].splice(index, 1);
             } else {
               this.removeDeletions(relatedObject, nested);
@@ -46,7 +47,7 @@ export default class WritePayload {
           });
         } else {
           let relatedObject = relatedObjects;
-          if (relatedObject.isMarkedForDestruction() || relatedObject.isMarkedForDisassociation()) {
+          if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
             model[key] = null;
           } else {
             this.removeDeletions(relatedObject, nested);
@@ -96,7 +97,9 @@ export default class WritePayload {
   }
 
   asJSON() : Object {
-    let data = {}
+    let data : JsonapiResource = {
+      type: this.model.klass.jsonapiType
+    }
 
     this.model.clearErrors();
 
@@ -107,8 +110,6 @@ export default class WritePayload {
     if (this.model.temp_id) {
       data['temp-id'] = this.model.temp_id;
     }
-
-    data['type'] = this.model.klass.jsonapiType;
 
     let _attributes = this.attributes()
     if (Object.keys(_attributes).length > 0) {
@@ -130,10 +131,10 @@ export default class WritePayload {
 
   // private
 
-  private _processRelatedModel(model: Model, nested: Object) {
+  private _processRelatedModel(model: JSORMBase, nested: Object) {
     model.clearErrors();
 
-    if (!model.isPersisted()) {
+    if (!model.isPersisted) {
       model.temp_id = tempId.generate()
     }
 
@@ -148,7 +149,7 @@ export default class WritePayload {
     return resourceIdentifier;
   }
 
-  private _resourceIdentifierFor(model: Model) {
+  private _resourceIdentifierFor(model: JSORMBase) {
     let identifier = {};
     identifier['type'] = model.klass.jsonapiType;
 
@@ -161,10 +162,10 @@ export default class WritePayload {
     }
 
     let method;
-    if (model.isPersisted()) {
-      if (model.isMarkedForDestruction()) {
+    if (model.isPersisted) {
+      if (model.isMarkedForDestruction) {
         method = 'destroy';
-      } else if (model.isMarkedForDisassociation()) {
+      } else if (model.isMarkedForDisassociation) {
         method = 'disassociate';
       } else {
         method = 'update';

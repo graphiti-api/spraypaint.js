@@ -1,7 +1,16 @@
-interface JsonapiDoc {
-  data: Array<JsonapiResource> | JsonapiResource
+type JsonapiDoc = JsonapiCollectionDoc | JsonapiResourceDoc
+
+interface JsonapiDocMeta {
   included?: Array<JsonapiResource>;
   meta?: object;
+}
+
+interface JsonapiCollectionDoc extends JsonapiDocMeta {
+  data: Array<JsonapiResource>
+}
+
+interface JsonapiResourceDoc extends JsonapiDocMeta {
+  data?: JsonapiResource | undefined
 }
 
 interface JsonapiResourceIdentifier {
@@ -17,9 +26,3 @@ interface JsonapiResource extends JsonapiResourceIdentifier {
   meta?: object;
   links?: object;
 }
-
-// interface IResultProxy<T> {
-//   data: any
-//   meta: Object
-//   raw: JsonapiDoc
-// }

@@ -13,21 +13,42 @@ const LOG_LEVELS = {
   error: 4,
 }
 
-export default class Logger {
-  private _level : LogLevel = LogLevel.info;
+export class Logger {
+  private _level : LogLevel = LogLevel.info
 
-  get level() {
-    let key : LogLevelKey
-
-    for (key in LogLevel) {
-      let val = LogLevel[key as LogLevelKey];
-      if (val === this._level) {
-        return key
-      }
+  constructor(level : LogLevelKey | LogLevel = 'warn') {
+    if (typeof level === 'number') {
+      this._level = level
+    } else {
+      this.setLevel(level)
     }
   }
 
-  set level(value : LogLevelKey) {
+  debug(stmt : any) : void {
+    if (this._level <= LogLevel.debug) {
+      console.info(stmt);
+    }
+  }
+
+  info(stmt : any) : void {
+    if (this._level <= LogLevel.info) {
+      console.info(stmt);
+    }
+  }
+
+  warn(stmt : any) : void {
+    if (this._level <= LogLevel.warn) {
+      console.warn(stmt);
+    }
+  }
+
+  error(stmt : any) : void {
+    if (this._level <= LogLevel.warn) {
+      console.error(stmt);
+    }
+  }
+
+  setLevel(value : LogLevelKey) {
     let lvlValue = LogLevel[value];
 
     if (lvlValue) {
@@ -37,29 +58,16 @@ export default class Logger {
     }
   }
 
-  debug(stmt : any) {
-    if (this._level <= LogLevel.debug) {
-      console.info(stmt);
-    }
-  }
+  level() {
+    let key : LogLevelKey
 
-  info(stmt : any) {
-    if (this._level <= LogLevel.info) {
-      console.info(stmt);
-    }
-  }
-
-  warn(stmt : any) {
-    if (this._level <= LogLevel.warn) {
-      console.warn(stmt);
-    }
-  }
-
-  error(stmt : any) {
-    if (this._level <= LogLevel.warn) {
-      console.error(stmt);
+    for (key in LogLevel) {
+      let val = LogLevel[key as LogLevelKey];
+      if (val === this._level) {
+        return key
+      }
     }
   }
 }
 
-
+export const logger = new Logger()
