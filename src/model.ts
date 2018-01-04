@@ -10,7 +10,7 @@ import { deserialize, deserializeInstance } from './util/deserialize';
 import { Attribute } from './attribute';
 import DirtyChecker from './util/dirty-check';
 import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope';
-import { TypeRegistry } from './type-registry'
+import { JsonapiTypeRegistry } from './jsonapi-type-registry'
 import { camelize } from 'inflected'
 import { ILogger, logger as defaultLogger } from './logger';
 import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
@@ -82,7 +82,7 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
   currentClass : typeof JSORMBase;
   isJSORMModel : boolean
   isBaseClass : boolean
-  typeRegistry : TypeRegistry
+  typeRegistry : JsonapiTypeRegistry
   middlewareStack : MiddlewareStack
 
   baseUrl : string
@@ -180,7 +180,7 @@ export class JSORMBase {
   static afterFetch : AfterFilter | undefined
   static jwtLocalStorage : string | false = false
 
-  private static _typeRegistry : TypeRegistry
+  private static _typeRegistry : JsonapiTypeRegistry
   private static _middlewareStack : MiddlewareStack
   private static _localStorageBackend? : StorageBackend
   private static _localStorage? : LocalStorage
@@ -244,7 +244,7 @@ export class JSORMBase {
     this.jsonapiType = undefined
 
     if (!this.typeRegistry) {
-      this.typeRegistry = new TypeRegistry(this)
+      this.typeRegistry = new JsonapiTypeRegistry(this)
     }
 
     if (!this.middlewareStack) {
@@ -281,7 +281,7 @@ export class JSORMBase {
     }
   }
 
-  static get typeRegistry() : TypeRegistry {
+  static get typeRegistry() : JsonapiTypeRegistry {
     if (this.baseClass  === undefined) {
       throw new Error(`No base class for ${this.name}`)
     }
@@ -289,7 +289,7 @@ export class JSORMBase {
     return this.baseClass._typeRegistry
   }
 
-  static set typeRegistry(registry: TypeRegistry) {
+  static set typeRegistry(registry: JsonapiTypeRegistry) {
     if (!this.isBaseClass) {
       throw new Error('Cannot set a registry on a non-base class')
     }

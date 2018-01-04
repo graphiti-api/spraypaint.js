@@ -2,7 +2,7 @@ import { expect, sinon } from '../test-helper';
 import { JSORMBase } from '../../src/model'
 import { hasOne } from '../../src/associations'
 import { attr } from '../../src/attribute'
-import { TypeRegistry } from '../../src/type-registry'
+import { JsonapiTypeRegistry } from '../../src/jsonapi-type-registry'
 import { StorageBackend } from '../../src/local-storage';
 
 import {
@@ -44,7 +44,7 @@ describe('Model', () => {
 
         it('creates a new model types registry', () => {
           expect((<any>JSORMBase)._typeRegistry).to.be.undefined
-          expect(BaseClass.typeRegistry).to.be.instanceOf(TypeRegistry)
+          expect(BaseClass.typeRegistry).to.be.instanceOf(JsonapiTypeRegistry)
         })
         
         it('sets the model as a new base class', () => {
