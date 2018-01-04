@@ -1,13 +1,12 @@
 import { expect, sinon } from '../test-helper';
 import { JSORMBase } from '../../src/model'
-import { belongsTo, hasOne, hasMany } from '../../src/associations'
-import { Attribute, AttributeValue, attr } from '../../src/attribute'
+import { hasOne } from '../../src/associations'
+import { attr } from '../../src/attribute'
 import { TypeRegistry } from '../../src/type-registry'
+import { StorageBackend } from '../../src/local-storage';
 
 import {
   ApplicationRecord,
-//   TestJWTSubclass,
-//   NonJWTOwner,
   Person,
   Book,
   Author,
@@ -93,21 +92,51 @@ describe('Model', () => {
           })
 
           describe('when localStorage is configured', function() {
-            beforeEach(function() {
-              Config.jwtLocalStorage = 'jwt'
-              Config.localStorage = { setItem: sinon.spy() }
+            let backend : StorageBackend
+            let BaseClass : typeof JSORMBase
+
+            const buildModel = () => {
+              // need new class for this since it needs initialization to have the jwt config set
+              @Model({
+                jwtLocalStorage: 'MyJWT',
+                localStorageBackend: backend, // Cast to any since we don't want this to be part of the standard model config interface. Just for test stubbing purposes
+              } as any)
+              class Base extends JSORMBase {}
+              BaseClass = Base
+            }
+
+            describe('JWT Updates', () => {
+              beforeEach(() => {
+                backend = {
+                  setItem: sinon.spy(),
+                  getItem: sinon.spy()
+                }
+                buildModel()
+              })
+
+              it('adds to localStorage', function() {
+                BaseClass.setJWT('n3wt0k3n');
+                expect(backend.setItem).to.have.been.calledWith('MyJWT', 'n3wt0k3n');
+              })
             })
 
-            afterEach(function() {
-              Config.jwtLocalStorage = undefined
-              Config.localStorage = undefined
-            })
+            describe('JWT Initialization', () => {
+              beforeEach(() => {
+                backend = {
+                  setItem: sinon.spy(),
+                  getItem: sinon.stub().returns('or!g!nalt0k3n')
+                }
+                buildModel()
+              })
 
-            it('adds to localStorage', function() {
-              Author.setJWT('n3wt0k3n');
-              let called = Config.localStorage.setItem
-                .calledWith('jwt', 'n3wt0k3n');
-              expect(called).to.eq(true);
+              it('sets the token correctly', function() {
+                expect(BaseClass.getJWT()).to.equal('or!g!nalt0k3n')
+              })
+
+              it('does not set it on the base class or other sibling classes', function() {
+                expect(JSORMBase.getJWT()).to.equal(undefined)
+                expect(ApplicationRecord.getJWT()).to.equal(undefined)
+              })
             })
           })
         });
@@ -250,7 +279,7 @@ describe('Model', () => {
       })
 
       const Post = BaseModel.extend({
-        config: {
+        static: {
           jsonapiType: 'posts'
         },
         attrs: {
@@ -373,34 +402,28 @@ describe('Model', () => {
       })
 
       describe('class options', () => {
-        const configProps : Array<'static' | 'config'> = ['static', 'config']
+        let config = {
+          apiNamespace: 'api/v1',
+          jwt: 'abc123', 
+        }
 
-        configProps.forEach((prop) => {
-          describe(`config prop is "${prop}"`, () => {
-            let config = {
-              apiNamespace: 'api/v1',
-              jwt: 'abc123', 
-            }
+        let MyModel = BaseModel.extend({
+          static: config
+        })
 
-            let MyModel = BaseModel.extend({
-              [prop]: config
-            })
+        it('preserves defaults for unspecified items', () => {
+          expect(MyModel.baseUrl).to.eq('http://please-set-a-base-url.com')
+          expect(MyModel.camelizeKeys).to.be.true
+        })
 
-            it('preserves defaults for unspecified items', () => {
-              expect(MyModel.baseUrl).to.eq('http://please-set-a-base-url.com')
-              expect(MyModel.camelizeKeys).to.be.true
-            })
+        it('correctly assigns options', () => {
+          expect(MyModel.apiNamespace).to.eq(config.apiNamespace)
+          expect(MyModel.jwt).to.eq(config.jwt)
+        })
 
-            it('correctly assigns options', () => {
-              expect(MyModel.apiNamespace).to.eq(config.apiNamespace)
-              expect(MyModel.jwt).to.eq(config.jwt)
-            })
-
-            it('does not override parent class options', () => {
-              expect(BaseModel.apiNamespace).not.to.eq(config.apiNamespace)
-              expect(BaseModel.jwt).not.to.eq(config.jwt)
-            })
-          })
+        it('does not override parent class options', () => {
+          expect(BaseModel.apiNamespace).not.to.eq(config.apiNamespace)
+          expect(BaseModel.jwt).not.to.eq(config.jwt)
         })
       })
     })

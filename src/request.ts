@@ -1,14 +1,16 @@
-import Config from './configuration';
 import colorize from './util/colorize';
 import { MiddlewareStack } from './middleware-stack';
+import { ILogger, logger as defaultLogger } from './logger';
 
 export type RequestVerbs = keyof Request
 
 export class Request {
   middleware: MiddlewareStack
+  private logger : ILogger
 
-  constructor(middleware: MiddlewareStack) {
+  constructor(middleware: MiddlewareStack, logger : ILogger) {
     this.middleware = middleware
+    this.logger = logger
   }
 
   get(url : string, options: RequestInit) : Promise<any> {
@@ -38,11 +40,11 @@ export class Request {
   // private
 
   private _logRequest(verb: string, url: string) : void {
-    Config.logger.info(colorize('cyan', `${verb}: `) + colorize('magenta', url));
+    this.logger.info(colorize('cyan', `${verb}: `) + colorize('magenta', url));
   }
 
   private _logResponse(responseJSON : string) : void {
-    Config.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)));
+    this.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)));
   }
 
   private async _fetchWithLogging(url: string, options: RequestInit) : Promise<any> {

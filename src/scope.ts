@@ -1,10 +1,8 @@
 import { JSORMBase } from './model';
-import Config from './configuration';
 import parameterize from './util/parameterize';
 import { IncludeDirective, IncludeArgHash, IncludeScopeHash } from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies'; 
 import { Request } from './request';
-import colorize from './util/colorize';
 import { refreshJWT } from './util/refresh-jwt';
 import cloneDeep from './util/clonedeep';
 
@@ -236,7 +234,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     if (qp) {
       url = `${url}?${qp}`;
     }
-    let request = new Request(this.model.middlewareStack);
+    let request = new Request(this.model.middlewareStack, this.model.logger);
     let fetchOpts = this.model.fetchOptions()
 
     let response = await request.get(url, fetchOpts)

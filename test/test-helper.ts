@@ -4,18 +4,21 @@ import 'isomorphic-fetch';
 import * as sinon from 'sinon';
 import * as fetchMock from 'fetch-mock';
 import 'mocha';
+
+import { JSORMBase } from '../src/index'
+
 es6Promise.polyfill();
 
 import * as chai from 'chai';
 const chaiThings = require('chai-things');
-
-import { Config } from '../src/index';
-
-winston.level = 'warn';
-Config.logger = winston;
+const sinonChai = require('sinon-chai')
 
 // MUST be in this order
 chai.use(chaiThings);
+chai.use(sinonChai);
+
+JSORMBase.logger = winston
+JSORMBase.logger.level = 'warn'
 
 let expect = chai.expect;
 

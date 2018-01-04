@@ -1,10 +1,10 @@
 import { CollectionProxy, RecordProxy } from './proxies';
 import { ValidationErrors } from './util/validation-errors';
-import { IncludeDirective } from './util/include-directive'
 import { refreshJWT } from './util/refresh-jwt';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
 import { Request, RequestVerbs } from './request';
 import { WritePayload } from './util/write-payload';
+import { LocalStorage, NullStorageBackend, StorageBackend } from './local-storage'
 
 import { deserialize, deserializeInstance } from './util/deserialize';
 import { Attribute } from './attribute';
@@ -12,7 +12,7 @@ import DirtyChecker from './util/dirty-check';
 import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope';
 import { TypeRegistry } from './type-registry'
 import { camelize } from 'inflected'
-import { logger } from './logger';
+import { ILogger, logger as defaultLogger } from './logger';
 import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
 
 import cloneDeep from './util/clonedeep';
@@ -24,6 +24,7 @@ export interface ModelConfiguration {
   jsonapiType : string
   endpoint : string;
   jwt : string
+  jwtLocalStorage : string | false
   camelizeKeys : boolean
   strictAttributes : boolean
 }
@@ -56,7 +57,6 @@ export interface ExtendOptions<
   Methods=DefaultMethods<M>
   > {
   static?: ModelConfigurationOptions
-  config?: ModelConfigurationOptions
   attrs?: AttrMap<Attributes>
   methods?: ThisType<M & Attributes & Methods> & Methods
 }
@@ -74,6 +74,7 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
     >
   inherited(subclass : typeof JSORMBase) : void
   registerType() : void
+  setAsBase() : void
 
   attributeList : Attrs
   extendOptions : any//ExtendOptions<M, Attributes, Methods>
@@ -89,6 +90,7 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
   jsonapiType? : string
   endpoint : string;
   jwt? : string;
+  jwtLocalStorage? : boolean
   camelizeKeys : boolean
   strictAttributes : boolean
 }
@@ -124,13 +126,7 @@ function extendModel<
 
   Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs)
 
-  if (options.static) {
-    applyModelConfig(Subclass, options.static)
-  }
-
-  if (options.config) {
-    applyModelConfig(Subclass, options.config)
-  }
+  applyModelConfig(Subclass, options.static || {})
 
   Subclass.registerType()
 
@@ -157,6 +153,12 @@ export function applyModelConfig<
   for(k in config) {
     ModelClass[k] = config[k]
   }    
+
+  if (ModelClass.isBaseClass === undefined) {
+    ModelClass.setAsBase()
+  } else if (ModelClass.isBaseClass === true) {
+    ModelClass.isBaseClass = false
+  }
 }
 
 export class JSORMBase {
@@ -168,6 +170,7 @@ export class JSORMBase {
   static jwt? : string;
   static camelizeKeys : boolean = true
   static strictAttributes : boolean = false
+  static logger : ILogger = defaultLogger
 
   static attributeList : Record<string, Attribute> = {}
   static extendOptions : any
@@ -175,9 +178,33 @@ export class JSORMBase {
   static currentClass : typeof JSORMBase = JSORMBase
   static beforeFetch : BeforeFilter | undefined
   static afterFetch : AfterFilter | undefined
+  static jwtLocalStorage : string | false = false
 
   private static _typeRegistry : TypeRegistry
   private static _middlewareStack : MiddlewareStack
+  private static _localStorageBackend? : StorageBackend
+  private static _localStorage? : LocalStorage
+  
+  static get localStorage() : LocalStorage {
+    if (!this._localStorage) {  
+      if(!this._localStorageBackend) {
+        if (this.jwtLocalStorage) {
+          this._localStorageBackend = localStorage
+        } else {
+          this._localStorageBackend = new NullStorageBackend()
+        }
+      }
+
+      this._localStorage = new LocalStorage(this.jwtLocalStorage, this._localStorageBackend)
+    }
+
+    return this._localStorage
+  }
+
+  static set localStorageBackend(backend : StorageBackend | undefined) {
+    this._localStorageBackend = backend
+    this._localStorage = undefined
+  }
 
   // This is to allow for sane type checking in collaboration with the 
   // isModelClass function exported below.  It is very hard to find out whether
@@ -210,12 +237,6 @@ export class JSORMBase {
     subclass.currentClass = subclass;
     subclass.prototype.klass = subclass;
     subclass.attributeList = cloneDeep(subclass.attributeList)
-
-    if (this.isBaseClass === undefined) {
-      subclass.setAsBase()
-    } else if (this.isBaseClass === true) {
-      subclass.isBaseClass = false
-    }
   }
 
   static setAsBase() : void {
@@ -229,6 +250,9 @@ export class JSORMBase {
     if (!this.middlewareStack) {
       this._middlewareStack = new MiddlewareStack()
     }
+
+    let jwt = this.localStorage.getJWT()
+    this.setJWT(jwt)
   }
 
   static isSubclassOf(maybeSuper : typeof JSORMBase) : boolean {
@@ -317,9 +341,6 @@ export class JSORMBase {
     const attrs = this.klass.attributeList 
     for (let key in attrs) {
       let attr = attrs[key];
-      if (attr.isRelationship) {
-        let foo = 'bar'
-      }
       Object.defineProperty(this, key, attr.descriptor());
     }
   }
@@ -501,12 +522,10 @@ export class JSORMBase {
 
   static scope<I extends typeof JSORMBase>(this: I) : Scope<I> {
     return new Scope(this)
-    // return this._scope || new Scope(this);
   }
 
   static first<I extends typeof JSORMBase>(this: I) {
     return this.scope().first();
-    // return Promise.resolve(this)
   }
   static all<I extends typeof JSORMBase>(this: I) {
     return this.scope().all();
@@ -552,12 +571,13 @@ export class JSORMBase {
     return this.scope().merge(obj);
   }
 
-  static setJWT(token: string) : void {
+  static setJWT(token: string | undefined | null) : void {
     if (this.baseClass === undefined) {
       throw new Error(`Cannot set JWT on ${this.name}: No base class present.`)
     }
 
-    this.baseClass.jwt = token;
+    this.baseClass.jwt = token || undefined;
+    this.localStorage.setJWT(token)
   }
 
   static getJWT() : string | undefined {
@@ -569,7 +589,7 @@ export class JSORMBase {
   }
 
   static getJWTOwner() : typeof JSORMBase | undefined {
-    logger.warn('JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead')
+    this.logger.warn('JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead')
 
     return this.baseClass
   }
@@ -577,7 +597,7 @@ export class JSORMBase {
   async destroy() : Promise<boolean> {
     let url     = this.klass.url(this.id);
     let verb    = 'delete';
-    let request = new Request(this._middleware());
+    let request = new Request(this._middleware(), this.klass.logger);
     let response : any
 
     try {
@@ -591,11 +611,10 @@ export class JSORMBase {
     });
   }
 
-
   async save(options: SaveOptions = {}) : Promise<boolean> {
-    let url     = this.klass.url()
+    let url = this.klass.url()
     let verb : RequestVerbs = 'post'
-    let request = new Request(this._middleware())
+    let request = new Request(this._middleware(), this.klass.logger)
     let payload = new WritePayload(this, options['with'])
     let response : any
 
@@ -649,7 +668,6 @@ export class JSORMBase {
 } 
 
 ;(<any>JSORMBase.prototype).klass = JSORMBase
-
 
 export function isModelClass(arg: any) : arg is typeof JSORMBase {
   if (!arg) { return false }

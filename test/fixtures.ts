@@ -2,7 +2,6 @@ import {
   JSORMBase, 
   Model, 
   ModelConstructor, 
-  Config, 
   attr, 
   hasMany, 
   belongsTo, 
@@ -116,10 +115,3 @@ export class MultiWord extends ApplicationRecord {
 export const TestJWTSubclass = ApplicationRecord.extend({});
 
 export const NonJWTOwner = JSORMBase.extend({});
-
-// const configSetup = function(opts = {}) {
-//   opts['jwtOwners'] = [ApplicationRecord, TestJWTSubclass];
-//   Config.setup(opts);
-// };
-// configSetup();
-

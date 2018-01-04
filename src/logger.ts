@@ -13,14 +13,22 @@ const LOG_LEVELS = {
   error: 4,
 }
 
-export class Logger {
+export interface ILogger {
+  debug(stmt : any) : void
+  info(stmt : any) : void
+  warn(stmt : any) : void
+  error(stmt : any) : void
+  level : string
+}
+
+export class Logger implements ILogger {
   private _level : LogLevel = LogLevel.info
 
   constructor(level : LogLevelKey | LogLevel = 'warn') {
     if (typeof level === 'number') {
       this._level = level
     } else {
-      this.setLevel(level)
+      this.level =level
     }
   }
 
@@ -48,8 +56,8 @@ export class Logger {
     }
   }
 
-  setLevel(value : LogLevelKey) {
-    let lvlValue = LogLevel[value];
+  set level(value : string) {
+    let lvlValue = LogLevel[value as LogLevelKey];
 
     if (lvlValue) {
       this._level = lvlValue;
@@ -58,7 +66,7 @@ export class Logger {
     }
   }
 
-  level() {
+  get level() : string{
     let key : LogLevelKey
 
     for (key in LogLevel) {
@@ -67,6 +75,8 @@ export class Logger {
         return key
       }
     }
+    
+    throw new Error(`Invalid log level: ${this._level}`)
   }
 }
 

@@ -219,13 +219,15 @@ describe('nested persistence', function() {
       expect(instance.books[0].genre.id).to.eq('20');
     });
 
-    xit('removes old temp ids', async function() {
-      await instance.save({ with: { books: 'genre' } })
+    // Commenting out to avoid thinking something is wrong
+    // every time I see a pending test. We may be able to delete this?
+    // it('removes old temp ids', async function() {
+    //   await instance.save({ with: { books: 'genre' } })
 
-      expect(instance.id).to.eq('1');
-      expect(instance.books[0].temp_id).to.eq(null);
-      expect(instance.books[0].genre.temp_id).to.eq(null);
-    });
+    //   expect(instance.id).to.eq('1');
+    //   expect(instance.books[0].temp_id).to.eq(null);
+    //   expect(instance.books[0].genre.temp_id).to.eq(null);
+    // });
 
     it('updates attributes with data from server', async function() {
       await instance.save({ with: { books: 'genre' } })
@@ -248,17 +250,14 @@ describe('nested persistence', function() {
   });
 
   describe('basic nested update', function() {
-    let expected;
-
     beforeEach(function() {
       seedPersistedData();
     });
 
-    it('sends the correct payload', function(done) {
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('update'));
-        done();
-      });
+    it('sends the correct payload', async function() {
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('update'));
     });
   });
 
@@ -267,29 +266,26 @@ describe('nested persistence', function() {
       seedPersistedData();
     });
 
-    it('sends the correct payload', function(done) {
+    it('sends the correct payload', async function() {
       instance.books[0].isMarkedForDestruction = true;
       instance.books[0].genre.isMarkedForDestruction = true;
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('destroy'));
-        done();
-      });
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('destroy'));
     });
 
-    it('removes the associated has_many data', function(done) {
+    it('removes the associated has_many data', async function() {
       instance.books[0].isMarkedForDestruction = true;
-      instance.save({ with: 'books' }).then((response) => {
-        expect(instance.books.length).to.eq(0);
-        done();
-      });
+      await instance.save({ with: 'books' })
+
+      expect(instance.books.length).to.eq(0);
     });
 
-    it('removes the associated belongs_to data', function(done) {
+    it('removes the associated belongs_to data', async function() {
       instance.books[0].genre.isMarkedForDestruction = true;
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(instance.books[0].genre).to.eq(null);
-        done();
-      });
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(instance.books[0].genre).to.eq(null);
     });
   });
 
@@ -298,29 +294,26 @@ describe('nested persistence', function() {
       seedPersistedData();
     });
 
-    it('sends the correct payload', function(done) {
+    it('sends the correct payload', async function() {
       instance.books[0].isMarkedForDisassociation = true;
       instance.books[0].genre.isMarkedForDisassociation = true;
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('disassociate'));
-        done();
-      });
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('disassociate'));
     });
 
-    it('removes the associated has_many data', function(done) {
+    it('removes the associated has_many data', async function() {
       instance.books[0].isMarkedForDisassociation = true;
-      instance.save({ with: 'books' }).then((response) => {
-        expect(instance.books.length).to.eq(0);
-        done();
-      });
+      await instance.save({ with: 'books' })
+
+      expect(instance.books.length).to.eq(0);
     });
 
-    it('removes the associated belongs_to data', function(done) {
+    it('removes the associated belongs_to data', async function() {
       instance.books[0].genre.isMarkedForDisassociation = true;
-      instance.save({ with: { books: 'genre' } }).then((response) => {
-        expect(instance.books[0].genre).to.eq(null);
-        done();
-      });
+      await instance.save({ with: { books: 'genre' } })
+
+      expect(instance.books[0].genre).to.eq(null);
     });
   });
 });
