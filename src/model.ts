@@ -2,7 +2,7 @@ import { CollectionProxy, RecordProxy } from './proxies';
 import { ValidationErrors } from './util/validation-errors';
 import { refreshJWT } from './util/refresh-jwt';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
-import { Request, RequestVerbs } from './request';
+import { Request, RequestVerbs, JsonapiResponse } from './request';
 import { WritePayload } from './util/write-payload';
 import { LocalStorage, NullStorageBackend, StorageBackend } from './local-storage'
 
@@ -17,6 +17,7 @@ import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
 
 import cloneDeep from './util/clonedeep';
 import { nonenumerable } from './util/decorators'
+import { IncludeScopeHash } from './util/include-directive';
 
 export interface ModelConfiguration {
   baseUrl : string
@@ -29,6 +30,25 @@ export interface ModelConfiguration {
   strictAttributes : boolean
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration> 
+
+export type ModelIdFields = 'id' | 'temp_id'
+
+export type ModelAttrs<K extends keyof T, T extends JSORMBase> = {
+  [P in K]?: T[P]
+} & Partial<Record<ModelIdFields, string>>
+
+export type ModelAttrChanges<T> = {
+  [P in keyof T]?: T[P][]
+} & Partial<Record<ModelIdFields, string[]>>
+
+export type ModelRecord<T extends JSORMBase> = 
+  ModelAttrs<
+    keyof (Omit<T, keyof JSORMBase>), 
+    T
+  >
+
+export type ModelAttributeChangeSet<T extends JSORMBase> = 
+  ModelAttrChanges<(Omit<T, keyof JSORMBase>)>
 
 export interface SaveOptions {
   with? : IncludeScope
@@ -96,7 +116,7 @@ export interface ModelConstructor<M extends JSORMBase, Attrs> {
 }
 
 function extendModel<
-  MC extends ModelConstructor<M, Attrs>, 
+  // MC extends ModelConstructor<M, Attrs>, 
   M extends JSORMBase, 
   Attrs, 
   ExtendedAttrs, 
@@ -223,12 +243,12 @@ export class JSORMBase {
   @nonenumerable private _markedForDestruction: boolean = false;
   @nonenumerable private _markedForDisassociation: boolean = false;
   @nonenumerable private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
-  @nonenumerable private _attributes : Record<string, any>
-  @nonenumerable private _originalAttributes : Record<string, any>
+  @nonenumerable private _attributes : ModelRecord<this>
+  @nonenumerable private _originalAttributes : ModelRecord<this>
   @nonenumerable private __meta__ : any
   @nonenumerable private _errors : object = {}
 
-  static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
+  static fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc) : any {
     return deserialize(this.typeRegistry, resource, payload);
   }
 
@@ -372,13 +392,28 @@ export class JSORMBase {
     this._markedForDisassociation = val
   }
 
-  get attributes() {
+  get attributes() : Record<string, any> {
     return this._attributes
   }
 
   set attributes(attrs : Record<string, any>) {
     this._attributes = {};
     this.assignAttributes(attrs);
+  }
+
+  /*
+   * This is a (hopefully) temporary method for typescript users.
+   * 
+   * Currently the attributes() setter takes an arbitrary hash which
+   * may or may not include valid attributes. In non-strict mode, it
+   * silently drops those that it doesn't know. This is all perfectly fine
+   * from a functionality point, but it means we can't correctly type
+   * the attributes() getter return object, as it must match the setter's
+   * type. I propose we change the type definition to require sending
+   * abitrary hashes through the assignAttributes() method instead.
+   */
+  get typedAttributes() : ModelRecord<this> {
+    return this._attributes
   }
 
   relationship(name : string) : Array<JSORMBase> | JSORMBase | undefined {
@@ -410,7 +445,7 @@ export class JSORMBase {
     return relationshipIdentifiersFor(this, relationNames);
   }
 
-  fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc, includeDirective: Object = {}) : any {
+  fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc, includeDirective: IncludeScopeHash = {}) : any {
     return deserializeInstance(this, resource, payload, includeDirective);
   }
 
@@ -446,9 +481,9 @@ export class JSORMBase {
     return dc.check(relationships);
   }
 
-  changes() : Object {
-    let dc = new DirtyChecker(this);
-    return dc.dirtyAttributes();
+  changes() : ModelAttributeChangeSet<this> {
+    let dc = new DirtyChecker(this)
+    return dc.dirtyAttributes()
   }
 
   hasDirtyRelation(relationName: string, relatedModel: JSORMBase) : boolean {
@@ -456,7 +491,7 @@ export class JSORMBase {
     return dc.checkRelation(relationName, relatedModel);
   }
 
-  dup() : JSORMBase {
+  dup() : this {
     return cloneDeep(this);
   }
   
@@ -624,7 +659,7 @@ export class JSORMBase {
     }
 
     let json = payload.asJSON();
-    
+
     try {
       response = await request[verb](url, json, this._fetchOptions())
     } catch (err) {
@@ -637,11 +672,11 @@ export class JSORMBase {
     });
   }
 
-  private async _handleResponse(response: any, callback: () => void) : Promise<boolean>  {
+  private async _handleResponse(response: JsonapiResponse, callback: () => void) : Promise<boolean>  {
     refreshJWT(this.klass, response);
 
     if (response.status == 422) {
-      ValidationErrors.apply(this, response['jsonPayload']);
+      ValidationErrors.apply(this, response.jsonPayload);
       return false
     } else {
       callback();

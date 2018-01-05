@@ -3,24 +3,26 @@ import { camelize } from 'inflected'
 
 export class ValidationErrors {
   model: JSORMBase;
-  payload: Array<Object> = [];
+  payload: JsonapiResponseDoc
 
-  constructor(model: JSORMBase, payload: Array<Object>) {
+  constructor(model: JSORMBase, payload: JsonapiResponseDoc) {
     this.model = model;
     this.payload = payload;
   }
 
-  static apply(model: JSORMBase, payload: Array<Object>) {
+  static apply(model: JSORMBase, payload: JsonapiResponseDoc) : void {
     let instance = new ValidationErrors(model, payload);
-    let errors = instance.apply();
+    instance.apply();
   }
 
   apply() {
     let errorsAccumulator = {}
 
-    this.payload['errors'].forEach((err) => {
-      let meta = err['meta'];
-      let metaRelationship = meta['relationship'];
+    if (!this.payload.errors) { return }
+
+    this.payload.errors.forEach((err) => {
+      let meta = err.meta
+      let metaRelationship = meta.relationship
 
       if (metaRelationship) {
         this._processRelationship(this.model, metaRelationship);
@@ -32,8 +34,8 @@ export class ValidationErrors {
     this.model.errors = errorsAccumulator
   }
 
-  private _processResource(errorsAccumulator: object, meta: Object) {
-    let attribute = meta['attribute']
+  private _processResource(errorsAccumulator : Record<string, string>, meta : JsonapiErrorMeta) {
+    let attribute = meta.attribute
 
     if (this.model.klass.camelizeKeys) {
       attribute = camelize(attribute, false)
@@ -42,8 +44,8 @@ export class ValidationErrors {
     errorsAccumulator[attribute] = meta['message'];
   }
 
-  private _processRelationship(model: JSORMBase, meta: Object) {
-    let relatedObject = model[meta['name']];
+  private _processRelationship(model: JSORMBase, meta: JsonapiErrorMeta) {
+    let relatedObject = (<any>model)[meta.name]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find((r) => {
         return (r.id === meta['id'] || r.temp_id === meta['temp-id']);
@@ -53,19 +55,19 @@ export class ValidationErrors {
     if (meta['relationship']) {
       this._processRelationship(relatedObject, meta['relationship']);
     } else {
-      let relatedAccumulator = {}
+      let relatedAccumulator : Record<string, string> = {}
       this._processResource(relatedAccumulator, meta);
 
       // make sure to assign a new error object, instead of mutating
       // the existing one, otherwise js frameworks with object tracking
       // won't be able to keep up. Validate vue.js when changing this code:
-      let newErrs = {}
+      let newErrs : Record<string, string>= {}
       Object.keys(relatedObject.errors).forEach((key) => {
         newErrs[key] = relatedObject.errors[key]
-      });
+      })
       Object.keys(relatedAccumulator).forEach((key) => {
         newErrs[key] = relatedAccumulator[key]
-      });
+      })
       relatedObject.errors = newErrs
     }
   }

@@ -733,6 +733,7 @@ describe('Model', () => {
         instance.isPersisted = true
         expect(instance.changes()).to.deep.equal({});
         instance.firstName = 'bar'
+
         expect(instance.changes()).to.deep.equal({
           firstName: ['foo', 'bar']
         });
@@ -927,7 +928,7 @@ describe('Model', () => {
     });
 
     describe('when a has-many is marked for destruction', () => {
-      let newDoc : JsonapiDoc
+      let newDoc : JsonapiResponseDoc
       let instance : Author
       let book : Book
 
@@ -964,7 +965,7 @@ describe('Model', () => {
     });
 
     describe('when a has-many is marked for disassociation', () => {
-      let newDoc : JsonapiDoc
+      let newDoc : JsonapiResponseDoc
       let instance : Author
       let book : Book
 
@@ -1001,7 +1002,7 @@ describe('Model', () => {
     });
 
     describe('when a belongs-to is marked for destruction', function() {
-      let newDoc : JsonapiDoc
+      let newDoc : JsonapiResponseDoc
       let instance : Author
       let book : Book
 
@@ -1056,7 +1057,7 @@ describe('Model', () => {
     });
 
     describe('when a belongs-to is marked for disassociation', function() {
-      let newDoc : JsonapiDoc
+      let newDoc : JsonapiResponseDoc
       let instance : Author
       let book : Book
 

@@ -4,6 +4,10 @@ import { ILogger, logger as defaultLogger } from './logger';
 
 export type RequestVerbs = keyof Request
 
+export interface JsonapiResponse extends Response {
+  jsonPayload : JsonapiResponseDoc
+}
+
 export class Request {
   middleware: MiddlewareStack
   private logger : ILogger
@@ -18,14 +22,14 @@ export class Request {
     return this._fetchWithLogging(url, options);
   }
 
-  post(url: string, payload: Object, options: RequestInit) : Promise<any> {
+  post(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
     options.method = 'POST';
     options.body   = JSON.stringify(payload);
 
     return this._fetchWithLogging(url, options);
   }
 
-  put(url: string, payload: Object, options: RequestInit) : Promise<any> {
+  put(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
     options.method = 'PUT';
     options.body   = JSON.stringify(payload);
 

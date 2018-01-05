@@ -4,4 +4,8 @@ const generate = function() : string {
   return `temp-id-${memo}`
 }
 
-export default { generate }
+const tempId = {
+  generate
+}
+
+export { tempId, generate as generateTempId }

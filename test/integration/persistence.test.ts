@@ -6,10 +6,10 @@ after(function () {
 });
 
 let instance : Person
-let payloads : Array<JsonapiDoc>
-let putPayloads : Array<JsonapiDoc>
-let deletePayloads : Array<JsonapiDoc>
-let serverResponse : JsonapiDoc
+let payloads : Array<JsonapiRequestDoc>
+let putPayloads : Array<JsonapiRequestDoc>
+let deletePayloads : Array<object>
+let serverResponse : JsonapiResponseDoc
 
 beforeEach(function() {
   payloads = [];
@@ -57,7 +57,7 @@ describe('Model persistence', function() {
 
         await instance.save()
 
-        expect(payloads[0]['data']['attributes']).to.eq(undefined);
+        expect((<any>payloads[0]).data.attributes).to.eq(undefined);
       });
     });
 

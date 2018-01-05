@@ -1,6 +1,6 @@
 import { Attribute, AttrRecord, Attr } from './attribute';
 import { JSORMBase, ModelConstructor } from './model';
-import { TypeRegistry } from './type-registry';
+import { JsonapiTypeRegistry } from './jsonapi-type-registry';
 
 export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
   type? : Attr<T>
@@ -16,7 +16,7 @@ export interface Association {
 export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> implements Association {
   isRelationship : true = true
   jsonapiType : string
-  typeRegistry : TypeRegistry
+  typeRegistry : JsonapiTypeRegistry
   private _klass : typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {
@@ -57,7 +57,7 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
 export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements Association {
   isRelationship : true = true
   jsonapiType : string
-  typeRegistry : TypeRegistry
+  typeRegistry : JsonapiTypeRegistry
   private _klass : typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {

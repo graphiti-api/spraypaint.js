@@ -1,12 +1,12 @@
 import { sinon, expect, fetchMock } from '../test-helper';
 import { Author, Book, Genre } from '../fixtures';
-import tempId from '../../src/util/temp-id';
+import { tempId } from '../../src/util/temp-id';
 
 let instance : Author
-let payloads : Array<JsonapiDoc>
-let putPayloads : Array<JsonapiDoc>
-let deletePayloads : Array<JsonapiDoc>
-let serverResponse : JsonapiDoc
+let payloads : Array<JsonapiRequestDoc>
+let putPayloads : Array<JsonapiRequestDoc>
+let deletePayloads : Array<object>
+let serverResponse : JsonapiResponseDoc
 
 type method = 'update' | 'destroy' | 'disassociate'
 
@@ -29,7 +29,7 @@ const resetMocks = function() {
   });
 }
 
-let expectedCreatePayload : JsonapiDoc = {
+let expectedCreatePayload : JsonapiResponseDoc = {
   data: {
     type: 'authors',
     attributes: { first_name: 'Stephen' },
@@ -72,7 +72,7 @@ let expectedCreatePayload : JsonapiDoc = {
   ]
 };
 
-let expectedUpdatePayload = function(method : method) : JsonapiDoc {
+let expectedUpdatePayload = function(method : method) : JsonapiResponseDoc {
   return {
     data: {
       id: '1',

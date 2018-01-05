@@ -32,7 +32,7 @@ function ModelDecorator(config? : ModelConfigurationOptions) {
 function modelFactory<M extends typeof JSORMBase>(ModelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void {
   ensureModelInheritance(ModelClass)
 
-  applyModelConfig(ModelClass, config || {})
+  applyModelConfig(ModelClass as any, config || {})
 
   if (!ModelClass.jsonapiType && !ModelClass.isBaseClass) {
     ModelClass.jsonapiType = pluralize(underscore(ModelClass.name))
