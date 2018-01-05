@@ -9,7 +9,7 @@
   "license": "MIT",
   "homepage": "https://github.com/jsonapi-suite/jsorm",
   "scripts": {
-    "clean": "rimraf ./dist ./build ./coverage ./lib",
+    "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
     "prebuild": "yarn run clean",
     "build": "npm-run-all --parallel build:node build:es6",
     "build:node": "yarn run tsc -p ./tsconfig.node.json",
