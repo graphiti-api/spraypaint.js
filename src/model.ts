@@ -508,8 +508,9 @@ export class JSORMBase {
       } as any
     }
 
-    if (this.getJWT()) {
-      options.headers.Authorization = `Token token="${this.getJWT()}"`;
+    let jwt = this.getJWT()
+    if (jwt) {
+      options.headers.Authorization = this.generateAuthHeader(jwt)
     }
 
     return options
@@ -621,6 +622,10 @@ export class JSORMBase {
     if (owner) {
       return owner.jwt;
     }
+  }
+
+  static generateAuthHeader(jwt: string) : string {
+    return `Token token="${jwt}"`;
   }
 
   static getJWTOwner() : typeof JSORMBase | undefined {

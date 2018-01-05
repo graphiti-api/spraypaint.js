@@ -65,6 +65,30 @@ describe('authorization headers', function() {
     });
   });
 
+  describe('when header is set in a custom generateAuthHeader', function() {
+    let originalHeaderFn : any
+    beforeEach(function() {
+      ApplicationRecord.jwt = 'cu570m70k3n';
+      originalHeaderFn = Author.generateAuthHeader;
+      Author.generateAuthHeader = function(token) {
+        return `Bearer ${token}`;
+      };
+    });
+
+    afterEach(function() {
+      Author.generateAuthHeader = originalHeaderFn;
+    });
+
+    it("sends the custom Authorization token in the request's headers", async function() {
+      fetchMock.mock((url, opts : any) => {
+        expect(opts.headers.Authorization).to.eq('Bearer cu570m70k3n');
+        return true;
+      }, { status: 200, body: stubFind, sendAsJson: true });
+      
+      await Author.find(1)
+    });
+  });
+
   describe('when header is NOT returned in response', function() {
     beforeEach(function() {
       fetchMock.get('http://example.com/api/v1/authors', {
