@@ -367,6 +367,7 @@ describe('Model', () => {
         it('allows extension of the model', () => {
           let post  = new FrontPagePost({title: 'The Title' , pageOrder: 1})
 
+
           expect(post.screamTitle(3)).to.equal('THE TITLE!!!')
           expect(post.isFirst()).to.be.true
         })
@@ -378,14 +379,37 @@ describe('Model', () => {
         })
       })
 
+      /*
+       *
+       * While the underlying javascript functions correctly, the
+       * current type definitions for the JSORMBase.extend() API
+       * don't allow for declaring a typescript class based on a
+       * class created from extend().  This was originally working,
+       * but the type definitions were VERY complicated, and in
+       * simplifying them, it was necessary to omit the case
+       * where one was going FROM javascript TO typescript,
+       * which seems like a far edge case when there aren't any 
+       * type definitions exported by the library as well, so I'm
+       * punting on it for now until I figure out a typings fix. 
+       * 
+       * Keeping the tests around with a lot of coercion to verify
+       * the underlying functionality still works from a JS-only
+       * perspective.
+       * 
+       */
       describe('inheritance with class-based declaration', () => {
-        class FrontPagePost extends Post {
-          @Attr pageOrder : number
+        class ExtendedPost extends (<any>Post) {
+          // @Attr pageOrder : number
+          pageOrder : number
 
           isFirst() {
             return this.pageOrder === 1
           }
         }
+        Model(ExtendedPost as any)
+        Attr(ExtendedPost as any, 'pageOrder')
+        const FrontPagePost : any = ExtendedPost
+        
 
         it('allows extension of the model', () => {
           let post  = new FrontPagePost({title: 'The Title' , pageOrder: 1})
@@ -1113,7 +1137,7 @@ describe('Model', () => {
     });
   })
 
-  describe('relationshipResourceIdentifiers', () => {
+  describe('#relationshipResourceIdentifiers()', () => {
     @Model()
     class RelationGraph extends ApplicationRecord {
       @BelongsTo({type: Author}) author : Author
@@ -1161,64 +1185,53 @@ describe('Model', () => {
       });
     });
   });
+
+  describe('#url', () => {
+    context('Default base URL generation method', () => {
+      it('should append the baseUrl, apiNamespace, and jsonapi type', () => {
+        class DefaultBaseUrl extends ApplicationRecord {
+          static baseUrl : string = 'http://base.com'
+          static apiNamespace : string = '/namespace/v1'
+          static jsonapiType : string = 'testtype'
+        }
+
+        expect(DefaultBaseUrl.url('testId')).to.eq('http://base.com/namespace/v1/testtype/testId')
+      })
+    })
+
+    context('Base URL path generation is overridden', () => {
+      it('should use the result of the override', () => {
+        class OverriddenBaseUrl extends ApplicationRecord {
+          static jsonapiType : string = 'testtype'
+          static fullBasePath() : string {
+            return 'http://overridden.base'
+          }
+        }
+
+        expect(OverriddenBaseUrl.url('testId')).to.eq('http://overridden.base/testtype/testId')
+      })
+    })
+  })
+
+  describe('#fetchOptions', () => {
+    context('jwt is set', () => {
+      beforeEach(() => {
+        ApplicationRecord.jwt = 'g3tm3';
+      });
+
+      afterEach(() => {
+        ApplicationRecord.jwt = undefined;
+      });
+
+      it('sets the auth header', () => {
+        expect((<any>Author.fetchOptions().headers).Authorization).to.eq('Token token="g3tm3"');
+      });
+    })
+
+    it('includes the content headers', () => {
+      let headers : any = Author.fetchOptions().headers
+      expect(headers.Accept).to.eq('application/json')
+      expect(headers['Content-Type']).to.eq('application/json')
+    })
+  })
 })
-
-// let instance;
-// Config.setup();
-
-// describe('Model', () => {
-
-//   describe('.url', () => {
-//     context('Default base URL generation method', () => {
-//       it('should append the baseUrl, apiNamespace, and jsonapi type', () => {
-//         class DefaultBaseUrl extends ApplicationRecord {
-//           static baseUrl : string = 'http://base.com'
-//           static apiNamespace : string = '/namespace/v1'
-//           static jsonapiType : string = 'testtype'
-//         }
-
-//         expect(DefaultBaseUrl.url('testId')).to.eq('http://base.com/namespace/v1/testtype/testId')
-//       })
-//     })
-
-//     context('Base URL path generation is overridden', () => {
-//       it('should use the result of the override () => {
-//         class OverriddenBaseUrl extends ApplicationRecord {
-//           static jsonapiType : string = 'testtype'
-//           static fullBasePath() : string {
-//             return 'http://overridden.base'
-//           }
-//         }
-
-//         expect(OverriddenBaseUrl.url('testId')).to.eq('http://overridden.base/testtype/testId')
-//       })
-//     })
-//   })
-
-//   describe('#fetchOptions', () => {
-//     context('jwt is set', () => {
-//       beforeEach(() => {
-//         ApplicationRecord.jwt = 'g3tm3';
-//       });
-
-//       afterEach(() => {
-//         ApplicationRecord.jwt = null;
-//       });
-
-//       it('sets the auth header', () => {
-//         expect(Author.fetchOptions().headers.Authorization).to.eq('Token token="g3tm3"');
-//       });
-//     })
-
-//     it('includes the content headers', () => {
-//       let headers = Author.fetchOptions().headers
-//       expect(headers.Accept).to.eq('application/json')
-//       expect(headers['Content-Type']).to.eq('application/json')
-//     })
-//   })
-
-
-//   });
-
-
-// });

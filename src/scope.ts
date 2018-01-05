@@ -229,7 +229,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     }
   }
 
-  private async _fetch(url : string) : Promise<JsonapiDoc> {
+  private async _fetch(url : string) : Promise<JsonapiResponseDoc> {
     let qp = this.toQueryParams();
     if (qp) {
       url = `${url}?${qp}`;
@@ -242,7 +242,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return response['jsonPayload'];
   }
 
-  private _buildRecordResult(jsonResult : JsonapiDoc) {
+  private _buildRecordResult(jsonResult : JsonapiResponseDoc) {
     let record : T['prototype'] | null = null
 
     if (jsonResult.data) {

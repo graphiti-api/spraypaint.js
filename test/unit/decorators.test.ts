@@ -11,14 +11,15 @@ import { JSORMBase } from '../../src/model'
 
 describe('Decorators', () => {
   describe('@Model', () => {
+    let config = {
+      apiNamespace: 'api/v2',
+      jsonapiType: 'my_types',
+      jwt: 'abc123', 
+    }
+
     describe('class options', () => {
       let TestModel : typeof JSORMBase
       let BaseModel : typeof JSORMBase
-      let config = {
-        apiNamespace: 'api/v1',
-        jsonapiType: 'my_types',
-        jwt: 'abc123', 
-      }
 
       beforeEach(() => {
         @Model()
@@ -46,6 +47,35 @@ describe('Decorators', () => {
         expect(BaseModel.apiNamespace).not.to.eq(config.apiNamespace)
         expect(BaseModel.jsonapiType).not.to.eq(config.jsonapiType)
         expect(BaseModel.jwt).not.to.eq(config.jwt)
+      })
+    })
+
+    describe('non-decorator syntax', () => {
+      it('can be applied directly to a JSORMBase-extended class', () => {
+        class TestBase extends JSORMBase {}
+        Model(TestBase)
+        
+        class Person extends TestBase {}
+        Model(Person)
+
+        expect(TestBase.currentClass).to.equal(TestBase)
+        expect(TestBase.isBaseClass).to.be.true
+        expect(Person.parentClass).to.equal(TestBase)
+      })
+
+      it('accepts config options', () => { 
+        class TestBase extends JSORMBase {}
+        Model(TestBase)
+
+        class Person extends TestBase {}
+        Model(Person, config)
+
+        expect(TestBase.currentClass).to.equal(TestBase)
+        expect(TestBase.isBaseClass).to.be.true
+
+        expect(Person.apiNamespace).to.eq(config.apiNamespace)
+        expect(Person.jwt).to.eq(config.jwt)
+        expect(Person.jsonapiType).to.eq(config.jsonapiType)
       })
     })
   })

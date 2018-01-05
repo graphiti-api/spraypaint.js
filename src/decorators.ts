@@ -2,11 +2,11 @@ import { pluralize, underscore } from 'inflected'
 
 import { 
   applyModelConfig,
-  isModelInstance,
   JSORMBase, 
   ModelConfiguration, 
   ModelConfigurationOptions,
   isModelClass, 
+  isModelInstance,
 } from './model'
 
 import { 
@@ -22,17 +22,28 @@ import {
   BelongsTo,
 } from './associations'
 
-function ModelDecorator(config? : ModelConfigurationOptions) {
-  return function<M extends typeof JSORMBase>(target: M) : M {
-    modelFactory(target, config)
-    return target
+type ModelDecorator = <M extends typeof JSORMBase>(target: M) => M 
+
+function ModelDecorator(config? : ModelConfigurationOptions) : ModelDecorator
+function ModelDecorator(modelClass : typeof JSORMBase, config?: ModelConfigurationOptions) : void
+function ModelDecorator(
+  modelOrConfig? : ModelConfigurationOptions | typeof JSORMBase,
+  config? : ModelConfigurationOptions
+) {
+  if(isModelClass(modelOrConfig)) {
+    modelFactory(modelOrConfig, config)
+  } else {
+    return function<M extends typeof JSORMBase>(target: M) : M {
+      modelFactory(target, modelOrConfig)
+      return target
+    }
   }
 }
 
 function modelFactory<M extends typeof JSORMBase>(ModelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void {
   ensureModelInheritance(ModelClass)
 
-  applyModelConfig(ModelClass as any, config || {})
+  applyModelConfig(ModelClass, config || {})
 
   if (!ModelClass.jsonapiType && !ModelClass.isBaseClass) {
     ModelClass.jsonapiType = pluralize(underscore(ModelClass.name))

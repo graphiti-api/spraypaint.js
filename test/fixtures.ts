@@ -1,7 +1,6 @@
 import { 
   JSORMBase, 
   Model, 
-  ModelConstructor, 
   attr, 
   hasMany, 
   belongsTo, 

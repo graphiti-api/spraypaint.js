@@ -1,5 +1,5 @@
 import { Attribute, AttrRecord, Attr } from './attribute';
-import { JSORMBase, ModelConstructor } from './model';
+import { JSORMBase } from './model';
 import { JsonapiTypeRegistry } from './jsonapi-type-registry';
 
 export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {

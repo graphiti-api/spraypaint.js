@@ -15,8 +15,8 @@
     "noLib": false,
     "removeComments": false,
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
     "sourceMap": true,
     "declaration": true,
     "declarationDir": "lib/",
@@ -30,5 +30,8 @@
     "src/**/*.ts",
     "test/**/*.ts",
     "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "test/backwards-breaking-test.ts"
   ]
 }

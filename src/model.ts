@@ -55,14 +55,15 @@ export interface SaveOptions {
 }
 
 export type ExtendedModel<
-  Subclass extends JSORMBase, 
+  Superclass extends typeof JSORMBase, 
   Attributes, 
-  Methods
+  Methods,
+  Prototype=Superclass['prototype'] & Attributes & Methods
 > = 
-  JSORMBase &
-  Subclass &
-  Attributes &
-  Methods
+  {
+    new(attrs?: Record<string, any>) : Prototype
+    prototype: Prototype
+  } & Superclass
 
 export type AttrMap<T> = {
   [P in keyof T]: Attribute<T[P]>;
@@ -81,91 +82,8 @@ export interface ExtendOptions<
   methods?: ThisType<M & Attributes & Methods> & Methods
 }
 
-export interface ModelConstructor<M extends JSORMBase, Attrs> {
-  // new (attrs?: Partial<Attrs>) : M
-  new (attrs?: Record<string, any>) : M
-  extend<ExtendedAttrs, Methods> (
-    // this: { new(attrs?: Partial<Attrs>) : M }, 
-    this: { new(attrs?: Record<string, any>) : M }, 
-    options : ExtendOptions<M, ExtendedAttrs, Methods>
-  ) : ModelConstructor<
-      ExtendedModel<M, ExtendedAttrs, Methods>, 
-      Attrs & ExtendedAttrs
-    >
-  inherited(subclass : typeof JSORMBase) : void
-  registerType() : void
-  setAsBase() : void
-
-  attributeList : Attrs
-  extendOptions : any//ExtendOptions<M, Attributes, Methods>
-  parentClass : typeof JSORMBase;
-  currentClass : typeof JSORMBase;
-  isJSORMModel : boolean
-  isBaseClass : boolean
-  typeRegistry : JsonapiTypeRegistry
-  middlewareStack : MiddlewareStack
-
-  baseUrl : string
-  apiNamespace : string
-  jsonapiType? : string
-  endpoint : string;
-  jwt? : string;
-  jwtLocalStorage? : boolean
-  camelizeKeys : boolean
-  strictAttributes : boolean
-}
-
-function extendModel<
-  // MC extends ModelConstructor<M, Attrs>, 
-  M extends JSORMBase, 
-  Attrs, 
-  ExtendedAttrs, 
-  Methods
->(
-  Superclass: ModelConstructor<M, Attrs>, 
-  options : ExtendOptions<M, ExtendedAttrs, Methods>
-) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-  class Subclass extends (<ModelConstructor<JSORMBase, Attrs>>Superclass) { }
-
-  Superclass.inherited(<any>Subclass)
-  
-  let attrs : any = {}
-  if (options.attrs) {
-    for(let key in options.attrs) {
-      let attr = options.attrs[key]
-
-      if(!attr.name) {
-        attr.name = key
-      }
-
-      attr.owner = <any>Subclass
-
-      attrs[key] = attr
-    }
-  }
-
-  Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs)
-
-  applyModelConfig(Subclass, options.static || {})
-
-  Subclass.registerType()
-
-  if (options.methods) {
-    for(const methodName in options.methods) {
-      (<any>Subclass.prototype)[methodName] = options.methods[methodName]
-    }
-  }
-
-  return <any>Subclass
-}
-
-export function applyModelConfig<
-  M extends JSORMBase, 
-  Attrs, 
-  ExtendedAttrs,
-  Methods
->(
-  ModelClass : ModelConstructor<ExtendedModel<M, Attrs, Methods>, Attrs & ExtendedAttrs>, 
+export function applyModelConfig<T extends typeof JSORMBase>(
+  ModelClass : T,
   config: ModelConfigurationOptions
 ) : void {
   let k : keyof ModelConfigurationOptions
@@ -226,11 +144,23 @@ export class JSORMBase {
     this._localStorage = undefined
   }
 
-  // This is to allow for sane type checking in collaboration with the 
-  // isModelClass function exported below.  It is very hard to find out whether
-  // something is a class of a certain type or subtype
-  // (as opposed to an instance of that class), so we set a magic prop on this
-  // for use around the code.
+  /*
+   *
+   * This is to allow for sane type checking in collaboration with the 
+   * isModelClass function exported below.  It is very hard to find out 
+   * whether something is a class of a certain type or subtype
+   * (as opposed to an instance of that class), so we set a magic prop on 
+   * this for use around the codebase. For example, if you have a function:
+   * 
+   * ``` typescript
+   * function(arg : typeof JSORMBase | { foo : string }) {
+   *   if(arg.isJSORMModel) {
+   *     let modelClass : typeof JSORMBase = arg
+   *   }
+   * }
+   * ```
+   * 
+   */
   static readonly isJSORMModel : boolean = true
 
   id? : string;
@@ -334,19 +264,48 @@ export class JSORMBase {
   }
 
   static extend<
-    MC extends ModelConstructor<M, Attrs>, 
-    M extends JSORMBase,
-    Attrs, 
-    ExtendedAttrs,
-    Methods
+    T extends typeof JSORMBase, 
+    ExtendedAttrs, 
+    Methods,
+    SuperType=T
   >(
-    this : { new(...args: any[]) : M }, 
-    options : ExtendOptions<M, ExtendedAttrs, Methods>
-  ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-    const Super = this as MC
-    const Subclass = extendModel(Super, options)
+    this: T,
+    options : ExtendOptions<T, ExtendedAttrs, Methods>
+  ) : ExtendedModel<T, ExtendedAttrs, Methods> {
+    class Subclass extends (<ExtendedModel<typeof JSORMBase, {}, {}>>this) { }
 
-    return Subclass
+    this.inherited(<any>Subclass)
+
+    this.inherited(<any>Subclass)
+    
+    let attrs : any = {}
+    if (options.attrs) {
+      for(let key in options.attrs) {
+        let attr = options.attrs[key]
+
+        if(!attr.name) {
+          attr.name = key
+        }
+
+        attr.owner = <any>Subclass
+
+        attrs[key] = attr
+      }
+    }
+
+    Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs)
+
+    applyModelConfig(Subclass, options.static || {})
+
+    Subclass.registerType()
+
+    if (options.methods) {
+      for(const methodName in options.methods) {
+        (<any>Subclass.prototype)[methodName] = options.methods[methodName]
+      }
+    }
+
+    return <any>Subclass
   }
 
   constructor(attrs? : Record<string, any>) {
