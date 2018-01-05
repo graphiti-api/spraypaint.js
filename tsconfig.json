@@ -5,10 +5,10 @@
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "moduleResolution": "node",
-    "outDir": "lib/",
     "target": "es5",
-    "module": "esnext",
+    "module": "commonjs",
     "lib": ["es2015", "dom"],
+    "outDir": "build/",
     "noEmitHelpers": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
@@ -19,7 +19,6 @@
     // "noUnusedParameters": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "lib/",
     "inlineSourceMap": false
   },
   "formatCodeOptions": {
