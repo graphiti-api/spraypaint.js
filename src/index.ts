@@ -1,4 +1,6 @@
-export { JSORMBase } from './model';
+export { 
+  JSORMBase 
+} from './model';
 
 export { 
   Attribute, 
@@ -20,5 +22,10 @@ export {
 } from './decorators'
 
 export {
-  Scope
+  Scope,
+  SortScope,
+  FieldScope,
+  WhereClause,
+  StatsScope,
+  IncludeScope,
 } from './scope'
