@@ -1,21 +1,23 @@
 import { CollectionProxy, RecordProxy } from './proxies';
-// import { camelize } from './util/string';
 import { ValidationErrors } from './util/validation-errors';
-import { IncludeDirective } from './util/include-directive'
 import { refreshJWT } from './util/refresh-jwt';
 import relationshipIdentifiersFor from './util/relationship-identifiers';
-import { Request, RequestVerbs } from './request';
+import { Request, RequestVerbs, JsonapiResponse } from './request';
 import { WritePayload } from './util/write-payload';
+import { LocalStorage, NullStorageBackend, StorageBackend } from './local-storage'
 
-import cloneDeep from './util/clonedeep';
 import { deserialize, deserializeInstance } from './util/deserialize';
 import { Attribute } from './attribute';
 import DirtyChecker from './util/dirty-check';
 import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope';
-import { TypeRegistry } from './type-registry'
+import { JsonapiTypeRegistry } from './jsonapi-type-registry'
 import { camelize } from 'inflected'
-import { logger } from './logger';
+import { ILogger, logger as defaultLogger } from './logger';
 import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
+
+import { cloneDeep } from './util/clonedeep';
+import { nonenumerable } from './util/decorators'
+import { IncludeScopeHash } from './util/include-directive';
 
 export interface ModelConfiguration {
   baseUrl : string
@@ -23,24 +25,45 @@ export interface ModelConfiguration {
   jsonapiType : string
   endpoint : string;
   jwt : string
+  jwtLocalStorage : string | false
   camelizeKeys : boolean
   strictAttributes : boolean
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration> 
+
+export type ModelIdFields = 'id' | 'temp_id'
+
+export type ModelAttrs<K extends keyof T, T extends JSORMBase> = {
+  [P in K]?: T[P]
+} & Partial<Record<ModelIdFields, string>>
+
+export type ModelAttrChanges<T> = {
+  [P in keyof T]?: T[P][]
+} & Partial<Record<ModelIdFields, string[]>>
+
+export type ModelRecord<T extends JSORMBase> = 
+  ModelAttrs<
+    keyof (Omit<T, keyof JSORMBase>), 
+    T
+  >
+
+export type ModelAttributeChangeSet<T extends JSORMBase> = 
+  ModelAttrChanges<(Omit<T, keyof JSORMBase>)>
 
 export interface SaveOptions {
   with? : IncludeScope
 }
 
 export type ExtendedModel<
-  Subclass extends JSORMBase, 
+  Superclass extends typeof JSORMBase, 
   Attributes, 
-  Methods
+  Methods,
+  Prototype=Superclass['prototype'] & Attributes & Methods
 > = 
-  JSORMBase &
-  Subclass &
-  Attributes &
-  Methods
+  {
+    new(attrs?: Record<string, any>) : Prototype
+    prototype: Prototype
+  } & Superclass
 
 export type AttrMap<T> = {
   [P in keyof T]: Attribute<T[P]>;
@@ -55,100 +78,12 @@ export interface ExtendOptions<
   Methods=DefaultMethods<M>
   > {
   static?: ModelConfigurationOptions
-  config?: ModelConfigurationOptions
   attrs?: AttrMap<Attributes>
   methods?: ThisType<M & Attributes & Methods> & Methods
 }
 
-export interface ModelConstructor<M extends JSORMBase, Attrs> {
-  // new (attrs?: Partial<Attrs>) : M
-  new (attrs?: Record<string, any>) : M
-  extend<ExtendedAttrs, Methods> (
-    // this: { new(attrs?: Partial<Attrs>) : M }, 
-    this: { new(attrs?: Record<string, any>) : M }, 
-    options : ExtendOptions<M, ExtendedAttrs, Methods>
-  ) : ModelConstructor<
-      ExtendedModel<M, ExtendedAttrs, Methods>, 
-      Attrs & ExtendedAttrs
-    >
-  inherited(subclass : typeof JSORMBase) : void
-  registerType() : void
-
-  attributeList : Attrs
-  extendOptions : any//ExtendOptions<M, Attributes, Methods>
-  parentClass : typeof JSORMBase;
-  currentClass : typeof JSORMBase;
-  isJSORMModel : boolean
-  isBaseClass : boolean
-  typeRegistry : TypeRegistry
-  middlewareStack : MiddlewareStack
-
-  baseUrl : string
-  apiNamespace : string
-  jsonapiType? : string
-  endpoint : string;
-  jwt? : string;
-  camelizeKeys : boolean
-  strictAttributes : boolean
-}
-
-function extendModel<
-  MC extends ModelConstructor<M, Attrs>, 
-  M extends JSORMBase, 
-  Attrs, 
-  ExtendedAttrs, 
-  Methods
->(
-  Superclass: ModelConstructor<M, Attrs>, 
-  options : ExtendOptions<M, ExtendedAttrs, Methods>
-) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-  class Subclass extends (<ModelConstructor<JSORMBase, Attrs>>Superclass) { }
-
-  Superclass.inherited(<any>Subclass)
-  
-  let attrs : any = {}
-  if (options.attrs) {
-    for(let key in options.attrs) {
-      let attr = options.attrs[key]
-
-      if(!attr.name) {
-        attr.name = key
-      }
-
-      attr.owner = <any>Subclass
-
-      attrs[key] = attr
-    }
-  }
-
-  Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs)
-
-  if (options.static) {
-    applyModelConfig(Subclass, options.static)
-  }
-
-  if (options.config) {
-    applyModelConfig(Subclass, options.config)
-  }
-
-  Subclass.registerType()
-
-  if (options.methods) {
-    for(const methodName in options.methods) {
-      (<any>Subclass.prototype)[methodName] = options.methods[methodName]
-    }
-  }
-
-  return <any>Subclass
-}
-
-export function applyModelConfig<
-  M extends JSORMBase, 
-  Attrs, 
-  ExtendedAttrs,
-  Methods
->(
-  ModelClass : ModelConstructor<ExtendedModel<M, Attrs, Methods>, Attrs & ExtendedAttrs>, 
+export function applyModelConfig<T extends typeof JSORMBase>(
+  ModelClass : T,
   config: ModelConfigurationOptions
 ) : void {
   let k : keyof ModelConfigurationOptions
@@ -156,6 +91,12 @@ export function applyModelConfig<
   for(k in config) {
     ModelClass[k] = config[k]
   }    
+
+  if (ModelClass.isBaseClass === undefined) {
+    ModelClass.setAsBase()
+  } else if (ModelClass.isBaseClass === true) {
+    ModelClass.isBaseClass = false
+  }
 }
 
 export class JSORMBase {
@@ -167,6 +108,7 @@ export class JSORMBase {
   static jwt? : string;
   static camelizeKeys : boolean = true
   static strictAttributes : boolean = false
+  static logger : ILogger = defaultLogger
 
   static attributeList : Record<string, Attribute> = {}
   static extendOptions : any
@@ -174,31 +116,69 @@ export class JSORMBase {
   static currentClass : typeof JSORMBase = JSORMBase
   static beforeFetch : BeforeFilter | undefined
   static afterFetch : AfterFilter | undefined
+  static jwtLocalStorage : string | false = false
 
-  private static _typeRegistry : TypeRegistry
+  private static _typeRegistry : JsonapiTypeRegistry
   private static _middlewareStack : MiddlewareStack
+  private static _localStorageBackend? : StorageBackend
+  private static _localStorage? : LocalStorage
+  
+  static get localStorage() : LocalStorage {
+    if (!this._localStorage) {  
+      if(!this._localStorageBackend) {
+        if (this.jwtLocalStorage) {
+          this._localStorageBackend = localStorage
+        } else {
+          this._localStorageBackend = new NullStorageBackend()
+        }
+      }
 
-  // This is to allow for sane type checking in collaboration with the 
-  // isModelClass function exported below.  It is very hard to find out whether
-  // something is a class of a certain type or subtype
-  // (as opposed to an instance of that class), so we set a magic prop on this
-  // for use around the code.
+      this._localStorage = new LocalStorage(this.jwtLocalStorage, this._localStorageBackend)
+    }
+
+    return this._localStorage
+  }
+
+  static set localStorageBackend(backend : StorageBackend | undefined) {
+    this._localStorageBackend = backend
+    this._localStorage = undefined
+  }
+
+  /*
+   *
+   * This is to allow for sane type checking in collaboration with the 
+   * isModelClass function exported below.  It is very hard to find out 
+   * whether something is a class of a certain type or subtype
+   * (as opposed to an instance of that class), so we set a magic prop on 
+   * this for use around the codebase. For example, if you have a function:
+   * 
+   * ``` typescript
+   * function(arg : typeof JSORMBase | { foo : string }) {
+   *   if(arg.isJSORMModel) {
+   *     let modelClass : typeof JSORMBase = arg
+   *   }
+   * }
+   * ```
+   * 
+   */
   static readonly isJSORMModel : boolean = true
 
   id? : string;
   temp_id? : string;
-  relationships : Record<string, JSORMBase | JSORMBase[]> = {}
-  klass : typeof JSORMBase
-  private _persisted : boolean = false;
-  private _markedForDestruction: boolean = false;
-  private _markedForDisassociation: boolean = false;
-  private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
-  private _attributes : Record<string, any>
-  private _originalAttributes : Record<string, any>
-  private __meta__ : any
-  private _errors : object = {}
 
-  static fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc) : any {
+  @nonenumerable relationships : Record<string, JSORMBase | JSORMBase[]> = {}
+  @nonenumerable klass : typeof JSORMBase
+
+  @nonenumerable private _persisted : boolean = false;
+  @nonenumerable private _markedForDestruction: boolean = false;
+  @nonenumerable private _markedForDisassociation: boolean = false;
+  @nonenumerable private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
+  @nonenumerable private _attributes : ModelRecord<this>
+  @nonenumerable private _originalAttributes : ModelRecord<this>
+  @nonenumerable private __meta__ : any
+  @nonenumerable private _errors : object = {}
+
+  static fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc) : any {
     return deserialize(this.typeRegistry, resource, payload);
   }
 
@@ -207,12 +187,6 @@ export class JSORMBase {
     subclass.currentClass = subclass;
     subclass.prototype.klass = subclass;
     subclass.attributeList = cloneDeep(subclass.attributeList)
-
-    if (this.isBaseClass === undefined) {
-      subclass.setAsBase()
-    } else if (this.isBaseClass === true) {
-      subclass.isBaseClass = false
-    }
   }
 
   static setAsBase() : void {
@@ -220,12 +194,15 @@ export class JSORMBase {
     this.jsonapiType = undefined
 
     if (!this.typeRegistry) {
-      this.typeRegistry = new TypeRegistry(this)
+      this.typeRegistry = new JsonapiTypeRegistry(this)
     }
 
     if (!this.middlewareStack) {
       this._middlewareStack = new MiddlewareStack()
     }
+
+    let jwt = this.localStorage.getJWT()
+    this.setJWT(jwt)
   }
 
   static isSubclassOf(maybeSuper : typeof JSORMBase) : boolean {
@@ -254,7 +231,7 @@ export class JSORMBase {
     }
   }
 
-  static get typeRegistry() : TypeRegistry {
+  static get typeRegistry() : JsonapiTypeRegistry {
     if (this.baseClass  === undefined) {
       throw new Error(`No base class for ${this.name}`)
     }
@@ -262,7 +239,7 @@ export class JSORMBase {
     return this.baseClass._typeRegistry
   }
 
-  static set typeRegistry(registry: TypeRegistry) {
+  static set typeRegistry(registry: JsonapiTypeRegistry) {
     if (!this.isBaseClass) {
       throw new Error('Cannot set a registry on a non-base class')
     }
@@ -287,19 +264,48 @@ export class JSORMBase {
   }
 
   static extend<
-    MC extends ModelConstructor<M, Attrs>, 
-    M extends JSORMBase,
-    Attrs, 
-    ExtendedAttrs,
-    Methods
+    T extends typeof JSORMBase, 
+    ExtendedAttrs, 
+    Methods,
+    SuperType=T
   >(
-    this : { new(...args: any[]) : M }, 
-    options : ExtendOptions<M, ExtendedAttrs, Methods>
-  ) : ModelConstructor<ExtendedModel<M, ExtendedAttrs, Methods>, Attrs & ExtendedAttrs> {
-    const Super = this as MC
-    const Subclass = extendModel(Super, options)
+    this: T,
+    options : ExtendOptions<T, ExtendedAttrs, Methods>
+  ) : ExtendedModel<T, ExtendedAttrs, Methods> {
+    class Subclass extends (<ExtendedModel<typeof JSORMBase, {}, {}>>this) { }
 
-    return Subclass
+    this.inherited(<any>Subclass)
+
+    this.inherited(<any>Subclass)
+    
+    let attrs : any = {}
+    if (options.attrs) {
+      for(let key in options.attrs) {
+        let attr = options.attrs[key]
+
+        if(!attr.name) {
+          attr.name = key
+        }
+
+        attr.owner = <any>Subclass
+
+        attrs[key] = attr
+      }
+    }
+
+    Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs)
+
+    applyModelConfig(Subclass, options.static || {})
+
+    Subclass.registerType()
+
+    if (options.methods) {
+      for(const methodName in options.methods) {
+        (<any>Subclass.prototype)[methodName] = options.methods[methodName]
+      }
+    }
+
+    return <any>Subclass
   }
 
   constructor(attrs? : Record<string, any>) {
@@ -314,9 +320,6 @@ export class JSORMBase {
     const attrs = this.klass.attributeList 
     for (let key in attrs) {
       let attr = attrs[key];
-      if (attr.isRelationship) {
-        let foo = 'bar'
-      }
       Object.defineProperty(this, key, attr.descriptor());
     }
   }
@@ -348,13 +351,28 @@ export class JSORMBase {
     this._markedForDisassociation = val
   }
 
-  get attributes() {
+  get attributes() : Record<string, any> {
     return this._attributes
   }
 
   set attributes(attrs : Record<string, any>) {
     this._attributes = {};
     this.assignAttributes(attrs);
+  }
+
+  /*
+   * This is a (hopefully) temporary method for typescript users.
+   * 
+   * Currently the attributes() setter takes an arbitrary hash which
+   * may or may not include valid attributes. In non-strict mode, it
+   * silently drops those that it doesn't know. This is all perfectly fine
+   * from a functionality point, but it means we can't correctly type
+   * the attributes() getter return object, as it must match the setter's
+   * type. I propose we change the type definition to require sending
+   * abitrary hashes through the assignAttributes() method instead.
+   */
+  get typedAttributes() : ModelRecord<this> {
+    return this._attributes
   }
 
   relationship(name : string) : Array<JSORMBase> | JSORMBase | undefined {
@@ -386,7 +404,7 @@ export class JSORMBase {
     return relationshipIdentifiersFor(this, relationNames);
   }
 
-  fromJsonapi(resource: JsonapiResource, payload: JsonapiDoc, includeDirective: Object = {}) : any {
+  fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc, includeDirective: IncludeScopeHash = {}) : any {
     return deserializeInstance(this, resource, payload, includeDirective);
   }
 
@@ -422,9 +440,9 @@ export class JSORMBase {
     return dc.check(relationships);
   }
 
-  changes() : Object {
-    let dc = new DirtyChecker(this);
-    return dc.dirtyAttributes();
+  changes() : ModelAttributeChangeSet<this> {
+    let dc = new DirtyChecker(this)
+    return dc.dirtyAttributes()
   }
 
   hasDirtyRelation(relationName: string, relatedModel: JSORMBase) : boolean {
@@ -432,7 +450,7 @@ export class JSORMBase {
     return dc.checkRelation(relationName, relatedModel);
   }
 
-  dup() : JSORMBase {
+  dup() : this {
     return cloneDeep(this);
   }
   
@@ -449,8 +467,9 @@ export class JSORMBase {
       } as any
     }
 
-    if (this.getJWT()) {
-      options.headers.Authorization = `Token token="${this.getJWT()}"`;
+    let jwt = this.getJWT()
+    if (jwt) {
+      options.headers.Authorization = this.generateAuthHeader(jwt)
     }
 
     return options
@@ -498,63 +517,62 @@ export class JSORMBase {
 
   static scope<I extends typeof JSORMBase>(this: I) : Scope<I> {
     return new Scope(this)
-    // return this._scope || new Scope(this);
   }
 
-  static first() {
+  static first<I extends typeof JSORMBase>(this: I) {
     return this.scope().first();
-    // return Promise.resolve(this)
   }
-  static all() {
+  static all<I extends typeof JSORMBase>(this: I) {
     return this.scope().all();
   }
 
-  static find(id : string | number) {
+  static find<I extends typeof JSORMBase>(this: I, id : string | number) {
     return this.scope().find(id);
   }
 
-  static where(clause: WhereClause) : Scope {
+  static where<I extends typeof JSORMBase>(this: I, clause: WhereClause) {
     return this.scope().where(clause);
   }
 
-  static page(number: number) : Scope {
+  static page<I extends typeof JSORMBase>(this: I, number: number) {
     return this.scope().page(number);
   }
 
-  static per(size: number) : Scope {
+  static per<I extends typeof JSORMBase>(this: I, size: number) {
     return this.scope().per(size);
   }
 
-  static order(clause: SortScope | string) : Scope {
+  static order<I extends typeof JSORMBase>(this: I, clause: SortScope | string) {
     return this.scope().order(clause);
   }
 
-  static select(clause: FieldScope) : Scope {
+  static select<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
     return this.scope().select(clause);
   }
 
-  static selectExtra(clause: FieldScope) : Scope {
+  static selectExtra<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
     return this.scope().selectExtra(clause);
   }
 
-  static stats(clause: StatsScope) : Scope {
+  static stats<I extends typeof JSORMBase>(this: I, clause: StatsScope) {
     return this.scope().stats(clause);
   }
 
-  static includes(clause: IncludeScope) : Scope {
+  static includes<I extends typeof JSORMBase>(this: I, clause: IncludeScope) {
     return this.scope().includes(clause);
   }
 
-  static merge(obj : Record<string, Scope>) : Scope {
+  static merge<I extends typeof JSORMBase>(this: I, obj : Record<string, Scope>) {
     return this.scope().merge(obj);
   }
 
-  static setJWT(token: string) : void {
+  static setJWT(token: string | undefined | null) : void {
     if (this.baseClass === undefined) {
       throw new Error(`Cannot set JWT on ${this.name}: No base class present.`)
     }
 
-    this.baseClass.jwt = token;
+    this.baseClass.jwt = token || undefined;
+    this.localStorage.setJWT(token)
   }
 
   static getJWT() : string | undefined {
@@ -565,8 +583,12 @@ export class JSORMBase {
     }
   }
 
+  static generateAuthHeader(jwt: string) : string {
+    return `Token token="${jwt}"`;
+  }
+
   static getJWTOwner() : typeof JSORMBase | undefined {
-    logger.warn('JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead')
+    this.logger.warn('JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead')
 
     return this.baseClass
   }
@@ -574,7 +596,7 @@ export class JSORMBase {
   async destroy() : Promise<boolean> {
     let url     = this.klass.url(this.id);
     let verb    = 'delete';
-    let request = new Request(this._middleware());
+    let request = new Request(this._middleware(), this.klass.logger);
     let response : any
 
     try {
@@ -588,11 +610,10 @@ export class JSORMBase {
     });
   }
 
-
   async save(options: SaveOptions = {}) : Promise<boolean> {
-    let url     = this.klass.url()
+    let url = this.klass.url()
     let verb : RequestVerbs = 'post'
-    let request = new Request(this._middleware())
+    let request = new Request(this._middleware(), this.klass.logger)
     let payload = new WritePayload(this, options['with'])
     let response : any
 
@@ -602,7 +623,7 @@ export class JSORMBase {
     }
 
     let json = payload.asJSON();
-    
+
     try {
       response = await request[verb](url, json, this._fetchOptions())
     } catch (err) {
@@ -615,11 +636,11 @@ export class JSORMBase {
     });
   }
 
-  private async _handleResponse(response: any, callback: () => void) : Promise<boolean>  {
+  private async _handleResponse(response: JsonapiResponse, callback: () => void) : Promise<boolean>  {
     refreshJWT(this.klass, response);
 
     if (response.status == 422) {
-      ValidationErrors.apply(this, response['jsonPayload']);
+      ValidationErrors.apply(this, response.jsonPayload);
       return false
     } else {
       callback();
@@ -646,7 +667,6 @@ export class JSORMBase {
 } 
 
 ;(<any>JSORMBase.prototype).klass = JSORMBase
-
 
 export function isModelClass(arg: any) : arg is typeof JSORMBase {
   if (!arg) { return false }

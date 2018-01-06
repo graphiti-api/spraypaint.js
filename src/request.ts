@@ -1,14 +1,20 @@
-import Config from './configuration';
 import colorize from './util/colorize';
 import { MiddlewareStack } from './middleware-stack';
+import { ILogger, logger as defaultLogger } from './logger';
 
 export type RequestVerbs = keyof Request
 
+export interface JsonapiResponse extends Response {
+  jsonPayload : JsonapiResponseDoc
+}
+
 export class Request {
   middleware: MiddlewareStack
+  private logger : ILogger
 
-  constructor(middleware: MiddlewareStack) {
+  constructor(middleware: MiddlewareStack, logger : ILogger) {
     this.middleware = middleware
+    this.logger = logger
   }
 
   get(url : string, options: RequestInit) : Promise<any> {
@@ -16,14 +22,14 @@ export class Request {
     return this._fetchWithLogging(url, options);
   }
 
-  post(url: string, payload: Object, options: RequestInit) : Promise<any> {
+  post(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
     options.method = 'POST';
     options.body   = JSON.stringify(payload);
 
     return this._fetchWithLogging(url, options);
   }
 
-  put(url: string, payload: Object, options: RequestInit) : Promise<any> {
+  put(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
     options.method = 'PUT';
     options.body   = JSON.stringify(payload);
 
@@ -38,29 +44,24 @@ export class Request {
   // private
 
   private _logRequest(verb: string, url: string) : void {
-    Config.logger.info(colorize('cyan', `${verb}: `) + colorize('magenta', url));
+    this.logger.info(colorize('cyan', `${verb}: `) + colorize('magenta', url));
   }
 
   private _logResponse(responseJSON : string) : void {
-    Config.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)));
+    this.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)));
   }
 
   private async _fetchWithLogging(url: string, options: RequestInit) : Promise<any> {
     this._logRequest(options.method || 'UNDEFINED METHOD', url);
 
-    try {
-      let response = await this._fetch(url, options);
+    let response = await this._fetch(url, options);
 
-      this._logResponse(response['jsonPayload']);
+    this._logResponse(response['jsonPayload']);
 
-      return response
-    } catch(e) {
-      throw e
-    }
+    return response
   }
 
   private async _fetch(url: string, options: RequestInit) : Promise<any> {
-    // return new Promise((resolve, reject) => {
     try {
       this.middleware.beforeFetch(url, options)
     } catch(e) {

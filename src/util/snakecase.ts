@@ -1,1 +1,1 @@
-export { snakeCase as default } from 'lodash';
+export { default as snakeCase } from 'lodash-es/snakeCase'

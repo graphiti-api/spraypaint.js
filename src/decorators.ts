@@ -2,10 +2,11 @@ import { pluralize, underscore } from 'inflected'
 
 import { 
   applyModelConfig,
-  isModelInstance,
   JSORMBase, 
   ModelConfiguration, 
-  ModelConfigurationOptions, 
+  ModelConfigurationOptions,
+  isModelClass, 
+  isModelInstance,
 } from './model'
 
 import { 
@@ -20,20 +21,29 @@ import {
   HasOne,
   BelongsTo,
 } from './associations'
-import Model from './model-old';
 
-const ModelDecorator = function(config? : ModelConfigurationOptions) {
-  return function<M extends typeof JSORMBase>(target: M) : void {
-    modelFactory(target, config)
+type ModelDecorator = <M extends typeof JSORMBase>(target: M) => M 
+
+function ModelDecorator(config? : ModelConfigurationOptions) : ModelDecorator
+function ModelDecorator(modelClass : typeof JSORMBase, config?: ModelConfigurationOptions) : void
+function ModelDecorator(
+  modelOrConfig? : ModelConfigurationOptions | typeof JSORMBase,
+  config? : ModelConfigurationOptions
+) {
+  if(isModelClass(modelOrConfig)) {
+    modelFactory(modelOrConfig, config)
+  } else {
+    return function<M extends typeof JSORMBase>(target: M) : M {
+      modelFactory(target, modelOrConfig)
+      return target
+    }
   }
 }
 
 function modelFactory<M extends typeof JSORMBase>(ModelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void {
   ensureModelInheritance(ModelClass)
 
-  if (config) {
-    applyModelConfig(ModelClass, config)
-  }
+  applyModelConfig(ModelClass, config || {})
 
   if (!ModelClass.jsonapiType && !ModelClass.isBaseClass) {
     ModelClass.jsonapiType = pluralize(underscore(ModelClass.name))
@@ -44,7 +54,12 @@ function modelFactory<M extends typeof JSORMBase>(ModelClass : typeof JSORMBase,
 
 function AttrDecoratorFactory(config? : AttributeOptions) : PropertyDecorator
 function AttrDecoratorFactory(target : JSORMBase, propertyKey : string) : void
-function AttrDecoratorFactory(configOrTarget? : JSORMBase | AttributeOptions | undefined, propertyKey? : string) : any {
+function AttrDecoratorFactory(target : typeof JSORMBase, propertyKey : string, config? : AttributeOptions) : void
+function AttrDecoratorFactory(
+  configOrTarget? : typeof JSORMBase | JSORMBase | AttributeOptions | undefined, 
+  propertyKey? : string,
+  attrConfig? : AttributeOptions
+) : any {
   let attrDefinition = new Attribute({name: propertyKey})
 
   const attrFunction = function(ModelClass : typeof JSORMBase, propertyKey : string | symbol) : PropertyDescriptor {
@@ -58,14 +73,23 @@ function AttrDecoratorFactory(configOrTarget? : JSORMBase | AttributeOptions | u
     return attrDefinition.descriptor()
   }
 
-  if (isModelInstance(configOrTarget) ) {
+  if((isModelClass(configOrTarget) || 
+     isModelInstance(configOrTarget))) {
     // For type checking. Can't have a model AND no property key
     if (!propertyKey) {
-      throw new Error('This should not be possible')
+      throw new Error('Must provide a propertyKey')
     }
-    let target : JSORMBase = configOrTarget
-    
-    return attrFunction(<any>target.constructor, propertyKey)
+    let target = configOrTarget
+
+    if (isModelClass(target)) {
+      if (attrConfig) {
+        attrDefinition = new Attribute(attrConfig)
+      }
+      
+      attrFunction(target, propertyKey)
+    } else {
+      return attrFunction(<any>target.constructor, propertyKey)
+    }
   } else {
     if (configOrTarget) {
       attrDefinition = new Attribute(configOrTarget)
@@ -83,6 +107,8 @@ function ensureModelInheritance(ModelClass : typeof JSORMBase) {
   }
 }
 
+type DecoratorFn = (target : JSORMBase, propertyKey : string) => void
+type DecoratorArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string
 /* 
  * Yup that's a super-Java-y method name.  Decorators in 
  * ES7/TS are either of the form:
@@ -96,11 +122,29 @@ function ensureModelInheritance(ModelClass : typeof JSORMBase) {
  * that returns a decorator function.
  * 
  * This method builds the factory function for each of our
- * association types
+ * association types. 
+ * 
+ * Additionally, users without decorator support can apply these
+ * to their ES6-compatible classes directly if they prefer:
+ * 
+ * ``` javascript
+ * class Person extends ApplicationRecord {
+ *   fullName() { `${this.firstName} ${this.lastName} `}
+ * }
+ * Attr(Person, 'firstName')
+ * Attr(Person, 'lastName')
+ * BelongsTo(Person, 'mother', { type: Person })
+ * ```
  * 
  */ 
 function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) {
-  return function(optsOrType?: AssociationFactoryOpts<T> | string) {
+  function DecoratorFactory(target: typeof JSORMBase, propertyKey : string, optsOrType?: AssociationFactoryOpts<T> | string) : void 
+  function DecoratorFactory(optsOrType?: DecoratorArgs<T>) : DecoratorFn 
+  function DecoratorFactory(
+    targetOrConfig? : typeof JSORMBase | DecoratorArgs<T>, 
+    propertyKey? : string,
+    optsOrType?: DecoratorArgs<T>
+  ) {
     function extend(ModelClass : typeof JSORMBase) : typeof JSORMBase {
       ensureModelInheritance(ModelClass)
 
@@ -109,7 +153,7 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) 
 
     let opts : AssociationRecord<T> | undefined
 
-    return function(target: JSORMBase, propertyKey : string) {
+    const factoryFn = function(target: JSORMBase, propertyKey : string) {
       if (optsOrType === undefined) {
         let inferredType = pluralize(underscore(propertyKey))
 
@@ -143,7 +187,22 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) 
 
       attrDefinition.descriptor()
     }
+
+    if (isModelClass(targetOrConfig)) {
+      let target = targetOrConfig
+      
+      if (!propertyKey) {
+        throw new Error('Must provide propertyKey')
+      }
+
+      factoryFn(target.prototype, propertyKey)
+    } else {
+      optsOrType = targetOrConfig
+      return factoryFn
+    }
   }
+
+  return DecoratorFactory
 }
 
 const HasManyDecoratorFactory = AssociationDecoratorFactoryBuilder(HasMany)

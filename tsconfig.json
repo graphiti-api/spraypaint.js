@@ -5,21 +5,19 @@
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "moduleResolution": "node",
-    "outDir": "lib/",
     "target": "es5",
-    "module": "esnext",
+    "module": "commonjs",
     "lib": ["es2015", "dom"],
-    "noEmitHelpers": true,
+    "outDir": "build/",
+    "noEmitHelpers": false,
+    "importHelpers": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "noLib": false,
     "removeComments": false,
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "lib/",
     "inlineSourceMap": false
   },
   "formatCodeOptions": {
@@ -30,5 +28,8 @@
     "src/**/*.ts",
     "test/**/*.ts",
     "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "test/backwards-breaking-test.ts"
   ]
 }

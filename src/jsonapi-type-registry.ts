@@ -1,6 +1,6 @@
 import { JSORMBase } from './model'
 
-export class TypeRegistry {
+export class JsonapiTypeRegistry {
   private _typeMap : Record<string, typeof JSORMBase> = {}
   private _baseClass : typeof JSORMBase
 

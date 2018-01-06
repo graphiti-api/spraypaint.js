@@ -2,15 +2,15 @@ import { JSORMBase } from '../model'
 import { IResultProxy } from './index'
 
 export class RecordProxy<T> implements IResultProxy<T> {
-  private _raw_json : JsonapiDoc;
+  private _raw_json : JsonapiResponseDoc;
   private _record : T | null;
 
-  constructor (record : T | undefined | null, raw_json : JsonapiDoc) {
+  constructor (record : T | undefined | null, raw_json : JsonapiResponseDoc) {
     this._record = (record || null)
     this._raw_json = raw_json;
   }
 
-  get raw () : JsonapiDoc {
+  get raw () : JsonapiResponseDoc {
     return this._raw_json;
   }
 
@@ -18,7 +18,7 @@ export class RecordProxy<T> implements IResultProxy<T> {
     return this._record;
   }
 
-  get meta () : Object {
+  get meta () : Record<string, any> {
     return this.raw.meta || {};
   }
 }

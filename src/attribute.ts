@@ -53,12 +53,14 @@ export class Attribute<T=any> {
 
   // The model calls this setter
   setter(context: JSORMBase, val: any) : void {
-    context._attributes[this.name] = val;
+    let privateContext : any = context
+    privateContext._attributes[this.name] = val;
   }
 
   // The model calls this getter
   getter(context: JSORMBase) : any {
-    return context._attributes[this.name];
+    let privateContext : any = context
+    return privateContext._attributes[this.name];
   }
 
   // This returns the getters/setters for use on the *model*
@@ -67,14 +69,12 @@ export class Attribute<T=any> {
 
     return {
       enumerable: true,
-      get() : any {
-        return attr.getter(<any>this);
+      get(this: JSORMBase) : any {
+        return attr.getter(this);
       },
 
-      set(value) : void {
-        if (!value || !value.hasOwnProperty('isAttr')) {
-          attr.setter(<any>this, value);
-        }
+      set(this: JSORMBase, value) : void {
+        attr.setter(this, value);
       }
     }
   }
@@ -82,6 +82,14 @@ export class Attribute<T=any> {
 
 const simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/
 
+/*
+ *  Function taken from VueJS's props assertion code here:
+ *  https://github.com/vuejs/vue/blob/1dd6b6f046c3093950e599ccc6bbe7a393b8a494/src/core/util/props.js
+ * 
+ *  We aren't using this yet, but I don't want to lose the reference 
+ *  to it so I'm keeping it around.
+ *
+ */
 function assertType<T>(value: any, type: Attr<T>): {
   valid: boolean;
   expectedType: string;
@@ -131,7 +139,6 @@ function isType<T>(type : Attr<T>, fn : Function) {
   return false
 }
 
-
 /**
  * Get the raw type string of a value e.g. [object Object]
  */
@@ -144,51 +151,3 @@ const _toString = Object.prototype.toString
 function isPlainObject (obj: any): obj is object {
   return _toString.call(obj) === '[object Object]'
 }
-
-
-// export default class Attribute {
-//   name: string;
-
-//   persist: boolean = true;
-//   isAttr: boolean = true;
-//   isRelationship: boolean = false;
-
-//   constructor(opts?: attributeOptions) {
-//     if (opts && opts.hasOwnProperty('persist')) {
-//       this.persist = opts.persist;
-//     }
-//   }
-
-//   static applyAll(klass: typeof Model) : void {
-//     this._eachAttribute(klass, (attr) => {
-//       klass.attributeList[attr.name] = attr;
-//       let descriptor = attr.descriptor();
-//       Object.defineProperty(klass.prototype, attr.name, descriptor);
-//       let instance = new klass();
-
-//       let decorators = instance['__attrDecorators'] || [];
-//       decorators.forEach((d) => {
-//         if (d['attrName'] === attr.name) {
-//           d['decorator'](klass.prototype, attr.name, descriptor);
-//         }
-//       });
-//     });
-//   }
-
-//   private static _eachAttribute(klass: typeof Model, callback: Function) : void {
-//     let instance = new klass();
-//     for (let propName in instance) {
-//       if (instance[propName] && instance[propName].hasOwnProperty('isAttr')) {
-
-//         let attrInstance = instance[propName];
-//         attrInstance.name = propName;
-
-//         if (attrInstance.isRelationship) {
-//           attrInstance.klass = Config.modelForType(attrInstance.jsonapiType || attrInstance.name);
-//         }
-
-//         callback(attrInstance);
-//       }
-//     }
-//   }
-// }

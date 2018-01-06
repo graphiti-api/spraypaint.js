@@ -1,10 +1,11 @@
-import { JSORMBase } from '../model';
-import { IncludeDirective, IncludeScopeArg } from './include-directive';
+import { JSORMBase, ModelRecord, ModelAttributeChangeSet } from '../model';
+import { IncludeDirective, IncludeScopeHash } from './include-directive';
+import { IncludeScope } from '../scope'
 
-class DirtyChecker {
-  model: JSORMBase;
+class DirtyChecker<T extends JSORMBase> {
+  model: T;
 
-  constructor(model: JSORMBase) {
+  constructor(model: T) {
     this.model = model;
   }
 
@@ -15,7 +16,7 @@ class DirtyChecker {
     let dirty = false;
 
     if (relatedModel.isPersisted) {
-      let identifiers = this.model._originalRelationships[relationName] || [];
+      let identifiers : JsonapiResourceIdentifier[] = (<any>this.model)._originalRelationships[relationName] || [];
       let found = identifiers.find((ri) => {
         return JSON.stringify(ri) == JSON.stringify(relatedModel.resourceIdentifier);
       });
@@ -30,7 +31,7 @@ class DirtyChecker {
   // * marked for destruction / disassociation
   // * not persisted (and thus must be send to server)
   // * not itself dirty, but has nested relations that are dirty
-  check(relationships: IncludeScopeArg = {}) : boolean {
+  check(relationships: IncludeScope = {}) : boolean {
     let includeDirective = new IncludeDirective(relationships);
     let includeHash = includeDirective.toScopeObject();
 
@@ -41,11 +42,11 @@ class DirtyChecker {
       this._isUnpersisted()
   }
 
-  dirtyAttributes() : Object {
-    let dirty = {};
+  dirtyAttributes()  {
+    let dirty : ModelAttributeChangeSet<T> = {};
 
     for (let key of Object.keys(this.model.attributes)) {
-      let prior = this.model._originalAttributes[key];
+      let prior = (<any>this.model)._originalAttributes[key];
       let current = this.model.attributes[key];
 
       if (!this.model.isPersisted) {
@@ -64,13 +65,13 @@ class DirtyChecker {
   }
 
   private _hasDirtyAttributes() {
-    let originalAttrs = this.model._originalAttributes;
+    let originalAttrs = (<any>this.model)._originalAttributes;
     let currentAttrs = this.model.attributes;
 
     return JSON.stringify(originalAttrs) !== JSON.stringify(currentAttrs);
   }
 
-  private _hasDirtyRelationships(includeHash: Object) : boolean {
+  private _hasDirtyRelationships(includeHash: IncludeScopeHash) : boolean {
     let dirty = false;
 
     this._eachRelatedObject(includeHash, (relationName, relatedObject, nested) => {
@@ -86,11 +87,18 @@ class DirtyChecker {
     return dirty;
   }
 
-  _eachRelatedObject(includeHash: Object, callback: Function) : void {
+  _eachRelatedObject(
+    includeHash: IncludeScopeHash, 
+    callback: (key : string, object : JSORMBase, nested: IncludeScopeHash) => void
+  ) : void {
     Object.keys(includeHash).forEach((key) => {
       let nested = includeHash[key];
-      let relatedObjects = this.model[key];
-      if (!Array.isArray(relatedObjects)) relatedObjects = [relatedObjects];
+      let relatedObjects : JSORMBase[] | JSORMBase = (<any>this.model)[key];
+
+      if (!Array.isArray(relatedObjects)) {
+        relatedObjects = [relatedObjects]
+      }
+
       relatedObjects.forEach((relatedObject) => {
         if (relatedObject) {
           callback(key, relatedObject, nested);

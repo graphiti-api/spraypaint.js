@@ -64,6 +64,21 @@ describe('Model attributes', () => {
     expect(keys).to.include('firstName')
     expect(keys).to.include('lastName')
   });
+  
+  it('does should only include attributes in key enumeration', () => {
+    class BadPerson extends Person {}
+
+    let badPerson = new BadPerson()
+    let keys = Object.keys(badPerson)
+
+    for(let i in keys) {
+      expect(keys[i]).not.to.match(/^_/)
+      expect([
+        'relationships',
+        'klass',
+      ]).not.to.include(keys[i])
+    }
+  })
 
   // Without this behavior, the API could add a backwards-compatible field,
   // and this object might blow up.

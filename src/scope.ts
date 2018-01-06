@@ -1,12 +1,10 @@
 import { JSORMBase } from './model';
-import Config from './configuration';
 import parameterize from './util/parameterize';
 import { IncludeDirective, IncludeArgHash, IncludeScopeHash } from './util/include-directive';
 import { CollectionProxy, RecordProxy } from './proxies'; 
 import { Request } from './request';
-import colorize from './util/colorize';
 import { refreshJWT } from './util/refresh-jwt';
-import cloneDeep from './util/clonedeep';
+import { cloneDeep } from './util/clonedeep';
 
 export interface JsonapiQueryParams {
   page: AnyRecord,
@@ -43,34 +41,22 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   async all() : Promise<CollectionProxy<T['prototype']>> {
-    try {
-      let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
+    let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
 
-      return this._buildCollectionResult(response)
-    } catch(e) {
-      throw e
-    }
+    return this._buildCollectionResult(response)
   }
 
   async find(id : string | number) : Promise<RecordProxy<T['prototype']>> {
-    try {
-      let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
+    let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
 
-      return this._buildRecordResult(json)
-    } catch(e) {
-      throw e
-    }
+    return this._buildRecordResult(json)
   }
 
   async first() : Promise<RecordProxy<T['prototype']>> {
     let newScope = this.per(1);
     let rawResult 
 
-    try {
-     rawResult = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
-    } catch (err) {
-      throw err
-    }
+    rawResult = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
 
     return this._buildRecordResult(rawResult)
   }
@@ -243,24 +229,20 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     }
   }
 
-  private async _fetch(url : string) : Promise<JsonapiDoc> {
+  private async _fetch(url : string) : Promise<JsonapiResponseDoc> {
     let qp = this.toQueryParams();
     if (qp) {
       url = `${url}?${qp}`;
     }
-    let request = new Request(this.model.middlewareStack);
+    let request = new Request(this.model.middlewareStack, this.model.logger);
     let fetchOpts = this.model.fetchOptions()
 
-    try {
-      let response = await request.get(url, fetchOpts)
-      refreshJWT(this.model, response);
-      return response['jsonPayload'];
-    } catch (e) {
-      throw e
-    }
+    let response = await request.get(url, fetchOpts)
+    refreshJWT(this.model, response);
+    return response['jsonPayload'];
   }
 
-  private _buildRecordResult(jsonResult : JsonapiDoc) {
+  private _buildRecordResult(jsonResult : JsonapiResponseDoc) {
     let record : T['prototype'] | null = null
 
     if (jsonResult.data) {

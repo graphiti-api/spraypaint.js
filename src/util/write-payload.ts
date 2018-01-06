@@ -1,24 +1,28 @@
-import { JSORMBase } from '../model';
-import { IncludeDirective } from './include-directive';
-import * as _snakeCase from './snakecase';
-import tempId from './temp-id';
+import { JSORMBase, ModelRecord } from '../model';
+import { IncludeDirective, IncludeScopeHash } from './include-directive';
 import { IncludeScope } from '../scope';
-let snakeCase: any = (<any>_snakeCase).default || _snakeCase;
-snakeCase = snakeCase['default'] || snakeCase;
+import { snakeCase } from './snakecase';
+import { tempId } from './temp-id';
 
-export class WritePayload {
-  model: JSORMBase;
-  includeDirective: Object;
-  included: Array<Object> = [];
+export class WritePayload<T extends JSORMBase> {
+  model: T
+  jsonapiType : string
+  includeDirective: IncludeScopeHash
+  included: Array<JsonapiResource> = []
 
-  constructor(model : JSORMBase, relationships?: IncludeScope) {
-    let includeDirective = new IncludeDirective(relationships);
-    this.includeDirective = includeDirective.toScopeObject();
-    this.model = model;
+  constructor(model : T, relationships?: IncludeScope) {
+    let includeDirective = new IncludeDirective(relationships)
+    this.includeDirective = includeDirective.toScopeObject()
+    this.model = model
+
+    if (!model.klass.jsonapiType) {
+      throw new Error('Cannot serialize model: Undefined jsonapiType')
+    }
+    this.jsonapiType = model.klass.jsonapiType
   }
 
-  attributes() : Object {
-    let attrs = {};
+  attributes() {
+    let attrs : ModelRecord<T> = {}
 
     this._eachAttribute((key, value) => {
       let snakeKey    = snakeCase(key);
@@ -31,16 +35,17 @@ export class WritePayload {
     return attrs;
   }
 
-  removeDeletions(model: JSORMBase, includeDirective: Object) {
+  removeDeletions(model: T, includeDirective: IncludeScope) {
     Object.keys(includeDirective).forEach((key) => {
-      let nested = includeDirective[key];
+      let nested = (<any>includeDirective)[key];
 
-      let relatedObjects = model[key];
+      let modelIdx = (<any>model)
+      let relatedObjects = modelIdx[key];
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
             if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
-              model[key].splice(index, 1);
+              modelIdx[key].splice(index, 1);
             } else {
               this.removeDeletions(relatedObject, nested);
             }
@@ -48,7 +53,7 @@ export class WritePayload {
         } else {
           let relatedObject = relatedObjects;
           if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
-            model[key] = null;
+            modelIdx[key] = null;
           } else {
             this.removeDeletions(relatedObject, nested);
           }
@@ -63,13 +68,13 @@ export class WritePayload {
   }
 
   relationships() : Object {
-    let _relationships = {};
+    let _relationships : any = {};
 
-    Object.keys(this.includeDirective).forEach((key) => {
-      let nested = this.includeDirective[key];
+    Object.keys(this.includeDirective).forEach((key : any) => {
+      let nested = (<any>this.includeDirective)[key];
 
-      let data;
-      let relatedModels = this.model[key];
+      let data : any
+      let relatedModels = (<any>this.model)[key];
       if (relatedModels) {
         if (Array.isArray(relatedModels)) {
           data = [];
@@ -96,9 +101,9 @@ export class WritePayload {
     return _relationships;
   }
 
-  asJSON() : Object {
+  asJSON() : JsonapiRequestDoc {
     let data : JsonapiResource = {
-      type: this.model.klass.jsonapiType
+      type: this.jsonapiType
     }
 
     this.model.clearErrors();
@@ -121,17 +126,18 @@ export class WritePayload {
       data['relationships'] = relationshipData;
     }
 
-    let json = { data }
+    let json : JsonapiRequestDoc = { data }
+
     if (this.included.length > 0) {
-      json['included'] = this.included
+      json.included = this.included
     }
 
-    return json;
+    return json
   }
 
   // private
 
-  private _processRelatedModel(model: JSORMBase, nested: Object) {
+  private _processRelatedModel(model: T, nested: IncludeScopeHash) {
     model.clearErrors();
 
     if (!model.isPersisted) {
@@ -149,9 +155,14 @@ export class WritePayload {
     return resourceIdentifier;
   }
 
-  private _resourceIdentifierFor(model: JSORMBase) {
-    let identifier = {};
-    identifier['type'] = model.klass.jsonapiType;
+  private _resourceIdentifierFor(model: T) {
+    if (!model.klass.jsonapiType) {
+      throw new Error(`Cannot serialize model: Undefined jsonapiType for model ${model}`)
+    }
+
+    let identifier : JsonapiResourceIdentifier = {
+      type: model.klass.jsonapiType
+    }
 
     if (model.id) {
       identifier['id'] = model.id;
@@ -161,7 +172,7 @@ export class WritePayload {
       identifier['temp-id'] = model.temp_id;
     }
 
-    let method;
+    let method : JsonapiResourceMethod
     if (model.isPersisted) {
       if (model.isMarkedForDestruction) {
         method = 'destroy';
@@ -173,18 +184,18 @@ export class WritePayload {
     } else {
       method = 'create';
     }
-    identifier['method'] = method;
+    identifier.method = method;
 
     return identifier;
   }
 
-  private _pushInclude(include: Object) {
+  private _pushInclude(include: any) {
     if (!this._isIncluded(include)) {
       this.included.push(include);
     };
   }
 
-  private _isIncluded(include: Object) {
+  private _isIncluded(include: any) {
     this.included.forEach((incl) => {
       if (incl['type'] === include['type']) {
         if (incl['id'] === include['id'] || incl['temp-id'] === include['temp-id']) {
@@ -195,13 +206,14 @@ export class WritePayload {
     return false;
   }
 
-  private _eachAttribute(callback: Function) : void {
-    let modelAttrs = this.model.attributes;
+  private _eachAttribute(callback: (key : keyof T, val : any) => void) : void {
+    let modelAttrs = this.model.typedAttributes;
+
     Object.keys(modelAttrs).forEach((key) => {
       if (this.model.klass.attributeList[key].persist) {
         let value = modelAttrs[key];
-        callback(key, value);
+        callback(key as keyof T, value);
       }
-    });
+    })
   }
 }

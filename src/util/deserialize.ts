@@ -1,24 +1,25 @@
-import { TypeRegistry } from '../type-registry'
+import { JsonapiTypeRegistry } from '../jsonapi-type-registry'
 import { JSORMBase } from '../model';
 import { camelize } from './string';
+import { IncludeDirective, IncludeScopeHash, IncludeArgHash } from './include-directive';
 
-function deserialize(registry : TypeRegistry, datum : JsonapiResource, payload: JsonapiDoc) : JSORMBase {
+function deserialize(registry : JsonapiTypeRegistry, datum : JsonapiResource, payload: JsonapiResponseDoc) : JSORMBase {
   let deserializer = new Deserializer(registry, payload);
   return deserializer.deserialize(datum);
 }
 
-function deserializeInstance(instance: JSORMBase, resource : JsonapiResource, payload: JsonapiDoc, includeDirective: Object = {}) : JSORMBase {
+function deserializeInstance(instance: JSORMBase, resource : JsonapiResource, payload: JsonapiResponseDoc, includeDirective: IncludeScopeHash = {}) : JSORMBase {
   let deserializer = new Deserializer(instance.klass.typeRegistry, payload);
   return deserializer.deserializeInstance(instance, resource, includeDirective);
 }
 
 class Deserializer {
-  payload : JsonapiDoc;
-  registry : TypeRegistry
+  payload : JsonapiResponseDoc;
+  registry : JsonapiTypeRegistry
   private _deserialized : Array<JSORMBase> = []
   private _resources : Array<JsonapiResource> = []
 
-  constructor(registry : TypeRegistry, payload : JsonapiDoc) {
+  constructor(registry : JsonapiTypeRegistry, payload : JsonapiResponseDoc) {
     this.registry = registry
     this.payload = payload
 
@@ -70,11 +71,12 @@ class Deserializer {
   }
 
   pushRelation(model: JSORMBase, associationName: string, record: JSORMBase) : void {
-    let associationRecords = model[associationName];
+    let modelIdx = model as any
+    let associationRecords = modelIdx[associationName];
     let existingInstance = this.lookupAssociated(associationRecords, record);
 
     if (!existingInstance) {
-      model[associationName].push(record);
+      modelIdx[associationName].push(record);
     }
   }
 
@@ -83,7 +85,7 @@ class Deserializer {
     return this.deserializeInstance(instance, datum, {});
   }
 
-  deserializeInstance(instance: JSORMBase, datum: JsonapiResource, includeDirective: Object = {}) : JSORMBase {
+  deserializeInstance(instance: JSORMBase, datum: JsonapiResource, includeDirective: IncludeScopeHash = {}) : JSORMBase {
     let existing = this.alreadyDeserialized(datum);
     if (existing) return existing;
 
@@ -111,14 +113,15 @@ class Deserializer {
     return instance;
   }
 
-  _removeDeletions(model: JSORMBase, includeDirective: Object) {
+  _removeDeletions(model: JSORMBase, includeDirective: IncludeScopeHash) {
     Object.keys(includeDirective).forEach((key) => {
-      let relatedObjects = model[key];
+      let modelIdx = model as any
+      let relatedObjects = modelIdx[key];
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
             if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
-              model[key].splice(index, 1);
+              modelIdx[key].splice(index, 1);
             } else {
               this._removeDeletions(relatedObject, includeDirective[key] || {});
             }
@@ -126,7 +129,7 @@ class Deserializer {
         } else {
           let relatedObject = relatedObjects;
           if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
-            model[key] = null;
+            modelIdx[key] = null;
           } else {
             this._removeDeletions(relatedObject, includeDirective[key] || {});
           }
@@ -135,14 +138,15 @@ class Deserializer {
     });
   }
 
-  _processRelationships(instance : JSORMBase, relationships : Record<string, JsonapiDoc>, includeDirective : Object) {
+  _processRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, includeDirective : IncludeScopeHash) {
     this._iterateValidRelationships(instance, relationships, (relationName, relationData) => {
       let nestedIncludeDirective = includeDirective[relationName];
+      let instanceIdx = instance as any
 
       if (Array.isArray(relationData)) {
         for (let datum of relationData) {
           let hydratedDatum = this.findResource(datum);
-          let associationRecords = instance[relationName];
+          let associationRecords = instanceIdx[relationName];
           let relatedInstance = this.relationshipInstanceFor(hydratedDatum, associationRecords);
           relatedInstance = this.deserializeInstance(relatedInstance, hydratedDatum, nestedIncludeDirective);
 
@@ -150,19 +154,19 @@ class Deserializer {
         }
       } else {
         let hydratedDatum = this.findResource(relationData);
-        let existing = instance[relationName];
+        let existing = instanceIdx[relationName];
         let associated = existing || this.instanceFor(hydratedDatum.type);
 
         associated = this.deserializeInstance(associated, hydratedDatum, nestedIncludeDirective);
 
         if (!existing) {
-          instance[relationName] = associated;
+          instanceIdx[relationName] = associated;
         }
       }
     });
   }
 
-  _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiDoc>, callback : (name : string, data: Array<JsonapiResource> | JsonapiResource) => void) {
+  _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, callback : (name : string, data: Array<JsonapiResource> | JsonapiResource) => void) {
     for (let key in relationships) {
       let relationName = key;
 
