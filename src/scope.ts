@@ -4,7 +4,7 @@ import { IncludeDirective, IncludeArgHash, IncludeScopeHash } from './util/inclu
 import { CollectionProxy, RecordProxy } from './proxies'; 
 import { Request } from './request';
 import { refreshJWT } from './util/refresh-jwt';
-import cloneDeep from './util/clonedeep';
+import { cloneDeep } from './util/clonedeep';
 
 export interface JsonapiQueryParams {
   page: AnyRecord,

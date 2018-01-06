@@ -6,7 +6,7 @@ type JsonapiRequestDoc  = JsonapiResourceRequest
 
 interface JsonapiDocMeta {
   included?: Array<JsonapiResource>;
-  meta?: object;
+  meta?: Record<string, any>;
 }
 
 interface JsonapiCollectionDoc extends JsonapiDocMeta {
@@ -41,7 +41,7 @@ type JsonapiResourceMethod = 'create' | 'update' | 'destroy' | 'disassociate'
 interface JsonapiResource extends JsonapiResourceIdentifier {
   attributes?: object;
   relationships?: object;
-  meta?: object;
+  meta?: Record<string, any>;
   links?: object;
 }
 

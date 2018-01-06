@@ -18,7 +18,7 @@ export class CollectionProxy<T> implements IResultProxy<T> {
     return this._collection
   }
 
-  get meta () : Object {
+  get meta () : Record<string, any> {
     return this.raw.meta || {}
   }
 }

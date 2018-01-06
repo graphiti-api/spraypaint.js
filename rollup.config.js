@@ -1,10 +1,9 @@
 import { readFileSync } from 'fs';
-import buble from 'rollup-plugin-buble';
 import uglify from 'rollup-plugin-uglify';
 import commonjs from 'rollup-plugin-commonjs';
-import replace from 'rollup-plugin-replace';
+import resolve from 'rollup-plugin-node-resolve';
 
-const pkg = JSON.parse( readFileSync( 'package.json', 'utf-8' ) );
+const pkg = require('./package.json')
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -15,12 +14,11 @@ const banner = readFileSync( 'banner.js', 'utf-8' )
   .replace( '${homepage}', pkg.homepage )
 
 export default {
-  input: `./lib/index.js`,
+  input: pkg.module,
   plugins: [
     isProduction ? uglify({}) : {},
+    resolve(),
     commonjs({ include: './node_modules/**' }),
-    buble({exclude: './node_modules/**'}),
-    replace({ 'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV) })
   ],
   banner:  banner,
   sourceMap: false,

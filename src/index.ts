@@ -16,6 +16,7 @@ export {
   Attr,
   HasMany,
   HasOne,
+  BelongsTo,
 } from './decorators'
 
 export {

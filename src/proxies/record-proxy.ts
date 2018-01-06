@@ -18,7 +18,7 @@ export class RecordProxy<T> implements IResultProxy<T> {
     return this._record;
   }
 
-  get meta () : Object {
+  get meta () : Record<string, any> {
     return this.raw.meta || {};
   }
 }
