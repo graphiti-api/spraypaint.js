@@ -252,5 +252,21 @@ describe('Decorators', () => {
         })
       })
     })
-  });
+  })
+
+  describe('Attribute Decorator Factory', () => {
+    xit('should have the ability to link third party decorators into object lifecycle', () => {
+      //import { tracked } from '@glimmer/component'
+      //let trackedAttr = decoratorFactory(tracked)
+      @Model()
+      class BaseModel extends JSORMBase {
+      }
+
+      @Model()
+      class TestClass extends BaseModel {
+        //@trackedAttr
+        //@Attr name : string
+      }
+    })
+  })
 })
