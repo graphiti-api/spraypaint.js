@@ -28,6 +28,7 @@ export interface ModelConfiguration {
   jwtLocalStorage : string | false
   camelizeKeys : boolean
   strictAttributes : boolean
+  logger : ILogger
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration> 
 
@@ -163,21 +164,6 @@ export class JSORMBase {
    */
   static readonly isJSORMModel : boolean = true
 
-  id? : string;
-  temp_id? : string;
-
-  @nonenumerable relationships : Record<string, JSORMBase | JSORMBase[]> = {}
-  @nonenumerable klass : typeof JSORMBase
-
-  @nonenumerable private _persisted : boolean = false;
-  @nonenumerable private _markedForDestruction: boolean = false;
-  @nonenumerable private _markedForDisassociation: boolean = false;
-  @nonenumerable private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
-  @nonenumerable private _attributes : ModelRecord<this>
-  @nonenumerable private _originalAttributes : ModelRecord<this>
-  @nonenumerable private __meta__ : any
-  @nonenumerable private _errors : object = {}
-
   static fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc) : any {
     return deserialize(this.typeRegistry, resource, payload);
   }
@@ -308,20 +294,62 @@ export class JSORMBase {
     return <any>Subclass
   }
 
+  id? : string;
+  temp_id? : string;
+  $instanceId : number
+
+  @nonenumerable relationships : Record<string, JSORMBase | JSORMBase[]> = {}
+  @nonenumerable klass : typeof JSORMBase
+
+  @nonenumerable private _persisted : boolean = false;
+  @nonenumerable private _markedForDestruction: boolean = false;
+  @nonenumerable private _markedForDisassociation: boolean = false;
+  @nonenumerable private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
+  @nonenumerable private _attributes : ModelRecord<this>
+  @nonenumerable private _originalAttributes : ModelRecord<this>
+  @nonenumerable private __meta__ : any
+  @nonenumerable private _errors : object = {}
+
   constructor(attrs? : Record<string, any>) {
     this._initializeAttributes();
     this.assignAttributes(attrs)
+    this._originalAttributes = cloneDeep(this._attributes)
+    this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships))
   }
 
-  // Define getter/setters 
   private _initializeAttributes() {
     this._attributes = {}
-    this._originalAttributes = {}
+    this._copyPrototypeDescriptors()
+  }
+
+  /*
+   * VueJS, along with a few other frameworks rely on objects being "reactive". In practice, this
+   * means that when passing an object into an context where you would need change detection, vue
+   * will inspect it for any enumerable properties that exist and might be depended on in templates
+   * and other functions that will trigger changes.  In the case of vue, it intentionally avoids
+   * resolving properties on the prototype chain and instead determines which it should override
+   * using `Object.hasOwnProperty()`.  To get proper observability, we need to move all attribute
+   * methods plus a few other utility getters to the object itself. 
+   */
+  private _copyPrototypeDescriptors() {
     const attrs = this.klass.attributeList 
+
     for (let key in attrs) {
       let attr = attrs[key];
       Object.defineProperty(this, key, attr.descriptor());
     }
+
+    [
+      'isPersisted', 
+      'isMarkedForDestruction', 
+      'isMarkedForDisassociation'
+    ].forEach((property) => {
+      let descriptor = Object.getOwnPropertyDescriptor(JSORMBase.prototype, property)
+
+      if (descriptor) {
+        Object.defineProperty(this, property, descriptor)
+      }
+    })
   }
 
   isType(jsonapiType : string) {

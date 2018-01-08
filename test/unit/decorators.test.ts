@@ -5,6 +5,7 @@ import {
   HasOne, 
   HasMany, 
   BelongsTo, 
+  initModel,
 } from '../../src/decorators'
 import { Association } from '../../src/associations';
 import { JSORMBase } from '../../src/model'
@@ -51,12 +52,12 @@ describe('Decorators', () => {
     })
 
     describe('non-decorator syntax', () => {
-      it('can be applied directly to a JSORMBase-extended class', () => {
+      it('exports an initializer that can be applied directly to a JSORMBase-extended class', () => {
         class TestBase extends JSORMBase {}
-        Model(TestBase)
+        initModel(TestBase)
         
         class Person extends TestBase {}
-        Model(Person)
+        initModel(Person)
 
         expect(TestBase.currentClass).to.equal(TestBase)
         expect(TestBase.isBaseClass).to.be.true
@@ -65,10 +66,10 @@ describe('Decorators', () => {
 
       it('accepts config options', () => { 
         class TestBase extends JSORMBase {}
-        Model(TestBase)
+        initModel(TestBase)
 
         class Person extends TestBase {}
-        Model(Person, config)
+        initModel(Person, config)
 
         expect(TestBase.currentClass).to.equal(TestBase)
         expect(TestBase.isBaseClass).to.be.true

@@ -64,8 +64,20 @@ describe('Model attributes', () => {
     expect(keys).to.include('firstName')
     expect(keys).to.include('lastName')
   });
+
+  it('includes persistence indicators in enumerable properties', () => {
+    class BadPerson extends Person {}
+
+    let badPerson = new BadPerson()
+    let keys = Object.keys(badPerson)
+
+    expect(keys).to.include('isPersisted')
+    expect(keys).to.include('isMarkedForDestruction')
+    expect(keys).to.include('isMarkedForDisassociation')
+  });
   
-  it('does should only include attributes in key enumeration', () => {
+
+  it('does not include private variables and meta attributes in enumeration', () => {
     class BadPerson extends Person {}
 
     let badPerson = new BadPerson()
@@ -76,6 +88,7 @@ describe('Model attributes', () => {
       expect([
         'relationships',
         'klass',
+        'attributes',
       ]).not.to.include(keys[i])
     }
   })
