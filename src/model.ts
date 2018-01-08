@@ -296,7 +296,6 @@ export class JSORMBase {
 
   id? : string;
   temp_id? : string;
-  $instanceId : number
 
   @nonenumerable relationships : Record<string, JSORMBase | JSORMBase[]> = {}
   @nonenumerable klass : typeof JSORMBase
