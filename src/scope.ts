@@ -17,7 +17,7 @@ export interface JsonapiQueryParams {
 }
 
 export type SortDir = 'asc' | 'desc'
-export type SortScope = Record<string, SortDir> | string
+export type SortScope = Record<string, SortDir>
 export type FieldScope = Record<string, Array<string>>
 export type WhereClause = Record<string, string | number | boolean>
 export type StatsScope = Record<string, string | string[]>
