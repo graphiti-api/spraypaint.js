@@ -11,9 +11,9 @@
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
     "prebuild": "yarn run clean",
-    "build": "npm-run-all build:node build:es6 build:umd build:umd:min",
+    "build": "npm-run-all build:node build:es6 build:umd build:umd:min build:copy_shims",
     "build:node": "yarn run tsc -p ./tsconfig.node.json",
-    "build:es6": "yarn run tsc -p ./tsconfig.lib.json && yarn build:copy_shims",
+    "build:es6": "yarn run tsc -p ./tsconfig.lib.json",
     "build:umd": "yarn run rollup -c",
     "build:umd:min": "NODE_ENV=production yarn build:umd",
     "build:watch": "NODE_ENV=watch yarn build:es6 --watch",

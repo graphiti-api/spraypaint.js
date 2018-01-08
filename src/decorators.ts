@@ -24,20 +24,15 @@ import {
 
 type ModelDecorator = <M extends typeof JSORMBase>(target: M) => M 
 
-function ModelDecorator(config? : ModelConfigurationOptions) : ModelDecorator
-function ModelDecorator(modelClass : typeof JSORMBase, config?: ModelConfigurationOptions) : void
-function ModelDecorator(
-  modelOrConfig? : ModelConfigurationOptions | typeof JSORMBase,
-  config? : ModelConfigurationOptions
-) {
-  if(isModelClass(modelOrConfig)) {
-    modelFactory(modelOrConfig, config)
-  } else {
-    return function<M extends typeof JSORMBase>(target: M) : M {
-      modelFactory(target, modelOrConfig)
-      return target
-    }
+function ModelDecorator(config? : ModelConfigurationOptions) : ModelDecorator {
+  return function<M extends typeof JSORMBase>(target: M) : M {
+    modelFactory(target, config)
+    return target
   }
+}
+
+export function initModel(modelClass : typeof JSORMBase, config?: ModelConfigurationOptions) : void {
+  modelFactory(modelClass, config)
 }
 
 function modelFactory<M extends typeof JSORMBase>(ModelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void {
@@ -69,6 +64,7 @@ function AttrDecoratorFactory(
       attrDefinition.name = propertyKey
     }
     ModelClass.attributeList[propertyKey] = attrDefinition
+    attrDefinition.apply(ModelClass)
 
     return attrDefinition.descriptor()
   }
@@ -108,7 +104,7 @@ function ensureModelInheritance(ModelClass : typeof JSORMBase) {
 }
 
 type DecoratorFn = (target : JSORMBase, propertyKey : string) => void
-type DecoratorArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string
+type DecoratorArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string | typeof JSORMBase
 /* 
  * Yup that's a super-Java-y method name.  Decorators in 
  * ES7/TS are either of the form:
@@ -164,6 +160,10 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) 
         opts = {
           jsonapiType: optsOrType
         }
+      } else if(isModelClass(optsOrType)) {
+        opts = {
+          type: optsOrType as any
+        }
       } else {
         opts = {
           persist: optsOrType.persist,
@@ -182,8 +182,11 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) 
         attrDefinition.name = propertyKey
       }
     
-      extend(<any>target.constructor).attributeList[propertyKey] = attrDefinition
+      let ModelClass = extend(<any>target.constructor)
+      
+      ModelClass.attributeList[propertyKey] = attrDefinition
       attrDefinition.owner = target.constructor
+      attrDefinition.apply(ModelClass)
 
       attrDefinition.descriptor()
     }

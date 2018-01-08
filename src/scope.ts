@@ -37,7 +37,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   private _stats: StatsScope = {}
 
   constructor(model : T) {
-    this.model = model;
+    this.model = model
   }
 
   async all() : Promise<CollectionProxy<T['prototype']>> {

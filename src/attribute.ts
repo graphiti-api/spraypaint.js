@@ -51,6 +51,10 @@ export class Attribute<T=any> {
     }
   }
 
+  apply(ModelClass : typeof JSORMBase) : void {
+    Object.defineProperty(ModelClass.prototype, this.name, this.descriptor())
+  }
+
   // The model calls this setter
   setter(context: JSORMBase, val: any) : void {
     let privateContext : any = context
@@ -68,6 +72,7 @@ export class Attribute<T=any> {
     let attr = this;
 
     return {
+      configurable: true,
       enumerable: true,
       get(this: JSORMBase) : any {
         return attr.getter(this);
