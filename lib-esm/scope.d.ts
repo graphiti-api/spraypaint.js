@@ -1,0 +1,53 @@
+import { JSORMBase } from './model';
+import { IncludeArgHash } from './util/include-directive';
+import { CollectionProxy, RecordProxy } from './proxies';
+export interface JsonapiQueryParams {
+    page: AnyRecord;
+    filter: AnyRecord;
+    sort: string[];
+    fields: AnyRecord;
+    extra_fields: AnyRecord;
+    stats: AnyRecord;
+    include?: string;
+}
+export declare type SortDir = 'asc' | 'desc';
+export declare type SortScope = Record<string, SortDir>;
+export declare type FieldScope = Record<string, Array<string>>;
+export declare type WhereClause = Record<string, string | number | boolean>;
+export declare type StatsScope = Record<string, string | string[]>;
+export declare type IncludeScope = string | IncludeArgHash | Array<string | IncludeArgHash>;
+export declare type AnyRecord = Record<string, any>;
+export declare class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
+    model: T;
+    private _associations;
+    private _pagination;
+    private _filter;
+    private _sort;
+    private _fields;
+    private _extra_fields;
+    private _include;
+    private _stats;
+    constructor(model: T);
+    all(): Promise<CollectionProxy<T['prototype']>>;
+    find(id: string | number): Promise<RecordProxy<T['prototype']>>;
+    first(): Promise<RecordProxy<T['prototype']>>;
+    merge(obj: Record<string, Scope>): Scope<T>;
+    page(pageNumber: number): Scope<T>;
+    per(size: number): Scope<T>;
+    where(clause: WhereClause): Scope<T>;
+    stats(clause: StatsScope): Scope<T>;
+    order(clause: SortScope | string): Scope<T>;
+    select(clause: FieldScope): Scope<T>;
+    selectExtra(clause: FieldScope): Scope<T>;
+    includes(clause: IncludeScope): Scope<T>;
+    scope(): Scope<T>;
+    asQueryParams(): JsonapiQueryParams;
+    toQueryParams(): string | undefined;
+    copy(): Scope<T>;
+    private _mergeAssociationQueryParams(queryParams, associations);
+    private _transformAssociationSortParam(associationName, param);
+    private _sortParam(clause);
+    private _fetch(url);
+    private _buildRecordResult(jsonResult);
+    private _buildCollectionResult(jsonResult);
+}

@@ -123,7 +123,7 @@ export class JSORMBase {
   static currentClass : typeof JSORMBase = JSORMBase
   static beforeFetch : BeforeFilter | undefined
   static afterFetch : AfterFilter | undefined
-  static jwtLocalStorage : string | false = false
+  static jwtLocalStorage : string | false = 'jwt'
 
   private static _typeRegistry : JsonapiTypeRegistry
   private static _middlewareStack : MiddlewareStack

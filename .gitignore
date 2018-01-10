@@ -2,8 +2,6 @@
 .DS_Store
 node_modules
 
-lib
-lib-esm
 _bundles
 yarn.lock
 yarn-error.log
