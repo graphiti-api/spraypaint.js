@@ -30,11 +30,4 @@ export {
   IncludeScope,
 } from './scope'
 
-export {
-  JsonapiResponseDoc,
-  JsonapiRequestDoc,
-  JsonapiErrorDoc,
-  JsonapiResourceDoc,
-  JsonapiCollectionDoc,
-  JsonapiResource,
-} from './jsonapi-spec'
+export * from './jsonapi-spec'
