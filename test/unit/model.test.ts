@@ -94,8 +94,6 @@ describe('Model', () => {
 
           describe('when localStorage is configured', () => {
             let backend : StorageBackend
-            let BaseClass : typeof JSORMBase
-
             const buildModel = () => {
               // need new class for this since it needs initialization to have the jwt config set
               @Model({
@@ -282,7 +280,7 @@ describe('Model', () => {
 
       })
 
-      const Person = BaseModel.extend({
+      const Human = BaseModel.extend({
         attrs: {
           name: attr({ type: String })
         }
@@ -294,7 +292,7 @@ describe('Model', () => {
         },
         attrs: {
           title: attr({ type: String }),
-          author: hasOne({ type: Person })
+          author: hasOne({ type: Human })
         },
         methods: {
           screamTitle(exclamationPoints : number) : string {
@@ -330,7 +328,7 @@ describe('Model', () => {
       })
 
       it('correctly instantiates the model', () => {
-        let theAuthor = new Person({name: 'fred'})
+        let theAuthor = new Human({name: 'fred'})
         let post = new Post({title: 'The Title', author: theAuthor, id: '1234'})
 
         expect(post.author).to.equal(theAuthor)
@@ -896,7 +894,7 @@ describe('Model', () => {
 
       describe('when a hasMany relationship adds a new persisted member', () => {
         it('is dirty', () => {
-          let instance = new Author({ id: 1 })
+          instance = new Author({ id: 1 })
           instance.isPersisted = true
           instance.books = []
           instance.isPersisted = true
@@ -913,7 +911,7 @@ describe('Model', () => {
 
       describe('when a belongsTo changes a persisted member', () => {
         it('is dirty', () => {
-          let instance = new Author()
+          instance = new Author()
           let genre = new Genre({ id: 1 })
           genre.isPersisted = true
           let otherGenre = new Genre({ id: 2 })

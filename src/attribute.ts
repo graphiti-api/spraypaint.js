@@ -69,17 +69,17 @@ export class Attribute<T=any> {
 
   // This returns the getters/setters for use on the *model*
   descriptor() : PropertyDescriptor {
-    let attr = this
+    let attrDef = this
 
     return {
       configurable: true,
       enumerable: true,
       get(this : JSORMBase) : any {
-        return attr.getter(this)
+        return attrDef.getter(this)
       },
 
       set(this : JSORMBase, value) : void {
-        attr.setter(this, value)
+        attrDef.setter(this, value)
       }
     }
   }

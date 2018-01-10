@@ -60,9 +60,11 @@ describe('CollectionProxy', () => {
     })
 
     describe('meta is null', () => {
-      let personData = {
-        data: [],
-      }
+      beforeEach(() => {
+        personData = {
+          data: [],
+        }
+      })
 
       it('should return an empty object', () => {
         let collection = new CollectionProxy(recordArray, personData)

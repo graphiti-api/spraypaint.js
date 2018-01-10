@@ -58,13 +58,13 @@ const AttrDecoratorFactory : {
 ) : any => {
   let attrDefinition = new Attribute({name: propertyKey})
 
-  const attrFunction = (ModelClass : typeof JSORMBase, propertyKey : string | symbol) : PropertyDescriptor => {
+  const attrFunction = (ModelClass : typeof JSORMBase, propKey : string | symbol) : PropertyDescriptor => {
     ensureModelInheritance(ModelClass)
 
     if (!attrDefinition.name) {
-      attrDefinition.name = propertyKey
+      attrDefinition.name = propKey
     }
-    ModelClass.attributeList[propertyKey] = attrDefinition
+    ModelClass.attributeList[propKey] = attrDefinition
     attrDefinition.apply(ModelClass)
 
     return attrDefinition.descriptor()
@@ -92,8 +92,8 @@ const AttrDecoratorFactory : {
       attrDefinition = new Attribute(configOrTarget)
     }
 
-    return (target : JSORMBase, propertyKey : string | symbol) => {
-      return attrFunction(<any>target.constructor, propertyKey)
+    return (target : JSORMBase, propKey : string | symbol) => {
+      return attrFunction(<any>target.constructor, propKey)
     }
   }
 }
@@ -151,9 +151,9 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any)
 
     let opts : AssociationRecord<T> | undefined
 
-    const factoryFn = (target : JSORMBase, propertyKey : string) => {
+    const factoryFn = (target : JSORMBase, propKey : string) => {
       if (optsOrType === undefined) {
-        let inferredType = pluralize(underscore(propertyKey))
+        let inferredType = pluralize(underscore(propKey))
 
         opts = {
           jsonapiType: inferredType
@@ -181,12 +181,12 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any)
 
       let attrDefinition = new AttrType(opts)
       if (!attrDefinition.name) {
-        attrDefinition.name = propertyKey
+        attrDefinition.name = propKey
       }
     
       let ModelClass = extend(<any>target.constructor)
       
-      ModelClass.attributeList[propertyKey] = attrDefinition
+      ModelClass.attributeList[propKey] = attrDefinition
       attrDefinition.owner = target.constructor
       attrDefinition.apply(ModelClass)
 

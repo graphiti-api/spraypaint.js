@@ -37,7 +37,7 @@ class Deserializer {
   }
 
   addResources(data? : JsonapiResource[] | JsonapiResource) {
-    if (!data) return
+    if (!data) { return }
 
     if (Array.isArray(data)) {
       for (let datum of data) {
@@ -96,7 +96,7 @@ class Deserializer {
 
   deserializeInstance(instance : JSORMBase, datum : JsonapiResource, includeDirective : IncludeScopeHash = {}) : JSORMBase {
     let existing = this.alreadyDeserialized(datum)
-    if (existing) return existing
+    if (existing) { return existing }
 
     // assign ids
     instance.id = datum.id

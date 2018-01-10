@@ -89,7 +89,7 @@ let expectedCreatePayload : JsonapiResponseDoc = {
   ]
 }
 
-let expectedUpdatePayload = (method : method) : JsonapiResponseDoc => {
+let expectedUpdatePayload = (payloadMethod : method) : JsonapiResponseDoc => {
   return {
     data: {
       id: '1',
@@ -100,7 +100,7 @@ let expectedUpdatePayload = (method : method) : JsonapiResponseDoc => {
             {
               id: '10',
               type: 'books',
-              method: method
+              method: payloadMethod
             }
           ]
         }
@@ -118,7 +118,7 @@ let expectedUpdatePayload = (method : method) : JsonapiResponseDoc => {
             data: {
               id: '20',
               type: 'genres',
-              method: method
+              method: payloadMethod
             }
           }
         }
