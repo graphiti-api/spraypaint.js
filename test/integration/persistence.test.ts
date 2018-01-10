@@ -7,9 +7,9 @@ after(function () {
 })
 
 let instance : Person
-let payloads : Array<JsonapiRequestDoc>
-let putPayloads : Array<JsonapiRequestDoc>
-let deletePayloads : Array<object>
+let payloads : JsonapiRequestDoc[]
+let putPayloads : JsonapiRequestDoc[]
+let deletePayloads : object[]
 let serverResponse : JsonapiResponseDoc
 
 beforeEach(function() {

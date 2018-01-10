@@ -4,7 +4,7 @@ import { JsonapiResponseDoc } from '../jsonapi-spec'
 
 export class CollectionProxy<T extends JSORMBase> implements IResultProxy<T> {
   private _raw_json : JsonapiResponseDoc
-  private _collection : Array<T>
+  private _collection : T[]
 
   constructor (collection : T[], raw_json : JsonapiResponseDoc = { data: [] }) {
     this._collection = collection
@@ -15,7 +15,7 @@ export class CollectionProxy<T extends JSORMBase> implements IResultProxy<T> {
     return this._raw_json
   }
 
-  get data () : Array<T> {
+  get data () : T[] {
     return this._collection
   }
 

@@ -2,8 +2,8 @@ export type BeforeFilter = (requestUrl : string, options: RequestInit) => void
 export type AfterFilter = (response : Response, json: JSON) => void
 
 export class MiddlewareStack {
-  private _beforeFilters: Array<BeforeFilter> = []
-  private _afterFilters: Array<AfterFilter> = []
+  private _beforeFilters: BeforeFilter[] = []
+  private _afterFilters: AfterFilter[] = []
 
   constructor(before: BeforeFilter[] = [], after : AfterFilter[] = []) {
     this._beforeFilters = before

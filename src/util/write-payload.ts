@@ -14,7 +14,7 @@ export class WritePayload<T extends JSORMBase> {
   model: T
   jsonapiType : string
   includeDirective: IncludeScopeHash
-  included: Array<JsonapiResource> = []
+  included: JsonapiResource[] = []
 
   constructor(model : T, relationships?: IncludeScope) {
     let includeDirective = new IncludeDirective(relationships)

@@ -3,12 +3,12 @@ export type JsonapiSuccessDoc = JsonapiCollectionDoc | JsonapiResourceDoc
 export type JsonapiRequestDoc  = JsonapiResourceRequest
 
 export interface JsonapiDocMeta {
-  included?: Array<JsonapiResource>
+  included?: JsonapiResource[]
   meta?: Record<string, any>
 }
 
 export interface JsonapiCollectionDoc extends JsonapiDocMeta {
-  data: Array<JsonapiResource>
+  data: JsonapiResource[]
   errors?: undefined
 }
 
@@ -23,7 +23,7 @@ export interface JsonapiResourceRequest extends JsonapiDocMeta {
 
 export interface JsonapiErrorDoc extends JsonapiDocMeta {
   data: undefined
-  errors: Array<JsonapiError>
+  errors: JsonapiError[]
 }
 
 export interface JsonapiResourceIdentifier {

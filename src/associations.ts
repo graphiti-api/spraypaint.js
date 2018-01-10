@@ -54,7 +54,7 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
   }
 }
 
-export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements Association {
+export class HasMany<T extends JSORMBase> extends Attribute<T[]> implements Association {
   isRelationship : true = true
   jsonapiType : string
   typeRegistry : JsonapiTypeRegistry

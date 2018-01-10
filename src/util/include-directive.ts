@@ -74,7 +74,7 @@ export class IncludeDirective {
     return parsed
   }
 
-  private _parseArray(includeArray: Array<any>) : IncludeHash {
+  private _parseArray(includeArray: any[]) : IncludeHash {
     let parsed : IncludeHash = {}
     for (let value of includeArray) {
       let parsedEl = this._parseIncludeArgs(value)

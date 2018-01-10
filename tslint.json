@@ -1,5 +1,6 @@
 {
   "rules": {
-    "semicolon": [true, "never"]
+    "semicolon": [true, "never"],
+    "array-type": [true, "array"]
   }
 }

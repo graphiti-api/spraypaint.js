@@ -408,7 +408,7 @@ export class JSORMBase {
     return this._attributes
   }
 
-  relationship(name : string) : Array<JSORMBase> | JSORMBase | undefined {
+  relationship(name : string) : JSORMBase[] | JSORMBase | undefined {
     return this.relationships[name]
   }
 
@@ -433,7 +433,7 @@ export class JSORMBase {
     this.__meta__ = metaObj
   }
 
-  relationshipResourceIdentifiers(relationNames: Array<string>) {
+  relationshipResourceIdentifiers(relationNames: string[]) {
     return relationshipIdentifiersFor(this, relationNames)
   }
 
@@ -552,54 +552,54 @@ export class JSORMBase {
     return new Scope(this)
   }
 
-  static first<I extends typeof JSORMBase>(this: I) {
+  static first<I extends typeof JSORMBase>(this : I) {
     return this.scope().first()
   }
-  static all<I extends typeof JSORMBase>(this: I) {
+  static all<I extends typeof JSORMBase>(this : I) {
     return this.scope().all()
   }
 
-  static find<I extends typeof JSORMBase>(this: I, id : string | number) {
+  static find<I extends typeof JSORMBase>(this : I, id : string | number) {
     return this.scope().find(id)
   }
 
-  static where<I extends typeof JSORMBase>(this: I, clause: WhereClause) {
+  static where<I extends typeof JSORMBase>(this : I, clause : WhereClause) {
     return this.scope().where(clause)
   }
 
-  static page<I extends typeof JSORMBase>(this: I, number: number) {
-    return this.scope().page(number)
+  static page<I extends typeof JSORMBase>(this : I, pageNum : number) {
+    return this.scope().page(pageNum)
   }
 
-  static per<I extends typeof JSORMBase>(this: I, size: number) {
+  static per<I extends typeof JSORMBase>(this : I, size : number) {
     return this.scope().per(size)
   }
 
-  static order<I extends typeof JSORMBase>(this: I, clause: SortScope | string) {
+  static order<I extends typeof JSORMBase>(this : I, clause : SortScope | string) {
     return this.scope().order(clause)
   }
 
-  static select<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
+  static select<I extends typeof JSORMBase>(this : I, clause : FieldScope) {
     return this.scope().select(clause)
   }
 
-  static selectExtra<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
+  static selectExtra<I extends typeof JSORMBase>(this : I, clause : FieldScope) {
     return this.scope().selectExtra(clause)
   }
 
-  static stats<I extends typeof JSORMBase>(this: I, clause: StatsScope) {
+  static stats<I extends typeof JSORMBase>(this : I, clause : StatsScope) {
     return this.scope().stats(clause)
   }
 
-  static includes<I extends typeof JSORMBase>(this: I, clause: IncludeScope) {
+  static includes<I extends typeof JSORMBase>(this : I, clause : IncludeScope) {
     return this.scope().includes(clause)
   }
 
-  static merge<I extends typeof JSORMBase>(this: I, obj : Record<string, Scope>) {
+  static merge<I extends typeof JSORMBase>(this : I, obj : Record<string, Scope>) {
     return this.scope().merge(obj)
   }
 
-  static setJWT(token: string | undefined | null) : void {
+  static setJWT(token : string | undefined | null) : void {
     if (this.baseClass === undefined) {
       throw new Error(`Cannot set JWT on ${this.name}: No base class present.`)
     }
@@ -616,7 +616,7 @@ export class JSORMBase {
     }
   }
 
-  static generateAuthHeader(jwt: string) : string {
+  static generateAuthHeader(jwt : string) : string {
     return `Token token="${jwt}"`
   }
 
@@ -643,7 +643,7 @@ export class JSORMBase {
     })
   }
 
-  async save(options: SaveOptions = {}) : Promise<boolean> {
+  async save(options : SaveOptions = {}) : Promise<boolean> {
     let url = this.klass.url()
     let verb : RequestVerbs = 'post'
     let request = new Request(this._middleware(), this.klass.logger)
@@ -669,7 +669,7 @@ export class JSORMBase {
     })
   }
 
-  private async _handleResponse(response: JsonapiResponse, callback: () => void) : Promise<boolean>  {
+  private async _handleResponse(response : JsonapiResponse, callback : () => void) : Promise<boolean>  {
     refreshJWT(this.klass, response)
 
     if (response.status == 422) {
@@ -694,19 +694,19 @@ export class JSORMBase {
   // * remove the corresponding code from isPersisted and handle here (likely
   // only an issue with test setup)
   // * Make all calls go through resetRelationTracking();
-  resetRelationTracking(includeDirective: Object) {
+  resetRelationTracking(includeDirective : Object) {
     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective))
   }
 }
 
 (<any>JSORMBase.prototype).klass = JSORMBase
 
-export function isModelClass(arg: any) : arg is typeof JSORMBase {
+export function isModelClass(arg : any) : arg is typeof JSORMBase {
   if (!arg) { return false }
   return arg.currentClass && arg.currentClass.isJSORMModel
 }
 
-export function isModelInstance(arg: any) : arg is JSORMBase {
+export function isModelInstance(arg : any) : arg is JSORMBase {
   if (!arg) { return false }
   return isModelClass(arg.constructor.currentClass)
 }

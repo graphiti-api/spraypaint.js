@@ -20,8 +20,8 @@ function deserializeInstance(instance: JSORMBase, resource : JsonapiResource, pa
 class Deserializer {
   payload : JsonapiResponseDoc
   registry : JsonapiTypeRegistry
-  private _deserialized : Array<JSORMBase> = []
-  private _resources : Array<JsonapiResource> = []
+  private _deserialized : JSORMBase[] = []
+  private _resources : JsonapiResource[] = []
 
   constructor(registry : JsonapiTypeRegistry, payload : JsonapiResponseDoc) {
     this.registry = registry
@@ -31,7 +31,7 @@ class Deserializer {
     this.addResources(payload.included)
   }
 
-  addResources(data? : Array<JsonapiResource> | JsonapiResource) {
+  addResources(data? : JsonapiResource[] | JsonapiResource) {
     if (!data) return
 
     if (Array.isArray(data)) {
@@ -53,7 +53,7 @@ class Deserializer {
     return new klass()
   }
 
-  relationshipInstanceFor(datum: JsonapiResource, records: Array<JSORMBase>) : JSORMBase {
+  relationshipInstanceFor(datum: JsonapiResource, records: JSORMBase[]) : JSORMBase {
     let record = records.find((r) => {
       return !!(r.klass.jsonapiType === datum.type &&
         (r.id && datum.id && r.id === datum.id || r.temp_id && datum['temp-id'] && r.temp_id === datum['temp-id']))
@@ -67,7 +67,7 @@ class Deserializer {
   }
 
   // todo null temp id
-  lookupAssociated(recordSet: Array<JSORMBase>, record: JSORMBase) {
+  lookupAssociated(recordSet: JSORMBase[], record: JSORMBase) {
     return recordSet.find((r) => {
       return !!(r.klass.jsonapiType === record.klass.jsonapiType &&
         (r.temp_id && record.temp_id && r.temp_id === record.temp_id || r.id && record.id && r.id === record.id))
@@ -170,7 +170,7 @@ class Deserializer {
     })
   }
 
-  _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, callback : (name : string, data: Array<JsonapiResource> | JsonapiResource) => void) {
+  _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, callback : (name : string, data: JsonapiResource[] | JsonapiResource) => void) {
     for (let key in relationships) {
       let relationName = key
 

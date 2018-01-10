@@ -25,10 +25,10 @@ export interface JsonapiQueryParams {
 
 export type SortDir = 'asc' | 'desc'
 export type SortScope = Record<string, SortDir>
-export type FieldScope = Record<string, Array<string>>
+export type FieldScope = Record<string, string[]>
 export type WhereClause = Record<string, string | number | boolean>
 export type StatsScope = Record<string, string | string[]>
-export type IncludeScope = string | IncludeArgHash | Array<string | IncludeArgHash>
+export type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[]
 
 export type AnyRecord = Record<string, any>
 
@@ -265,7 +265,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   private _buildCollectionResult(jsonResult : JsonapiCollectionDoc) {
-    let recordArray : Array<T['prototype']> = []
+    let recordArray : T['prototype'][] = []
 
     jsonResult.data.forEach((record) => {
       recordArray.push(this.model.fromJsonapi(record, jsonResult))
