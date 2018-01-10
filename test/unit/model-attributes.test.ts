@@ -84,12 +84,14 @@ describe('Model attributes', () => {
     let keys = Object.keys(badPerson)
 
     for(let i in keys) {
-      expect(keys[i]).not.to.match(/^_/)
-      expect([
-        'relationships',
-        'klass',
-        'attributes',
-      ]).not.to.include(keys[i])
+      if (keys.hasOwnProperty(i)) {
+        expect(keys[i]).not.to.match(/^_/)
+        expect([
+          'relationships',
+          'klass',
+          'attributes',
+        ]).not.to.include(keys[i])
+      }
     }
   })
 

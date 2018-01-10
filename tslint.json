@@ -3,6 +3,7 @@
     "tslint-config-prettier"
   ],
   "rules": {
+    "forin": true,
     "no-shadowed-variable": true,
     "no-string-literal": true,
     "only-arrow-functions": true,

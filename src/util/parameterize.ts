@@ -2,21 +2,23 @@ const parameterize = (obj : any, prefix? : string) : string => {
   let str = []
 
   for (let key in obj) {
-    let value = obj[key]
+    if (obj.hasOwnProperty(key)) {
+      let value = obj[key]
 
-    if (value !== undefined && value !== null && value !== '') {
-      if (prefix) {
-        key = `${prefix}[${key}]`
-      }
-
-      if (Array.isArray(value)) {
-        if (value.length > 0) {
-          str.push(`${key}=${value.join(',')}`)
+      if (value !== undefined && value !== null && value !== '') {
+        if (prefix) {
+          key = `${prefix}[${key}]`
         }
-      } else if (typeof value == "object") {
-        str.push(parameterize(value, key))
-      } else {
-        str.push(`${key}=${value}`)
+
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            str.push(`${key}=${value.join(',')}`)
+          }
+        } else if (typeof value == "object") {
+          str.push(parameterize(value, key))
+        } else {
+          str.push(`${key}=${value}`)
+        }
       }
     }
   }

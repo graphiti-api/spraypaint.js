@@ -21,14 +21,18 @@ export class IncludeDirective {
     let includeHash = this._parseIncludeArgs(arg)
 
     for (let key in includeHash) {
-      this.dct[key] = new IncludeDirective(includeHash[key])
+      if (includeHash.hasOwnProperty(key)) {
+        this.dct[key] = new IncludeDirective(includeHash[key])
+      }
     }
   }
 
   toScopeObject() : IncludeScopeHash {
     let hash : IncludeScopeHash = {}
     for (let key in this.dct) {
-      hash[key] = this.dct[key].toScopeObject()
+      if (this.dct.hasOwnProperty(key)) {
+        hash[key] = this.dct[key].toScopeObject()
+      }
     }
     return hash
   }
@@ -36,15 +40,17 @@ export class IncludeDirective {
   toString() : string {
     let stringArray = []
     for (let key in this.dct) {
-      let stringValue = this.dct[key].toString()
+      if (this.dct.hasOwnProperty(key)) {
+        let stringValue = this.dct[key].toString()
 
-      if (stringValue === '') {
-        stringArray.push(key)
-      } else {
-        let split = stringValue.split(',')
-        split = split.map((x) => { return `${key}.${x}` })
+        if (stringValue === '') {
+          stringArray.push(key)
+        } else {
+          let split = stringValue.split(',')
+          split = split.map((x) => `${key}.${x}`)
 
-        stringArray.push(split.join(','))
+          stringArray.push(split.join(','))
+        }
       }
     }
 
@@ -69,7 +75,9 @@ export class IncludeDirective {
     let parsed : IncludeHash = {}
 
     for (let key in includeObj) {
-      parsed[key] = this._parseIncludeArgs(includeObj[key])
+      if (includeObj.hasOwnProperty(key)) {
+        parsed[key] = this._parseIncludeArgs(includeObj[key])
+      }
     }
     return parsed
   }
@@ -79,7 +87,9 @@ export class IncludeDirective {
     for (let value of includeArray) {
       let parsedEl = this._parseIncludeArgs(value)
       for (let key in parsedEl) {
-        parsed[key] = parsedEl[key]
+        if (parsedEl.hasOwnProperty(key)) {
+          parsed[key] = parsedEl[key]
+        }
       }
     }
     return parsed

@@ -177,16 +177,18 @@ class Deserializer {
 
   _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, callback : (name : string, data : JsonapiResource[] | JsonapiResource) => void) {
     for (let key in relationships) {
-      let relationName = key
+      if (relationships.hasOwnProperty(key)) {
+        let relationName = key
 
-      if (instance.klass.camelizeKeys) {
-        relationName = camelize(key, false)
-      }
+        if (instance.klass.camelizeKeys) {
+          relationName = camelize(key, false)
+        }
 
-      if (instance.klass.attributeList[relationName]) {
-        let relationData = relationships[key].data
-        if(!relationData) continue // only links, empty, etc
-        callback(relationName, relationData)
+        if (instance.klass.attributeList[relationName]) {
+          let relationData = relationships[key].data
+          if(!relationData) { continue } // only links, empty, etc
+          callback(relationName, relationData)
+        }
       }
     }
   }

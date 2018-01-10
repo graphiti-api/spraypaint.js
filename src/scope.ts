@@ -96,7 +96,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     let copy = this.copy()
 
     for (let key in clause) {
-      copy._filter[key] = clause[key]
+      if(clause.hasOwnProperty(key)) {
+        copy._filter[key] = clause[key]
+      }
     }
     return copy
   }
@@ -105,7 +107,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     let copy = this.copy()
 
     for (let key in clause) {
-      copy._stats[key] = clause[key]
+      if(clause.hasOwnProperty(key)) {
+        copy._stats[key] = clause[key]
+      }
     }
     return copy
   }
@@ -115,7 +119,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
 
     if (typeof clause === "object") {
       for (let key in clause) {
-        copy._sort[key] = clause[key]
+        if(clause.hasOwnProperty(key)) {
+          copy._sort[key] = clause[key]
+        }
       }
     } else {
       copy._sort[clause] = 'asc'
@@ -128,7 +134,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     let copy = this.copy()
 
     for (let key in clause) {
-      copy._fields[key] = clause[key]
+      if(clause.hasOwnProperty(key)) {
+        copy._fields[key] = clause[key]
+      }
     }
 
     return copy
@@ -138,7 +146,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     let copy = this.copy()
 
     for (let key in clause) {
-      copy._extra_fields[key] = clause[key]
+      if(clause.hasOwnProperty(key)) {
+        copy._extra_fields[key] = clause[key]
+      }
     }
 
     return copy
@@ -151,7 +161,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     let directiveObject = directive.toScopeObject()
 
     for (let key in directiveObject) {
-      copy._include[key] = directiveObject[key]
+      if(directiveObject.hasOwnProperty(key)) {
+        copy._include[key] = directiveObject[key]
+      }
     }
 
     return copy
@@ -198,17 +210,19 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
 
   private _mergeAssociationQueryParams(queryParams : JsonapiQueryParams, associations : Record<string, Scope<any>>) {
     for (let key in associations) {
-      let associationScope = associations[key]
-      let associationQueryParams = associationScope.asQueryParams()
+      if(associations.hasOwnProperty(key)) {
+        let associationScope = associations[key]
+        let associationQueryParams = associationScope.asQueryParams()
 
-      queryParams.page[key]   = associationQueryParams.page
-      queryParams.filter[key] = associationQueryParams.filter
-      queryParams.stats[key]  = associationQueryParams.stats
+        queryParams.page[key]   = associationQueryParams.page
+        queryParams.filter[key] = associationQueryParams.filter
+        queryParams.stats[key]  = associationQueryParams.stats
 
-      associationQueryParams.sort.forEach((s) => {
-        let transformed = this._transformAssociationSortParam(key, s)
-        queryParams.sort.push(transformed)
-      })
+        associationQueryParams.sort.forEach((s) => {
+          let transformed = this._transformAssociationSortParam(key, s)
+          queryParams.sort.push(transformed)
+        })
+      }
     }
   }
 
@@ -225,11 +239,13 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
       let params = []
 
       for (let key in clause) {
-        if (clause[key] !== 'asc') {
-          key = `-${key}`
-        }
+        if(clause.hasOwnProperty(key)) {
+          if (clause[key] !== 'asc') {
+            key = `-${key}`
+          }
 
-        params.push(key)
+          params.push(key)
+        }
       }
 
       return params

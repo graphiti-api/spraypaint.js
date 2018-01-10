@@ -70,9 +70,11 @@ export class Logger implements ILogger {
     let key : LogLevelKey
 
     for (key in LogLevel) {
-      let val = LogLevel[key as LogLevelKey]
-      if (val === this._level) {
-        return key
+      if (LogLevel.hasOwnProperty(key)) {
+        let val = LogLevel[key as LogLevelKey]
+        if (val === this._level) {
+          return key
+        }
       }
     }
     

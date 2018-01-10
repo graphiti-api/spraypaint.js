@@ -96,8 +96,10 @@ export const applyModelConfig = <T extends typeof JSORMBase> (
   let k : keyof ModelConfigurationOptions
 
   for(k in config) {
-    ModelClass[k] = config[k]
-  }
+    if(config.hasOwnProperty(k)) {
+      ModelClass[k] = config[k]
+    }
+  }    
 
   if (ModelClass.isBaseClass === undefined) {
     ModelClass.setAsBase()
@@ -273,15 +275,17 @@ export class JSORMBase {
     let attrs : any = {}
     if (options.attrs) {
       for(let key in options.attrs) {
-        let attr = options.attrs[key]
+        if (options.attrs.hasOwnProperty(key)) {
+          let attr = options.attrs[key]
 
-        if(!attr.name) {
-          attr.name = key
+          if(!attr.name) {
+            attr.name = key
+          }
+
+          attr.owner = <any>Subclass
+
+          attrs[key] = attr
         }
-
-        attr.owner = <any>Subclass
-
-        attrs[key] = attr
       }
     }
 
@@ -292,8 +296,10 @@ export class JSORMBase {
     Subclass.registerType()
 
     if (options.methods) {
-      for(const methodName in options.methods) {
-        (<any>Subclass.prototype)[methodName] = options.methods[methodName]
+      for(let methodName in options.methods) {
+        if (options.methods.hasOwnProperty(methodName)) {
+          (<any>Subclass.prototype)[methodName] = options.methods[methodName]
+        }
       }
     }
 
@@ -340,8 +346,10 @@ export class JSORMBase {
     const attrs = this.klass.attributeList
 
     for (let key in attrs) {
-      let attr = attrs[key]
-      Object.defineProperty(this, key, attr.descriptor())
+      if(attrs.hasOwnProperty(key)) {
+        let attr = attrs[key]
+        Object.defineProperty(this, key, attr.descriptor())
+      }
     }
 
     [
@@ -415,16 +423,18 @@ export class JSORMBase {
   assignAttributes(attrs? : Record<string, any>) : void {
     if (!attrs) { return }
     for(var key in attrs) {
-      let attributeName = key
+      if (attrs.hasOwnProperty(key)) {
+        let attributeName = key
 
-      if (this.klass.camelizeKeys) {
-        attributeName = camelize(key, false)
-      }
-
-      if (key == 'id' || this.klass.attributeList[attributeName]) {
-        (<any>this)[attributeName] = attrs[key]
-      } else if (this.klass.strictAttributes) {
-        throw new Error(`Unknown attribute: ${key}`)
+        if (this.klass.camelizeKeys) {
+          attributeName = camelize(key, false)
+        }
+        
+        if (key == 'id' || this.klass.attributeList[attributeName]) {
+          (<any>this)[attributeName] = attrs[key]
+        } else if (this.klass.strictAttributes) {
+          throw new Error(`Unknown attribute: ${key}`)
+        }
       }
     }
   }
