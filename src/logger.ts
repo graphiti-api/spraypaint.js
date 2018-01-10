@@ -1,3 +1,4 @@
+/* tslint:disable:no-console */
 export enum LogLevel {
   debug = 1,
   info = 2,
@@ -62,7 +63,7 @@ export class Logger implements ILogger {
     if (lvlValue) {
       this._level = lvlValue
     } else {
-      throw(`Log level must be one of ${Object.keys(LOG_LEVELS).join(', ')}`)
+      throw new Error((`Log level must be one of ${Object.keys(LOG_LEVELS).join(', ')}`))
     }
   }
 
