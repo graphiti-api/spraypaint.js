@@ -49,7 +49,7 @@ let generateMockResponse = function(type: string) {
         attributes: {}
       }
     ]
-  };
+  } as any
 };
 
 describe('Relations', function() {
@@ -77,6 +77,21 @@ describe('Relations', function() {
         done();
       });
     });
+
+    describe('when a belongsTo relationship has null data', function() {
+      beforeEach(function() {
+        let response = generateMockResponse('authors')
+        response.data.relationships = { genre: { data: null } }
+        delete response.data.included
+        fetchMock.get('http://example.com/api/v1/authors/1?include=genre', response)
+      })
+
+      it('does not blow up', async function() {
+        let { data } = await Author.includes(['genre']).find(1)
+        expect(data.klass).to.eq(Author)
+        expect(data.genre).to.eq(undefined)
+      })
+    })
   });
 
   describe('when camelizeKeys is false', function() {

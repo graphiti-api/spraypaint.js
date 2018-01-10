@@ -1,21 +1,22 @@
 import { JSORMBase } from './model';
 import parameterize from './util/parameterize';
 import { IncludeDirective, IncludeArgHash, IncludeScopeHash } from './util/include-directive';
-import { CollectionProxy, RecordProxy } from './proxies'; 
+import { CollectionProxy, RecordProxy } from './proxies';
 import { Request } from './request';
 import { refreshJWT } from './util/refresh-jwt';
 import { cloneDeep } from './util/clonedeep';
-import { 
+import {
   JsonapiResource,
   JsonapiResponseDoc,
   JsonapiCollectionDoc,
   JsonapiResourceDoc,
+  JsonapiSuccessDoc
 } from './jsonapi-spec'
 
 export interface JsonapiQueryParams {
   page: AnyRecord,
   filter: AnyRecord,
-  sort: string[], 
+  sort: string[],
   fields: AnyRecord,
   extra_fields: AnyRecord,
   stats: AnyRecord,
@@ -60,7 +61,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
 
   async first() : Promise<RecordProxy<T['prototype']>> {
     let newScope = this.per(1);
-    let rawResult 
+    let rawResult
 
     rawResult = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
 
@@ -248,21 +249,17 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return response['jsonPayload'];
   }
 
-  private _buildRecordResult(jsonResult : JsonapiResponseDoc) {
-    let record : T['prototype'] | null = null
+  private _buildRecordResult(jsonResult : JsonapiSuccessDoc) {
+    let record : T['prototype']
 
-    if (jsonResult.data) {
-      let rawRecord : JsonapiResource
-      if (jsonResult.data instanceof Array) {
-        rawRecord = jsonResult.data[0]
-      } else {
-        rawRecord = jsonResult.data
-      }
-
-      if (rawRecord) {
-        record = this.model.fromJsonapi(rawRecord, jsonResult)
-      }
+    let rawRecord : JsonapiResource
+    if (jsonResult.data instanceof Array) {
+      rawRecord = jsonResult.data[0]
+    } else {
+      rawRecord = jsonResult.data
     }
+
+    record = this.model.fromJsonapi(rawRecord, jsonResult)
 
     return new RecordProxy(record, jsonResult)
   }

@@ -1,25 +1,29 @@
-export { 
-  JSORMBase 
+export {
+  JSORMBase
 } from './model';
 
-export { 
-  Attribute, 
-  attr 
+export {
+  Attribute,
+  attr
 } from './attribute';
 
-export { 
-  hasMany, 
-  hasOne, 
-  belongsTo 
+export {
+  hasMany,
+  hasOne,
+  belongsTo
 } from './associations';
 
-export { 
-  Model, 
+export {
+  Model,
   Attr,
   HasMany,
   HasOne,
   BelongsTo,
 } from './decorators'
+
+export {
+  MiddlewareStack
+} from './middleware-stack'
 
 export {
   Scope,
