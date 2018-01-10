@@ -8,6 +8,8 @@
       "parameter": "onespace",
       "property-declaration": "onespace",
       "variable-declaration": "onespace"
-    }]
+    }],
+    "variable-name": [true, "ban-keywords"],
+    "member-access": [true, "no-public"]
   }
 }

@@ -29,11 +29,11 @@ export type AttributeOptions = Partial<{
 }>
 
 export class Attribute<T=any> {
-  public isRelationship = false
-  public name : string | symbol
-  public type? : T = undefined
-  public persist : boolean = true
-  public owner : typeof JSORMBase
+  isRelationship = false
+  name : string | symbol
+  type? : T = undefined
+  persist : boolean = true
+  owner : typeof JSORMBase
 
   constructor(options : AttrRecord<T>) {
     if (!options) {
