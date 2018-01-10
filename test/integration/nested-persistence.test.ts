@@ -137,7 +137,7 @@ let expectedUpdatePayload = (payloadMethod : method) : JsonapiResponseDoc => {
 const seedPersistedData = () => {
   let genre = new Genre({ id: '20', name: 'Horror' })
   genre.isPersisted = true
-  let book = new Book({ id: '10', title: 'The Shining', genre: genre })
+  let book = new Book({ id: '10', title: 'The Shining', genre })
   book.isPersisted = true
   let specialBook = new Book({ id: '30', title: 'The Stand' })
   specialBook.isPersisted = true
@@ -224,7 +224,7 @@ describe('nested persistence', () => {
   describe('basic nested create', () => {
     beforeEach(() => {
       let genre = new Genre({ name: 'Horror' })
-      let book = new Book({ title: 'The Shining', genre: genre })
+      let book = new Book({ title: 'The Shining', genre })
       let specialBook = new Book({ title: 'The Stand' })
       instance.books = [book]
       instance.specialBooks = [specialBook]

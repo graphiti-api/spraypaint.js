@@ -735,7 +735,7 @@ describe('Model', () => {
     it('preserves other properties on relationships', () => {
       let genre : any = new Genre({ id: '1' })
       genre.bar = 'baz'
-      let book : any = new Book({ id: '1', genre: genre })
+      let book : any = new Book({ id: '1', genre })
       book.foo = 'bar'
       let instance : any= new Author({ id: '1', books: [book] })
       instance.fromJsonapi(doc.data, doc)
@@ -1043,7 +1043,7 @@ describe('Model', () => {
         genre.isPersisted = true
         genre.isMarkedForDestruction = true
 
-        book = new Book({ id: '1', genre: genre })
+        book = new Book({ id: '1', genre })
         book.isPersisted = true
 
         instance = new Author({ books: [book] })
@@ -1099,7 +1099,7 @@ describe('Model', () => {
         genre.isPersisted = true
         genre.isMarkedForDisassociation = true
 
-        book = new Book({ id: '1', genre: genre })
+        book = new Book({ id: '1', genre })
         book.isPersisted = true
 
         instance = new Author({ books: [book] })

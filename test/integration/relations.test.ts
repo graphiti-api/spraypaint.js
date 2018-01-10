@@ -12,7 +12,7 @@ let generateMockResponse = (type : string) => {
   return {
     data: {
       id: '1',
-      type: type,
+      type,
       attributes: {
         firstName: 'John'
       },

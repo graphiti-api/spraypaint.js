@@ -18,7 +18,7 @@ describe('Model relationships', () => {
 
   it('supports constructor assignment of models', () => {
     let genre = new Genre({ name: 'Horror' })
-    let author = new Author({ genre: genre })
+    let author = new Author({ genre })
     expect(author.genre).to.be.instanceof(Genre)
     expect(author.genre.name).to.eq('Horror')
   })
@@ -36,7 +36,7 @@ describe('Model relationships', () => {
 
   it('has enumerable properties', () => {
     let genre = new Genre({ name: 'Horror' })
-    let author = new Author({ genre: genre })
+    let author = new Author({ genre })
     let keys = Object.keys(author)
 
     expect(keys).to.include('genre')
