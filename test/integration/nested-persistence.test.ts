@@ -43,6 +43,15 @@ let expectedCreatePayload : JsonapiResponseDoc = {
             method: 'create'
           }
         ]
+      },
+      special_books: {
+        data: [
+          {
+            ['temp-id']: 'abc3',
+            type: 'books',
+            method: 'create'
+          }
+        ]
       }
     }
   },
@@ -68,6 +77,13 @@ let expectedCreatePayload : JsonapiResponseDoc = {
       type: 'genres',
       attributes: {
         name: 'Horror'
+      }
+    },
+    {
+      ['temp-id']: 'abc3',
+      type: 'books',
+      attributes: {
+        title: 'The Stand'
       }
     }
   ]
@@ -123,8 +139,11 @@ const seedPersistedData = function() {
   genre.isPersisted = true
   let book = new Book({ id: '10', title: 'The Shining', genre: genre })
   book.isPersisted = true
+  let specialBook = new Book({ id: '30', title: 'The Stand' });
+  specialBook.isPersisted = true
   instance.id = '1'
   instance.books = [book];
+  instance.specialBooks = [specialBook]
   instance.isPersisted = true;
   genre.name = 'Updated Genre Name';
   book.title = 'Updated Book Title';
@@ -170,6 +189,12 @@ describe('nested persistence', function() {
           id: '20',
           type: 'genres',
           attributes: { name: 'name from server' }
+        },
+        {
+          ['temp-id']: 'abc3',
+          id: '30',
+          type: 'books',
+          attributes: { title: 'another title from server' }
         }
       ]
     }
@@ -200,14 +225,16 @@ describe('nested persistence', function() {
     beforeEach(function() {
       let genre = new Genre({ name: 'Horror' });
       let book = new Book({ title: 'The Shining', genre: genre });
+      let specialBook = new Book({ title: 'The Stand' });
       instance.books = [book];
+      instance.specialBooks = [specialBook]
     });
 
     // todo test on the way back - id set, attrs updated, isPersisted
     // todo remove #destroy? and just save when markwithpersisted? combo? for ombined payload
     // todo test unique includes/circular relationshio
     it('sends the correct payload', async function() {
-      await instance.save({ with: { books: 'genre' } })
+      await instance.save({ with: { books: 'genre', specialBooks: {} } })
 
       expect(payloads[0]).to.deep.equal(expectedCreatePayload);
     });

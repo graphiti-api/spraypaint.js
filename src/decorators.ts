@@ -192,11 +192,12 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) 
     }
 
     if (isModelClass(targetOrConfig)) {
-      let target = targetOrConfig
-      
       if (!propertyKey) {
-        throw new Error('Must provide propertyKey')
+        optsOrType = targetOrConfig
+        return factoryFn
       }
+
+      let target = targetOrConfig
 
       factoryFn(target.prototype, propertyKey)
     } else {

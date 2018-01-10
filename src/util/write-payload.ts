@@ -1,9 +1,9 @@
 import { JSORMBase, ModelRecord } from '../model';
 import { IncludeDirective, IncludeScopeHash } from './include-directive';
 import { IncludeScope } from '../scope';
-import { snakeCase } from './snakecase';
 import { tempId } from './temp-id';
-import { 
+import { underscore } from 'inflected'
+import {
   JsonapiRequestDoc,
   JsonapiResourceIdentifier,
   JsonapiResourceMethod,
@@ -31,7 +31,7 @@ export class WritePayload<T extends JSORMBase> {
     let attrs : ModelRecord<T> = {}
 
     this._eachAttribute((key, value) => {
-      let snakeKey    = snakeCase(key);
+      let snakeKey    = underscore(key);
 
       if (!this.model.isPersisted || this.model.changes()[key]) {
         attrs[snakeKey] = value;
@@ -99,7 +99,7 @@ export class WritePayload<T extends JSORMBase> {
         }
 
         if (data) {
-          _relationships[key] = { data }
+          _relationships[underscore(key)] = { data }
         }
       }
     });
