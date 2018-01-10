@@ -115,7 +115,7 @@ export class WritePayload<T extends JSORMBase> {
     this.model.clearErrors()
 
     if (this.model.id) {
-      data['id'] = this.model.id
+      data.id = this.model.id
     }
 
     if (this.model.temp_id) {
@@ -124,12 +124,12 @@ export class WritePayload<T extends JSORMBase> {
 
     let _attributes = this.attributes()
     if (Object.keys(_attributes).length > 0) {
-      data['attributes'] = _attributes
+      data.attributes = _attributes
     }
 
     let relationshipData = this.relationships()
     if (Object.keys(relationshipData).length > 0) {
-      data['relationships'] = relationshipData
+      data.relationships = relationshipData
     }
 
     let json : JsonapiRequestDoc = { data }
@@ -151,7 +151,7 @@ export class WritePayload<T extends JSORMBase> {
     }
 
     let wp            = new WritePayload(model, nested)
-    let relatedJSON   = wp.asJSON()['data']
+    let relatedJSON   = wp.asJSON().data
 
     let resourceIdentifier = this._resourceIdentifierFor(model)
     this._pushInclude(relatedJSON)
@@ -171,7 +171,7 @@ export class WritePayload<T extends JSORMBase> {
     }
 
     if (model.id) {
-      identifier['id'] = model.id
+      identifier.id = model.id
     }
 
     if (model.temp_id) {
@@ -203,8 +203,8 @@ export class WritePayload<T extends JSORMBase> {
 
   private _isIncluded(include : any) {
     this.included.forEach((incl) => {
-      if (incl['type'] === include['type']) {
-        if (incl['id'] === include['id'] || incl['temp-id'] === include['temp-id']) {
+      if (incl.type === include.type) {
+        if (incl.id === include.id || incl['temp-id'] === include['temp-id']) {
           return true
         }
       }

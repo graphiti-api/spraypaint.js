@@ -97,7 +97,7 @@ describe('Decorators', () => {
           @Attr({type: String}) testField : string
         }
 
-        expect(TestClass.attributeList['testField']).to.include({
+        expect(TestClass.attributeList.testField).to.include({
           persist: true,
           type: String,
           name: 'testField'
@@ -110,7 +110,7 @@ describe('Decorators', () => {
           @Attr({type: String}) testField : string
         }
 
-        expect(TestClass.attributeList['testField']).to.include({
+        expect(TestClass.attributeList.testField).to.include({
           persist: true,
           type: String,
           name: 'testField'
@@ -125,7 +125,7 @@ describe('Decorators', () => {
           @Attr testField : string
         }
 
-        expect(TestClass.attributeList['testField']).to.include({
+        expect(TestClass.attributeList.testField).to.include({
           persist: true,
           type: undefined,
           name: 'testField'
@@ -141,7 +141,7 @@ describe('Decorators', () => {
         }
         Attr(TestClass, 'testField', {persist : false })
 
-        expect(TestClass.attributeList['testField']).to.include({
+        expect(TestClass.attributeList.testField).to.include({
           persist: false,
           type: undefined,
           name: 'testField'
@@ -178,7 +178,7 @@ describe('Decorators', () => {
             @Assoc({type: AssociationModel}) testField : any
           }
 
-          expect(TestClass.attributeList['testField']).to.include({
+          expect(TestClass.attributeList.testField).to.include({
             persist: true,
             type: AssociationModel,
             name: 'testField'
@@ -191,7 +191,7 @@ describe('Decorators', () => {
             @Assoc({type: 'test_associations'}) testField : any
           }
 
-          expect(TestClass.attributeList['testField']).to.include({
+          expect(TestClass.attributeList.testField).to.include({
             persist: true,
             jsonapiType: 'test_associations',
             name: 'testField'
@@ -204,7 +204,7 @@ describe('Decorators', () => {
             @Assoc('test_associations') testField : any
           }
 
-          expect(TestClass.attributeList['testField']).to.include({
+          expect(TestClass.attributeList.testField).to.include({
             persist: true,
             jsonapiType: 'test_associations',
             name: 'testField'
@@ -217,7 +217,7 @@ describe('Decorators', () => {
             @Assoc() testAssociation : any
           }
 
-          expect(TestClass.attributeList['testAssociation']).to.include({
+          expect(TestClass.attributeList.testAssociation).to.include({
             persist: true,
             jsonapiType: 'test_associations',
             name: 'testAssociation'
@@ -230,7 +230,7 @@ describe('Decorators', () => {
             @Assoc() testAssociation : any
           }
 
-          let assoc = TestClass.attributeList['testAssociation'] 
+          let assoc = TestClass.attributeList.testAssociation 
 
           expect(assoc.owner).to.equal(TestClass)
         })
@@ -244,7 +244,7 @@ describe('Decorators', () => {
 
           Assoc(TestClass, 'testField', {type: AssociationModel})
 
-          expect(TestClass.attributeList['testField']).to.include({
+          expect(TestClass.attributeList.testField).to.include({
             persist: true,
             type: AssociationModel,
             name: 'testField'

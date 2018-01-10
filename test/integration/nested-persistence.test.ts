@@ -218,7 +218,7 @@ describe('nested persistence', () => {
 
   afterEach(() => {
     tempIdIndex = 0
-    ;(<any>tempId.generate)['restore']()
+    ;(<any>tempId.generate).restore()
   })
 
   describe('basic nested create', () => {

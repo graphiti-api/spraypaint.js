@@ -61,7 +61,7 @@ export class Request {
 
     let response = await this._fetch(url, options)
 
-    this._logResponse(response['jsonPayload'])
+    this._logResponse(response.jsonPayload)
 
     return response
   }
@@ -104,7 +104,7 @@ export class Request {
     if (response.status >= 500) {
       throw new ResponseError(response, 'Server Error')
       // Allow 422 since we specially handle validation errors
-    } else if (response.status !== 422 && json['data'] === undefined) {
+    } else if (response.status !== 422 && json.data === undefined) {
       if (response.status === 404) {
         throw new ResponseError(response, 'record not found')
       } else {
@@ -113,7 +113,7 @@ export class Request {
       }
     }
 
-    (<any>response)['jsonPayload'] = json
+    (<any>response).jsonPayload = json
   }
 }
 

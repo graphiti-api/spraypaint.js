@@ -201,13 +201,13 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
       let associationScope = associations[key]
       let associationQueryParams = associationScope.asQueryParams()
 
-      queryParams['page'][key]   = associationQueryParams['page']
-      queryParams['filter'][key] = associationQueryParams['filter']
-      queryParams['stats'][key]  = associationQueryParams['stats']
+      queryParams.page[key]   = associationQueryParams.page
+      queryParams.filter[key] = associationQueryParams.filter
+      queryParams.stats[key]  = associationQueryParams.stats
 
-      associationQueryParams['sort'].forEach((s) => {
+      associationQueryParams.sort.forEach((s) => {
         let transformed = this._transformAssociationSortParam(key, s)
-        queryParams['sort'].push(transformed)
+        queryParams.sort.push(transformed)
       })
     }
   }
@@ -246,7 +246,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
 
     let response = await request.get(url, fetchOpts)
     refreshJWT(this.model, response)
-    return response['jsonPayload']
+    return response.jsonPayload
   }
 
   private _buildRecordResult(jsonResult : JsonapiSuccessDoc) {

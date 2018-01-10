@@ -385,7 +385,7 @@ describe('Model', () => {
         it('does not modify the parent attributes', () => { 
           let post = new Post({title: 'The Title' , pageOrder: 1})
 
-          expect(modelAttrs(post)['pageOrder']).to.be.undefined
+          expect(modelAttrs(post).pageOrder).to.be.undefined
         })
       })
 
@@ -431,7 +431,7 @@ describe('Model', () => {
         it('does not modify the parent attributes', () => { 
           let post = new Post({title: 'The Title' , pageOrder: 1})
 
-          expect(modelAttrs(post)['pageOrder']).to.be.undefined
+          expect(modelAttrs(post).pageOrder).to.be.undefined
         })
       })
 
@@ -725,20 +725,20 @@ describe('Model', () => {
 
     it('preserves other properties on the object', () => {
       let instance : any = new Author({ id: '1' })
-      instance['fooble'] = 'bar'
+      instance.fooble = 'bar'
       let same = instance.fromJsonapi(doc.data, doc)
       expect(same).to.eq(instance)
 
       expect(instance.id).to.eq('1')
       expect(instance.firstName).to.eq('Donald Budge')
-      expect(instance['fooble']).to.eq('bar')
+      expect(instance.fooble).to.eq('bar')
     })
  
     it('preserves other properties on relationships', () => {
       let genre : any = new Genre({ id: '1' })
-      genre['bar'] = 'baz'
+      genre.bar = 'baz'
       let book : any = new Book({ id: '1', genre: genre })
-      book['foo'] = 'bar'
+      book.foo = 'bar'
       let instance : any= new Author({ id: '1', books: [book] })
       instance.fromJsonapi(doc.data, doc)
 
@@ -746,8 +746,8 @@ describe('Model', () => {
       expect(instance.books[0].genre).to.eq(genre)
 
       expect(book.title).to.eq("Where's My Butt?")
-      expect(book['foo']).to.eq('bar')
-      expect(genre['bar']).to.eq('baz')
+      expect(book.foo).to.eq('bar')
+      expect(genre.bar).to.eq('baz')
     })
   })
 

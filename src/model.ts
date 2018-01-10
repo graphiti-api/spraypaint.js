@@ -647,7 +647,7 @@ export class JSORMBase {
     let url = this.klass.url()
     let verb : RequestVerbs = 'post'
     let request = new Request(this._middleware(), this.klass.logger)
-    let payload = new WritePayload(this, options['with'])
+    let payload = new WritePayload(this, options.with)
     let response : any
 
     if (this.isPersisted) {
@@ -664,7 +664,7 @@ export class JSORMBase {
     }
 
     return await this._handleResponse(response, () => {
-      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective)
+      this.fromJsonapi(response.jsonPayload.data, response.jsonPayload, payload.includeDirective)
       payload.postProcess()
     })
   }

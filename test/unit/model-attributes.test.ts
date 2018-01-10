@@ -12,7 +12,7 @@ describe('Model attributes', () => {
   it('supports constructor assignment', () => {
     let person = new Person({ firstName: 'Joe' })
     expect(person.firstName).to.eq('Joe')
-    expect(person.attributes['firstName']).to.eq('Joe')
+    expect(person.attributes.firstName).to.eq('Joe')
   })
 
   it('camelizes underscored strings', () => {
@@ -31,7 +31,7 @@ describe('Model attributes', () => {
     expect(person.attributes).to.eql({})
     person.firstName = 'John'
     expect(person.attributes).to.eql({ firstName: 'John' })
-    person.attributes['firstName'] = 'Jane'
+    person.attributes.firstName = 'Jane'
     expect(person.firstName).to.eq('Jane')
   })
 
@@ -100,20 +100,20 @@ describe('Model attributes', () => {
       let Model = Person
       it('silently drops', () => {
         let person = new Model({ foo: 'bar' })
-        expect(person.attributes['foo']).to.eq(undefined)
+        expect(person.attributes.foo).to.eq(undefined)
       })
 
       describe('but that attribute exists in an unrelated model', () => {
         it('still silently drops', () => {
           let person = new Model({ title: 'bar' })
-          expect(person.attributes['title']).to.eq(undefined)
+          expect(person.attributes.title).to.eq(undefined)
         })
       })
 
       describe('but that attribute exists in a subclass', () => {
         it('still silently drops', () => {
           let person = new Model({ extraThing: 'bar' })
-          expect(person.attributes['extraThing']).to.eq(undefined)
+          expect(person.attributes.extraThing).to.eq(undefined)
         })
       })
     })

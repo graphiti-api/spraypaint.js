@@ -108,7 +108,7 @@ describe('validations', () => {
 
   afterEach(() => {
     tempIdIndex = 0
-    ;(<any>tempId.generate)['restore']()
+    ;(<any>tempId.generate).restore()
   })
 
   it('applies errors to the instance', async () => {

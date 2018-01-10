@@ -3,6 +3,7 @@
     "tslint-config-prettier"
   ],
   "rules": {
+    "no-string-literal": true,
     "only-arrow-functions": true,
     "semicolon": [true, "never"],
     "array-type": [true, "array"],

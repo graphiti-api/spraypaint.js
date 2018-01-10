@@ -45,19 +45,19 @@ export class ValidationErrors {
       attribute = camelize(attribute, false)
     }
 
-    errorsAccumulator[attribute] = meta['message']
+    errorsAccumulator[attribute] = meta.message
   }
 
   private _processRelationship(model : JSORMBase, meta : JsonapiErrorMeta) {
     let relatedObject = (<any>model)[meta.name]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find((r) => {
-        return (r.id === meta['id'] || r.temp_id === meta['temp-id'])
+        return (r.id === meta.id || r.temp_id === meta['temp-id'])
       })
     }
 
-    if (meta['relationship']) {
-      this._processRelationship(relatedObject, meta['relationship'])
+    if (meta.relationship) {
+      this._processRelationship(relatedObject, meta.relationship)
     } else {
       let relatedAccumulator : Record<string, string> = {}
       this._processResource(relatedAccumulator, meta)
