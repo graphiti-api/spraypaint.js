@@ -8,7 +8,7 @@ let resultData = function<T>(promise : Promise<IResultProxy<T>>) : Promise<any> 
   })
 }
 
-let generateMockResponse = function(type: string) {
+let generateMockResponse = function(type : string) {
   return {
     data: {
       id: '1',

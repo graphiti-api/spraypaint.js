@@ -32,12 +32,12 @@ export class Person extends ApplicationRecord {
 
 @Model()
 export class PersonWithExtraAttr extends Person {
-  @Attr({persist: false}) extraThing: string
+  @Attr({persist: false}) extraThing : string
 }
 
 @Model({camelizeKeys: false})
 export class PersonWithoutCamelizedKeys extends Person {
-  @Attr first_name: string
+  @Attr first_name : string
 }
 
 @Model({
@@ -58,7 +58,7 @@ export class Author extends Person {
 export class Book extends ApplicationRecord {
   static jsonapiType = 'books'
 
-  @Attr title: string
+  @Attr title : string
 
   @BelongsTo({type: 'genres'}) genre : Genre
   @HasOne({type: Author}) author : any
@@ -89,7 +89,7 @@ export class Genre extends ApplicationRecord {
   static jsonapiType = 'genres'
 
   @Attr name : string 
-  @HasMany('authors') authors: any
+  @HasMany('authors') authors : any
 }
 
 @Model()
@@ -103,7 +103,7 @@ export class Bio extends ApplicationRecord {
 export class Tag extends ApplicationRecord {
   static jsonapiType = 'tags'
 
-  @Attr name: string 
+  @Attr name : string 
 }
 
 @Model()

@@ -68,8 +68,8 @@ export type ExtendedModel<
   Prototype=Superclass['prototype'] & Attributes & Methods
 > =
   {
-    new(attrs?: Record<string, any>) : Prototype
-    prototype: Prototype
+    new(attrs? : Record<string, any>) : Prototype
+    prototype : Prototype
   } & Superclass
 
 export type AttrMap<T> = {
@@ -77,21 +77,21 @@ export type AttrMap<T> = {
 }
 
 export type DefaultAttrs = Record<string, any>
-export type DefaultMethods<V> =  { [key: string]: (this: V, ...args: any[]) => any }
+export type DefaultMethods<V> =  { [key : string] : (this : V, ...args : any[]) => any }
 
 export interface ExtendOptions<
   M,
   Attributes=DefaultAttrs,
   Methods=DefaultMethods<M>
   > {
-  static?: ModelConfigurationOptions
-  attrs?: AttrMap<Attributes>
-  methods?: ThisType<M & Attributes & Methods> & Methods
+  static? : ModelConfigurationOptions
+  attrs? : AttrMap<Attributes>
+  methods? : ThisType<M & Attributes & Methods> & Methods
 }
 
 export function applyModelConfig<T extends typeof JSORMBase>(
   ModelClass : T,
-  config: ModelConfigurationOptions
+  config : ModelConfigurationOptions
 ) : void {
   let k : keyof ModelConfigurationOptions
 
@@ -170,7 +170,7 @@ export class JSORMBase {
    */
   static readonly isJSORMModel : boolean = true
 
-  static fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc) : any {
+  static fromJsonapi(resource : JsonapiResource, payload : JsonapiResponseDoc) : any {
     return deserialize(this.typeRegistry, resource, payload)
   }
 
@@ -231,7 +231,7 @@ export class JSORMBase {
     return this.baseClass._typeRegistry
   }
 
-  static set typeRegistry(registry: JsonapiTypeRegistry) {
+  static set typeRegistry(registry : JsonapiTypeRegistry) {
     if (!this.isBaseClass) {
       throw new Error('Cannot set a registry on a non-base class')
     }
@@ -261,7 +261,7 @@ export class JSORMBase {
     Methods,
     SuperType=T
   >(
-    this: T,
+    this : T,
     options : ExtendOptions<T, ExtendedAttrs, Methods>
   ) : ExtendedModel<T, ExtendedAttrs, Methods> {
     class Subclass extends (<ExtendedModel<typeof JSORMBase, {}, {}>>this) { }
@@ -307,8 +307,8 @@ export class JSORMBase {
   @nonenumerable klass : typeof JSORMBase
 
   @nonenumerable private _persisted : boolean = false
-  @nonenumerable private _markedForDestruction: boolean = false
-  @nonenumerable private _markedForDisassociation: boolean = false
+  @nonenumerable private _markedForDestruction : boolean = false
+  @nonenumerable private _markedForDisassociation : boolean = false
   @nonenumerable private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
   @nonenumerable private _attributes : ModelRecord<this>
   @nonenumerable private _originalAttributes : ModelRecord<this>
@@ -433,11 +433,11 @@ export class JSORMBase {
     this.__meta__ = metaObj
   }
 
-  relationshipResourceIdentifiers(relationNames: string[]) {
+  relationshipResourceIdentifiers(relationNames : string[]) {
     return relationshipIdentifiersFor(this, relationNames)
   }
 
-  fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc, includeDirective: IncludeScopeHash = {}) : any {
+  fromJsonapi(resource : JsonapiResource, payload : JsonapiResponseDoc, includeDirective : IncludeScopeHash = {}) : any {
     return deserializeInstance(this, resource, payload, includeDirective)
   }
 
@@ -468,7 +468,7 @@ export class JSORMBase {
     this._errors = {}
   }
 
-  isDirty(relationships?: IncludeScope) : boolean {
+  isDirty(relationships? : IncludeScope) : boolean {
     let dc = new DirtyChecker(this)
     return dc.check(relationships)
   }
@@ -478,7 +478,7 @@ export class JSORMBase {
     return dc.dirtyAttributes()
   }
 
-  hasDirtyRelation(relationName: string, relatedModel: JSORMBase) : boolean {
+  hasDirtyRelation(relationName : string, relatedModel : JSORMBase) : boolean {
     let dc = new DirtyChecker(this)
     return dc.checkRelation(relationName, relatedModel)
   }
@@ -508,7 +508,7 @@ export class JSORMBase {
     return options
   }
 
-  static url(id?: string | number) : string {
+  static url(id? : string | number) : string {
     let endpoint = this.endpoint || `/${this.jsonapiType}`
     let base = `${this.fullBasePath()}${endpoint}`
 
@@ -548,7 +548,7 @@ export class JSORMBase {
     this._middlewareStack = stack
   }
 
-  static scope<I extends typeof JSORMBase>(this: I) : Scope<I> {
+  static scope<I extends typeof JSORMBase>(this : I) : Scope<I> {
     return new Scope(this)
   }
 

@@ -7,7 +7,7 @@ const COLORS = {
 export type ColorKey = 'green' | 'cyan' | 'magenta' | 'bold'
 
 
-export default function colorize(color : ColorKey, text: string) : string {
+export default function colorize(color : ColorKey, text : string) : string {
   if (supportsColor()) {
     let map = COLORS[color]
     return `\u001b[${map[0]}m${text}\u001b[${map[1]}m`

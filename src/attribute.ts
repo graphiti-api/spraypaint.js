@@ -1,12 +1,12 @@
 import { JSORMBase } from './model'
 
-export type Attr<T> = { (): T } | { new (...args: any[]): T & object }
+export type Attr<T> = { () : T } | { new (...args : any[]) : T & object }
 
 export type AttrType<T> = Attr<T>
 
 export interface AttrRecord<T> {
-  name?: string | symbol
-  type?: AttrType<T>
+  name? : string | symbol
+  type? : AttrType<T>
   persist? : boolean
 }
 
@@ -23,7 +23,7 @@ export type AttributeValue<Attributes> = {
 }
 
 export type AttributeOptions = Partial<{
-  name: string | symbol
+  name : string | symbol
   type : { () : any }
   persist : boolean
 }>
@@ -35,7 +35,7 @@ export class Attribute<T=any> {
   public persist : boolean = true
   public owner : typeof JSORMBase
 
-  constructor(options: AttrRecord<T>) {
+  constructor(options : AttrRecord<T>) {
     if (!options) {
       return
     }
@@ -56,13 +56,13 @@ export class Attribute<T=any> {
   }
 
   // The model calls this setter
-  setter(context: JSORMBase, val: any) : void {
+  setter(context : JSORMBase, val : any) : void {
     let privateContext : any = context
     privateContext._attributes[this.name] = val
   }
 
   // The model calls this getter
-  getter(context: JSORMBase) : any {
+  getter(context : JSORMBase) : any {
     let privateContext : any = context
     return privateContext._attributes[this.name]
   }
@@ -74,11 +74,11 @@ export class Attribute<T=any> {
     return {
       configurable: true,
       enumerable: true,
-      get(this: JSORMBase) : any {
+      get(this : JSORMBase) : any {
         return attr.getter(this)
       },
 
-      set(this: JSORMBase, value) : void {
+      set(this : JSORMBase, value) : void {
         attr.setter(this, value)
       }
     }
@@ -95,9 +95,9 @@ const simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/
  *  to it so I'm keeping it around.
  *
  */
-function assertType<T>(value: any, type: Attr<T>): {
-  valid: boolean;
-  expectedType: string;
+function assertType<T>(value : any, type : Attr<T>) : {
+  valid : boolean;
+  expectedType : string;
 } {
   let valid
   const expectedType = getType(type)
@@ -153,6 +153,6 @@ const _toString = Object.prototype.toString
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
  */
-function isPlainObject (obj: any): obj is object {
+function isPlainObject (obj : any) : obj is object {
   return _toString.call(obj) === '[object Object]'
 }

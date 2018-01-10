@@ -22,16 +22,16 @@ import {
   BelongsTo,
 } from './associations'
 
-type ModelDecorator = <M extends typeof JSORMBase>(target: M) => M 
+type ModelDecorator = <M extends typeof JSORMBase>(target : M) => M 
 
 function ModelDecorator(config? : ModelConfigurationOptions) : ModelDecorator {
-  return function<M extends typeof JSORMBase>(target: M) : M {
+  return function<M extends typeof JSORMBase>(target : M) : M {
     modelFactory(target, config)
     return target
   }
 }
 
-export function initModel(modelClass : typeof JSORMBase, config?: ModelConfigurationOptions) : void {
+export function initModel(modelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void {
   modelFactory(modelClass, config)
 }
 
@@ -133,13 +133,13 @@ type DecoratorArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string | t
  * ```
  * 
  */ 
-function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) {
-  function DecoratorFactory(target: typeof JSORMBase, propertyKey : string, optsOrType?: AssociationFactoryOpts<T> | string) : void 
-  function DecoratorFactory(optsOrType?: DecoratorArgs<T>) : DecoratorFn 
+function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType : any) {
+  function DecoratorFactory(target : typeof JSORMBase, propertyKey : string, optsOrType? : AssociationFactoryOpts<T> | string) : void 
+  function DecoratorFactory(optsOrType? : DecoratorArgs<T>) : DecoratorFn 
   function DecoratorFactory(
     targetOrConfig? : typeof JSORMBase | DecoratorArgs<T>, 
     propertyKey? : string,
-    optsOrType?: DecoratorArgs<T>
+    optsOrType? : DecoratorArgs<T>
   ) {
     function extend(ModelClass : typeof JSORMBase) : typeof JSORMBase {
       ensureModelInheritance(ModelClass)
@@ -149,7 +149,7 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType: any) 
 
     let opts : AssociationRecord<T> | undefined
 
-    const factoryFn = function(target: JSORMBase, propertyKey : string) {
+    const factoryFn = function(target : JSORMBase, propertyKey : string) {
       if (optsOrType === undefined) {
         let inferredType = pluralize(underscore(propertyKey))
 

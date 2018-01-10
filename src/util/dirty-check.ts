@@ -4,16 +4,16 @@ import { IncludeScope } from '../scope'
 import { JsonapiResourceIdentifier } from '../jsonapi-spec'
 
 class DirtyChecker<T extends JSORMBase> {
-  model: T
+  model : T
 
-  constructor(model: T) {
+  constructor(model : T) {
     this.model = model
   }
 
   // Check if we are switching persisted objects. Either:
   // * adding a new already-persisted object to a hasMany array
   // * switching an existing persisted hasOne/belongsTo object
-  checkRelation(relationName: string, relatedModel: JSORMBase) : boolean {
+  checkRelation(relationName : string, relatedModel : JSORMBase) : boolean {
     let dirty = false
 
     if (relatedModel.isPersisted) {
@@ -32,7 +32,7 @@ class DirtyChecker<T extends JSORMBase> {
   // * marked for destruction / disassociation
   // * not persisted (and thus must be send to server)
   // * not itself dirty, but has nested relations that are dirty
-  check(relationships: IncludeScope = {}) : boolean {
+  check(relationships : IncludeScope = {}) : boolean {
     let includeDirective = new IncludeDirective(relationships)
     let includeHash = includeDirective.toScopeObject()
 
@@ -72,7 +72,7 @@ class DirtyChecker<T extends JSORMBase> {
     return JSON.stringify(originalAttrs) !== JSON.stringify(currentAttrs)
   }
 
-  private _hasDirtyRelationships(includeHash: IncludeScopeHash) : boolean {
+  private _hasDirtyRelationships(includeHash : IncludeScopeHash) : boolean {
     let dirty = false
 
     this._eachRelatedObject(includeHash, (relationName, relatedObject, nested) => {
@@ -89,8 +89,8 @@ class DirtyChecker<T extends JSORMBase> {
   }
 
   _eachRelatedObject(
-    includeHash: IncludeScopeHash, 
-    callback: (key : string, object : JSORMBase, nested: IncludeScopeHash) => void
+    includeHash : IncludeScopeHash, 
+    callback : (key : string, object : JSORMBase, nested : IncludeScopeHash) => void
   ) : void {
     Object.keys(includeHash).forEach((key) => {
       let nested = includeHash[key]

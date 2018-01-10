@@ -43,7 +43,7 @@ describe('Model Class static attributes typings',() => {
         })
       })
 
-      function strEnum<T extends string>(o: T[]): {[K in T]: K} {
+      function strEnum<T extends string>(o : T[]) : {[K in T]: K} {
         return o.reduce((res, key) => {
           res[key] = key
           return res
@@ -52,14 +52,14 @@ describe('Model Class static attributes typings',() => {
 
       describe('Scope delegators', () => {
         it('understands all of the scope delegator methods', () => {
-          let page : (num: number) => Scope<typeof RootClass> = RootClass.page
-          let per : (num: number) => Scope<typeof RootClass> = RootClass.per
-          let where : (opts: WhereClause) => Scope<typeof RootClass> = RootClass.where
-          let order : (opts: SortScope) => Scope<typeof RootClass> = RootClass.order
-          let selectExtra : (opts: FieldScope) => Scope<typeof RootClass> = RootClass.select
-          let includes : (opts: IncludeScope) => Scope<typeof RootClass> = RootClass.includes
-          let merge : (opts: Record<string, Scope>) => Scope<typeof RootClass> = RootClass.merge
-          let stats : (opts: StatsScope) => Scope<typeof RootClass> = RootClass.stats
+          let page : (num : number) => Scope<typeof RootClass> = RootClass.page
+          let per : (num : number) => Scope<typeof RootClass> = RootClass.per
+          let where : (opts : WhereClause) => Scope<typeof RootClass> = RootClass.where
+          let order : (opts : SortScope) => Scope<typeof RootClass> = RootClass.order
+          let selectExtra : (opts : FieldScope) => Scope<typeof RootClass> = RootClass.select
+          let includes : (opts : IncludeScope) => Scope<typeof RootClass> = RootClass.includes
+          let merge : (opts : Record<string, Scope>) => Scope<typeof RootClass> = RootClass.merge
+          let stats : (opts : StatsScope) => Scope<typeof RootClass> = RootClass.stats
         })
 
         it('understands the scope finder methods', () => {

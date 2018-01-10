@@ -14,13 +14,13 @@ import {
 } from './jsonapi-spec'
 
 export interface JsonapiQueryParams {
-  page: AnyRecord,
-  filter: AnyRecord,
-  sort: string[],
-  fields: AnyRecord,
-  extra_fields: AnyRecord,
-  stats: AnyRecord,
-  include?: string,
+  page : AnyRecord,
+  filter : AnyRecord,
+  sort : string[], 
+  fields : AnyRecord,
+  extra_fields : AnyRecord,
+  stats : AnyRecord,
+  include? : string,
 }
 
 export type SortDir = 'asc' | 'desc'
@@ -33,15 +33,15 @@ export type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[]
 export type AnyRecord = Record<string, any>
 
 export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
-  model: T
+  model : T
   private _associations : Record<string, Scope<any>> = {}
-  private _pagination: { number?: number, size?: number } = {}
-  private _filter: WhereClause = {}
-  private _sort: Record<string, SortDir> = {}
-  private _fields: FieldScope = {}
-  private _extra_fields: FieldScope = {}
-  private _include: IncludeScopeHash = {}
-  private _stats: StatsScope = {}
+  private _pagination : { number? : number, size? : number } = {}
+  private _filter : WhereClause = {}
+  private _sort : Record<string, SortDir> = {}
+  private _fields : FieldScope = {}
+  private _extra_fields : FieldScope = {}
+  private _include : IncludeScopeHash = {}
+  private _stats : StatsScope = {}
 
   constructor(model : T) {
     this.model = model
@@ -92,7 +92,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return copy
   }
 
-  where(clause: WhereClause) : Scope<T> {
+  where(clause : WhereClause) : Scope<T> {
     let copy = this.copy()
 
     for (let key in clause) {
@@ -101,7 +101,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return copy
   }
 
-  stats(clause: StatsScope) : Scope<T> {
+  stats(clause : StatsScope) : Scope<T> {
     let copy = this.copy()
 
     for (let key in clause) {
@@ -110,7 +110,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return copy
   }
 
-  order(clause: SortScope | string) : Scope<T> {
+  order(clause : SortScope | string) : Scope<T> {
     let copy = this.copy()
 
     if (typeof clause === "object") {
@@ -124,7 +124,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return copy
   }
 
-  select(clause: FieldScope) {
+  select(clause : FieldScope) {
     let copy = this.copy()
 
     for (let key in clause) {
@@ -134,7 +134,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return copy
   }
 
-  selectExtra(clause: FieldScope) {
+  selectExtra(clause : FieldScope) {
     let copy = this.copy()
 
     for (let key in clause) {
@@ -144,7 +144,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return copy
   }
 
-  includes(clause: IncludeScope) : Scope<T> {
+  includes(clause : IncludeScope) : Scope<T> {
     let copy = this.copy()
 
     let directive = new IncludeDirective(clause)
@@ -212,7 +212,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     }
   }
 
-  private _transformAssociationSortParam(associationName: string, param : string) : string {
+  private _transformAssociationSortParam(associationName : string, param : string) : string {
     if (param.indexOf('-') !== -1) {
       param = param.replace('-', '')
       associationName = `-${associationName}`
@@ -220,7 +220,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
     return `${associationName}.${param}`
   }
 
-  private _sortParam(clause: Record<string, SortDir> | undefined) {
+  private _sortParam(clause : Record<string, SortDir> | undefined) {
     if (clause && Object.keys(clause).length > 0) {
       let params = []
 

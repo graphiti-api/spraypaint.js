@@ -24,9 +24,9 @@ describe('Associations', () => {
     { assoc: belongsTo, Name: 'belongsTo', AssocClass: BelongsTo },
   ]
   singleDecorators.forEach(({assoc, Name, AssocClass} : { 
-    assoc: any, 
-    Name: string,
-    AssocClass: any
+    assoc : any, 
+    Name : string,
+    AssocClass : any
   }) => {
     describe(Name, () => {
       describe('Initializing Attribute', () => {

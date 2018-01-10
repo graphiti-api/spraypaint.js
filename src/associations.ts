@@ -9,8 +9,8 @@ export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
 
 export interface Association {
   isRelationship : true
-  readonly klass: typeof JSORMBase
-  jsonapiType: string
+  readonly klass : typeof JSORMBase
+  jsonapiType : string
 }
 
 export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> implements Association {
@@ -19,7 +19,7 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
   typeRegistry : JsonapiTypeRegistry
   private _klass : typeof JSORMBase
 
-  constructor(options: AssociationRecord<T>) {
+  constructor(options : AssociationRecord<T>) {
     super(options)
 
     if (options.jsonapiType) {
@@ -38,11 +38,11 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
     return this._klass 
   }
 
-  getter(context: JSORMBase) {
+  getter(context : JSORMBase) {
     return context.relationships[this.name]
   }
 
-  setter(context: JSORMBase, val: any) : void {
+  setter(context : JSORMBase, val : any) : void {
     if (val && !val.hasOwnProperty('isRelationship')) {
       if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
         val = new this.klass(val)
@@ -60,7 +60,7 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]> implements Asso
   typeRegistry : JsonapiTypeRegistry
   private _klass : typeof JSORMBase
 
-  constructor(options: AssociationRecord<T>) {
+  constructor(options : AssociationRecord<T>) {
     super(options as any)
 
     if (options.jsonapiType) {
@@ -79,7 +79,7 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]> implements Asso
     return this._klass 
   }
 
-  getter(context: JSORMBase) {
+  getter(context : JSORMBase) {
     let gotten = context.relationships[this.name]
     if (!gotten) {
       this.setter(context, [])
@@ -89,7 +89,7 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]> implements Asso
     }
   }
 
-  setter(context: JSORMBase, val: any) : void {
+  setter(context : JSORMBase, val : any) : void {
     if (val && !val.hasOwnProperty('isRelationship')) {
       if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
         val = new this.klass(val)
@@ -115,25 +115,25 @@ export interface AssociationFactoryOpts<T extends JSORMBase> {
 
 export type AssociationFactoryArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string
 
-export function hasOne<T extends JSORMBase>(options?: AssociationFactoryOpts<T>) : HasOne<T> {
+export function hasOne<T extends JSORMBase>(options? : AssociationFactoryOpts<T>) : HasOne<T> {
   let opts = extractAssocOpts(options)
 
   return new HasOne(opts)
 }
 
-export function belongsTo<T extends JSORMBase>(options?: AssociationFactoryArgs<T>) : BelongsTo<T> {
+export function belongsTo<T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : BelongsTo<T> {
   let opts = extractAssocOpts(options)
 
   return new BelongsTo(opts)
 }
 
-export function hasMany<T extends JSORMBase>(options?: AssociationFactoryArgs<T>) : HasMany<T> {
+export function hasMany<T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : HasMany<T> {
   let opts = extractAssocOpts(options)
 
   return new HasMany(opts)
 }
 
-function extractAssocOpts<T extends JSORMBase>(options?: AssociationFactoryArgs<T> | string) {
+function extractAssocOpts<T extends JSORMBase>(options? : AssociationFactoryArgs<T> | string) {
   let associationOpts : AssociationRecord<T> = {}
 
   if (options !== undefined) {
@@ -158,7 +158,7 @@ function extractAssocOpts<T extends JSORMBase>(options?: AssociationFactoryArgs<
   return associationOpts
 }
 
-type ModelAssoc = { owner: typeof JSORMBase }
+type ModelAssoc = { owner : typeof JSORMBase }
 function modelForType(association : ModelAssoc, jsonapiType : string) : typeof JSORMBase {
   let klass = association.owner.typeRegistry.get(jsonapiType)
 

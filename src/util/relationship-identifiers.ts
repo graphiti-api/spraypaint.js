@@ -9,7 +9,7 @@ import { JsonapiResourceIdentifier } from '../jsonapi-spec'
 // Will be array regardless of relationship type
 // This will only contain persisted objects
 // Used for dirty tracking associations
-export default function(model: JSORMBase, relationNames: string[]) {
+export default function(model : JSORMBase, relationNames : string[]) {
   let identifiers : Record<string, JsonapiResourceIdentifier[]>= {}
   relationNames.forEach((relationName) => {
     let relatedObjects = model.relationship(relationName)

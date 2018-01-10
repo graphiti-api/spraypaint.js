@@ -11,12 +11,12 @@ import {
 } from '../jsonapi-spec'
 
 export class WritePayload<T extends JSORMBase> {
-  model: T
+  model : T
   jsonapiType : string
-  includeDirective: IncludeScopeHash
-  included: JsonapiResource[] = []
+  includeDirective : IncludeScopeHash
+  included : JsonapiResource[] = []
 
-  constructor(model : T, relationships?: IncludeScope) {
+  constructor(model : T, relationships? : IncludeScope) {
     let includeDirective = new IncludeDirective(relationships)
     this.includeDirective = includeDirective.toScopeObject()
     this.model = model
@@ -41,7 +41,7 @@ export class WritePayload<T extends JSORMBase> {
     return attrs
   }
 
-  removeDeletions(model: T, includeDirective: IncludeScope) {
+  removeDeletions(model : T, includeDirective : IncludeScope) {
     Object.keys(includeDirective).forEach((key) => {
       let nested = (<any>includeDirective)[key]
 
@@ -143,7 +143,7 @@ export class WritePayload<T extends JSORMBase> {
 
   // private
 
-  private _processRelatedModel(model: T, nested: IncludeScopeHash) {
+  private _processRelatedModel(model : T, nested : IncludeScopeHash) {
     model.clearErrors()
 
     if (!model.isPersisted) {
@@ -161,7 +161,7 @@ export class WritePayload<T extends JSORMBase> {
     return resourceIdentifier
   }
 
-  private _resourceIdentifierFor(model: T) {
+  private _resourceIdentifierFor(model : T) {
     if (!model.klass.jsonapiType) {
       throw new Error(`Cannot serialize model: Undefined jsonapiType for model ${model}`)
     }
@@ -195,13 +195,13 @@ export class WritePayload<T extends JSORMBase> {
     return identifier
   }
 
-  private _pushInclude(include: any) {
+  private _pushInclude(include : any) {
     if (!this._isIncluded(include)) {
       this.included.push(include)
     }
   }
 
-  private _isIncluded(include: any) {
+  private _isIncluded(include : any) {
     this.included.forEach((incl) => {
       if (incl['type'] === include['type']) {
         if (incl['id'] === include['id'] || incl['temp-id'] === include['temp-id']) {
@@ -212,7 +212,7 @@ export class WritePayload<T extends JSORMBase> {
     return false
   }
 
-  private _eachAttribute(callback: (key : keyof T, val : any) => void) : void {
+  private _eachAttribute(callback : (key : keyof T, val : any) => void) : void {
     let modelAttrs = this.model.typedAttributes
 
     Object.keys(modelAttrs).forEach((key) => {

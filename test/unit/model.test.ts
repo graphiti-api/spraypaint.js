@@ -160,7 +160,7 @@ describe('Model', () => {
         @Attr title : string
         @BelongsTo({type: Person}) author : Person
 
-        screamTitle(exclamationPoints: number) : string {
+        screamTitle(exclamationPoints : number) : string {
           let loudness : string = ''
 
           for(let i = 0; i < exclamationPoints; i++) {
@@ -225,7 +225,7 @@ describe('Model', () => {
       describe('model inheritence', () => {
         @Model()
         class FrontPagePost extends Post {
-          @Attr() pageOrder: number
+          @Attr() pageOrder : number
 
           isFirst() {
             return this.pageOrder === 1
@@ -297,7 +297,7 @@ describe('Model', () => {
           author: hasOne({ type: Person })
         },
         methods: {
-          screamTitle(exclamationPoints: number) : string {
+          screamTitle(exclamationPoints : number) : string {
             let loudness : string = ''
 
             for(let i = 0; i < exclamationPoints; i++) {

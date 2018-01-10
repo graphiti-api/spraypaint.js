@@ -143,9 +143,9 @@ describe('authorization headers', function() {
 
     describe('local storage', function() {
       let localStorageMock : {
-        getItem: SinonSpy,
-        setItem: SinonSpy,
-        removeItem: SinonSpy,
+        getItem : SinonSpy,
+        setItem : SinonSpy,
+        removeItem : SinonSpy,
       }
 
       beforeEach(function() {

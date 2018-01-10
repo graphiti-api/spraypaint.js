@@ -6,15 +6,15 @@ import {
 } from '../jsonapi-spec'
 
 export class ValidationErrors {
-  model: JSORMBase
-  payload: JsonapiResponseDoc
+  model : JSORMBase
+  payload : JsonapiResponseDoc
 
-  constructor(model: JSORMBase, payload: JsonapiResponseDoc) {
+  constructor(model : JSORMBase, payload : JsonapiResponseDoc) {
     this.model = model
     this.payload = payload
   }
 
-  static apply(model: JSORMBase, payload: JsonapiResponseDoc) : void {
+  static apply(model : JSORMBase, payload : JsonapiResponseDoc) : void {
     let instance = new ValidationErrors(model, payload)
     instance.apply()
   }
@@ -48,7 +48,7 @@ export class ValidationErrors {
     errorsAccumulator[attribute] = meta['message']
   }
 
-  private _processRelationship(model: JSORMBase, meta: JsonapiErrorMeta) {
+  private _processRelationship(model : JSORMBase, meta : JsonapiErrorMeta) {
     let relatedObject = (<any>model)[meta.name]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find((r) => {

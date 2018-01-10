@@ -1,6 +1,13 @@
 {
   "rules": {
     "semicolon": [true, "never"],
-    "array-type": [true, "array"]
+    "array-type": [true, "array"],
+    "typedef-whitespace": [ true, {
+      "call-signature": "onespace",
+      "index-signature": "onespace",
+      "parameter": "onespace",
+      "property-declaration": "onespace",
+      "variable-declaration": "onespace"
+    }]
   }
 }

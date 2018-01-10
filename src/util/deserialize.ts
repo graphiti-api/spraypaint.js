@@ -7,12 +7,12 @@ import {
   JsonapiResponseDoc 
 } from '../jsonapi-spec'
 
-function deserialize(registry : JsonapiTypeRegistry, datum : JsonapiResource, payload: JsonapiResponseDoc) : JSORMBase {
+function deserialize(registry : JsonapiTypeRegistry, datum : JsonapiResource, payload : JsonapiResponseDoc) : JSORMBase {
   let deserializer = new Deserializer(registry, payload)
   return deserializer.deserialize(datum)
 }
 
-function deserializeInstance(instance: JSORMBase, resource : JsonapiResource, payload: JsonapiResponseDoc, includeDirective: IncludeScopeHash = {}) : JSORMBase {
+function deserializeInstance(instance : JSORMBase, resource : JsonapiResource, payload : JsonapiResponseDoc, includeDirective : IncludeScopeHash = {}) : JSORMBase {
   let deserializer = new Deserializer(instance.klass.typeRegistry, payload)
   return deserializer.deserializeInstance(instance, resource, includeDirective)
 }
@@ -43,7 +43,7 @@ class Deserializer {
     }
   }
 
-  instanceFor(type: string) : JSORMBase {
+  instanceFor(type : string) : JSORMBase {
     let klass = this.registry.get(type)
 
     if (!klass) {
@@ -53,7 +53,7 @@ class Deserializer {
     return new klass()
   }
 
-  relationshipInstanceFor(datum: JsonapiResource, records: JSORMBase[]) : JSORMBase {
+  relationshipInstanceFor(datum : JsonapiResource, records : JSORMBase[]) : JSORMBase {
     let record = records.find((r) => {
       return !!(r.klass.jsonapiType === datum.type &&
         (r.id && datum.id && r.id === datum.id || r.temp_id && datum['temp-id'] && r.temp_id === datum['temp-id']))
@@ -67,14 +67,14 @@ class Deserializer {
   }
 
   // todo null temp id
-  lookupAssociated(recordSet: JSORMBase[], record: JSORMBase) {
+  lookupAssociated(recordSet : JSORMBase[], record : JSORMBase) {
     return recordSet.find((r) => {
       return !!(r.klass.jsonapiType === record.klass.jsonapiType &&
         (r.temp_id && record.temp_id && r.temp_id === record.temp_id || r.id && record.id && r.id === record.id))
     })
   }
 
-  pushRelation(model: JSORMBase, associationName: string, record: JSORMBase) : void {
+  pushRelation(model : JSORMBase, associationName : string, record : JSORMBase) : void {
     let modelIdx = model as any
     let associationRecords = modelIdx[associationName]
     let existingInstance = this.lookupAssociated(associationRecords, record)
@@ -84,12 +84,12 @@ class Deserializer {
     }
   }
 
-  deserialize(datum: JsonapiResource) : JSORMBase {
+  deserialize(datum : JsonapiResource) : JSORMBase {
     let instance = this.instanceFor(datum.type)
     return this.deserializeInstance(instance, datum, {})
   }
 
-  deserializeInstance(instance: JSORMBase, datum: JsonapiResource, includeDirective: IncludeScopeHash = {}) : JSORMBase {
+  deserializeInstance(instance : JSORMBase, datum : JsonapiResource, includeDirective : IncludeScopeHash = {}) : JSORMBase {
     let existing = this.alreadyDeserialized(datum)
     if (existing) return existing
 
@@ -117,7 +117,7 @@ class Deserializer {
     return instance
   }
 
-  _removeDeletions(model: JSORMBase, includeDirective: IncludeScopeHash) {
+  _removeDeletions(model : JSORMBase, includeDirective : IncludeScopeHash) {
     Object.keys(includeDirective).forEach((key) => {
       let modelIdx = model as any
       let relatedObjects = modelIdx[key]
@@ -170,7 +170,7 @@ class Deserializer {
     })
   }
 
-  _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, callback : (name : string, data: JsonapiResource[] | JsonapiResource) => void) {
+  _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, callback : (name : string, data : JsonapiResource[] | JsonapiResource) => void) {
     for (let key in relationships) {
       let relationName = key
 

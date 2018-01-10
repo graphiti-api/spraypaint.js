@@ -14,41 +14,41 @@ export interface JsonapiResponse extends Response {
 }
 
 export class Request {
-  middleware: MiddlewareStack
+  middleware : MiddlewareStack
   private logger : ILogger
 
-  constructor(middleware: MiddlewareStack, logger : ILogger) {
+  constructor(middleware : MiddlewareStack, logger : ILogger) {
     this.middleware = middleware
     this.logger = logger
   }
 
-  get(url : string, options: RequestInit) : Promise<any> {
+  get(url : string, options : RequestInit) : Promise<any> {
     options.method = 'GET'
     return this._fetchWithLogging(url, options)
   }
 
-  post(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
+  post(url : string, payload : JsonapiRequestDoc, options : RequestInit) : Promise<any> {
     options.method = 'POST'
     options.body   = JSON.stringify(payload)
 
     return this._fetchWithLogging(url, options)
   }
 
-  put(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
+  put(url : string, payload : JsonapiRequestDoc, options : RequestInit) : Promise<any> {
     options.method = 'PUT'
     options.body   = JSON.stringify(payload)
 
     return this._fetchWithLogging(url, options)
   }
 
-  delete(url: string, options: RequestInit) : Promise<any> {
+  delete(url : string, options : RequestInit) : Promise<any> {
     options.method = 'DELETE'
     return this._fetchWithLogging(url, options)
   }
 
   // private
 
-  private _logRequest(verb: string, url: string) : void {
+  private _logRequest(verb : string, url : string) : void {
     this.logger.info(colorize('cyan', `${verb}: `) + colorize('magenta', url))
   }
 
@@ -56,7 +56,7 @@ export class Request {
     this.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)))
   }
 
-  private async _fetchWithLogging(url: string, options: RequestInit) : Promise<any> {
+  private async _fetchWithLogging(url : string, options : RequestInit) : Promise<any> {
     this._logRequest(options.method || 'UNDEFINED METHOD', url)
 
     let response = await this._fetch(url, options)
@@ -66,7 +66,7 @@ export class Request {
     return response
   }
 
-  private async _fetch(url: string, options: RequestInit) : Promise<any> {
+  private async _fetch(url : string, options : RequestInit) : Promise<any> {
     try {
       this.middleware.beforeFetch(url, options)
     } catch(e) {
@@ -86,7 +86,7 @@ export class Request {
     return response
   }
 
-  private async _handleResponse(response: Response) {
+  private async _handleResponse(response : Response) {
     let json
     try {
       json = await response.json()
@@ -118,11 +118,11 @@ export class Request {
 }
 
 class RequestError extends Error {
-  url: string
-  options: RequestInit
-  originalError: Error
+  url : string
+  options : RequestInit
+  originalError : Error
 
-  constructor(message: string, url: string, options: RequestInit, originalError: Error) {
+  constructor(message : string, url : string, options : RequestInit, originalError : Error) {
     super(message)
     this.stack = originalError.stack
     this.url = url
@@ -132,10 +132,10 @@ class RequestError extends Error {
 }
 
 class ResponseError extends Error {
-  response: Response | null
-  originalError: Error | undefined
+  response : Response | null
+  originalError : Error | undefined
 
-  constructor(response: Response | null, message?: string, originalError?: Error) {
+  constructor(response : Response | null, message? : string, originalError? : Error) {
     super(message || 'Invalid Response')
     this.response = response
     this.originalError = originalError

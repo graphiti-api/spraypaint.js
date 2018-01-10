@@ -1,6 +1,6 @@
 export interface StorageBackend {
   getItem(key : string) : string | null
-  setItem(key : string, value: string | null |undefined) : void
+  setItem(key : string, value : string | null |undefined) : void
   removeItem(key : string) : void 
 }
 
@@ -36,7 +36,7 @@ export class LocalStorage {
     }
   }
 
-  setJWT(value: string | undefined | null) : void {
+  setJWT(value : string | undefined | null) : void {
     if (this._jwtKey) { 
       if (value) { 
         this._backend.setItem(this._jwtKey, value) 
