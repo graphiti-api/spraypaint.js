@@ -15,10 +15,10 @@ import { camelize } from 'inflected'
 import { ILogger, logger as defaultLogger } from './logger';
 import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
 
-import { 
+import {
   JsonapiResource,
   JsonapiResponseDoc,
-  JsonapiResourceIdentifier, 
+  JsonapiResourceIdentifier,
 } from './jsonapi-spec'
 
 import { cloneDeep } from './util/clonedeep';
@@ -36,7 +36,7 @@ export interface ModelConfiguration {
   strictAttributes : boolean
   logger : ILogger
 }
-export type ModelConfigurationOptions = Partial<ModelConfiguration> 
+export type ModelConfigurationOptions = Partial<ModelConfiguration>
 
 export type ModelIdFields = 'id' | 'temp_id'
 
@@ -48,13 +48,13 @@ export type ModelAttrChanges<T> = {
   [P in keyof T]?: T[P][]
 } & Partial<Record<ModelIdFields, string[]>>
 
-export type ModelRecord<T extends JSORMBase> = 
+export type ModelRecord<T extends JSORMBase> =
   ModelAttrs<
-    keyof (Omit<T, keyof JSORMBase>), 
+    keyof (Omit<T, keyof JSORMBase>),
     T
   >
 
-export type ModelAttributeChangeSet<T extends JSORMBase> = 
+export type ModelAttributeChangeSet<T extends JSORMBase> =
   ModelAttrChanges<(Omit<T, keyof JSORMBase>)>
 
 export interface SaveOptions {
@@ -62,11 +62,11 @@ export interface SaveOptions {
 }
 
 export type ExtendedModel<
-  Superclass extends typeof JSORMBase, 
-  Attributes, 
+  Superclass extends typeof JSORMBase,
+  Attributes,
   Methods,
   Prototype=Superclass['prototype'] & Attributes & Methods
-> = 
+> =
   {
     new(attrs?: Record<string, any>) : Prototype
     prototype: Prototype
@@ -97,7 +97,7 @@ export function applyModelConfig<T extends typeof JSORMBase>(
 
   for(k in config) {
     ModelClass[k] = config[k]
-  }    
+  }
 
   if (ModelClass.isBaseClass === undefined) {
     ModelClass.setAsBase()
@@ -129,11 +129,11 @@ export class JSORMBase {
   private static _middlewareStack : MiddlewareStack
   private static _localStorageBackend? : StorageBackend
   private static _localStorage? : LocalStorage
-  
+
   static get localStorage() : LocalStorage {
-    if (!this._localStorage) {  
+    if (!this._localStorage) {
       if(!this._localStorageBackend) {
-        if (this.jwtLocalStorage) {
+        if (this.jwtLocalStorage && typeof localStorage !== 'undefined') {
           this._localStorageBackend = localStorage
         } else {
           this._localStorageBackend = new NullStorageBackend()
@@ -153,12 +153,12 @@ export class JSORMBase {
 
   /*
    *
-   * This is to allow for sane type checking in collaboration with the 
-   * isModelClass function exported below.  It is very hard to find out 
+   * This is to allow for sane type checking in collaboration with the
+   * isModelClass function exported below.  It is very hard to find out
    * whether something is a class of a certain type or subtype
-   * (as opposed to an instance of that class), so we set a magic prop on 
+   * (as opposed to an instance of that class), so we set a magic prop on
    * this for use around the codebase. For example, if you have a function:
-   * 
+   *
    * ``` typescript
    * function(arg : typeof JSORMBase | { foo : string }) {
    *   if(arg.isJSORMModel) {
@@ -166,7 +166,7 @@ export class JSORMBase {
    *   }
    * }
    * ```
-   * 
+   *
    */
   static readonly isJSORMModel : boolean = true
 
@@ -256,8 +256,8 @@ export class JSORMBase {
   }
 
   static extend<
-    T extends typeof JSORMBase, 
-    ExtendedAttrs, 
+    T extends typeof JSORMBase,
+    ExtendedAttrs,
     Methods,
     SuperType=T
   >(
@@ -269,7 +269,7 @@ export class JSORMBase {
     this.inherited(<any>Subclass)
 
     this.inherited(<any>Subclass)
-    
+
     let attrs : any = {}
     if (options.attrs) {
       for(let key in options.attrs) {
@@ -334,10 +334,10 @@ export class JSORMBase {
    * and other functions that will trigger changes.  In the case of vue, it intentionally avoids
    * resolving properties on the prototype chain and instead determines which it should override
    * using `Object.hasOwnProperty()`.  To get proper observability, we need to move all attribute
-   * methods plus a few other utility getters to the object itself. 
+   * methods plus a few other utility getters to the object itself.
    */
   private _copyPrototypeDescriptors() {
-    const attrs = this.klass.attributeList 
+    const attrs = this.klass.attributeList
 
     for (let key in attrs) {
       let attr = attrs[key];
@@ -345,8 +345,8 @@ export class JSORMBase {
     }
 
     [
-      'isPersisted', 
-      'isMarkedForDestruction', 
+      'isPersisted',
+      'isMarkedForDestruction',
       'isMarkedForDisassociation'
     ].forEach((property) => {
       let descriptor = Object.getOwnPropertyDescriptor(JSORMBase.prototype, property)
@@ -395,7 +395,7 @@ export class JSORMBase {
 
   /*
    * This is a (hopefully) temporary method for typescript users.
-   * 
+   *
    * Currently the attributes() setter takes an arbitrary hash which
    * may or may not include valid attributes. In non-strict mode, it
    * silently drops those that it doesn't know. This is all perfectly fine
@@ -420,7 +420,7 @@ export class JSORMBase {
       if (this.klass.camelizeKeys) {
         attributeName = camelize(key, false);
       }
-      
+
       if (key == 'id' || this.klass.attributeList[attributeName]) {
         (<any>this)[attributeName] = attrs[key];
       } else if (this.klass.strictAttributes) {
@@ -446,7 +446,7 @@ export class JSORMBase {
       throw new Error('Cannot build resource identifier for class. No JSONAPI Type specified.')
     }
 
-    return { 
+    return {
       id: this.id,
       type: this.klass.jsonapiType
      }
@@ -486,11 +486,11 @@ export class JSORMBase {
   dup() : this {
     return cloneDeep(this);
   }
-  
+
   /*
    *
    * Model Persistence Methods
-   * 
+   *
    */
   static fetchOptions() : RequestInit {
     let options = {
@@ -528,7 +528,7 @@ export class JSORMBase {
       let stack = this.baseClass._middlewareStack
 
       // Normally we want to use the middleware stack defined on the baseClass, but in the event
-      // that our subclass has overridden one or the other, we create a middleware stack that 
+      // that our subclass has overridden one or the other, we create a middleware stack that
       // replaces the normal filters with the class override.
       if (this.beforeFetch || this.afterFetch) {
         let before = this.beforeFetch ? [this.beforeFetch] : stack.beforeFilters
@@ -637,7 +637,7 @@ export class JSORMBase {
     } catch (err) {
       throw(err)
     }
-     
+
     return await this._handleResponse(response, () => {
       this.isPersisted = false;
     });
@@ -688,7 +688,7 @@ export class JSORMBase {
   private _middleware() : MiddlewareStack {
     return this.klass.middlewareStack
   }
-  
+
   // Todo:
   // * needs to recurse the directive
   // * remove the corresponding code from isPersisted and handle here (likely
@@ -697,7 +697,7 @@ export class JSORMBase {
   resetRelationTracking(includeDirective: Object) {
     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
   }
-} 
+}
 
 ;(<any>JSORMBase.prototype).klass = JSORMBase
 
