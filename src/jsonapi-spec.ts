@@ -1,4 +1,5 @@
 export type JsonapiResponseDoc = JsonapiCollectionDoc | JsonapiResourceDoc | JsonapiErrorDoc
+export type JsonapiSuccessDoc = JsonapiCollectionDoc | JsonapiResourceDoc
 export type JsonapiRequestDoc  = JsonapiResourceRequest
 
 export interface JsonapiDocMeta {
@@ -12,7 +13,7 @@ export interface JsonapiCollectionDoc extends JsonapiDocMeta {
 }
 
 export interface JsonapiResourceDoc extends JsonapiDocMeta {
-  data?: JsonapiResource | undefined
+  data: JsonapiResource
   errors?: undefined
 }
 

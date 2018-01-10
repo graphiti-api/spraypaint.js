@@ -4,10 +4,10 @@ import { JsonapiResponseDoc } from '../jsonapi-spec'
 
 export class RecordProxy<T extends JSORMBase> implements IResultProxy<T> {
   private _raw_json : JsonapiResponseDoc;
-  private _record : T | null;
+  private _record : T;
 
-  constructor (record : T | undefined | null, raw_json : JsonapiResponseDoc) {
-    this._record = (record || null)
+  constructor (record : T, raw_json : JsonapiResponseDoc) {
+    this._record = record
     this._raw_json = raw_json;
   }
 
@@ -15,7 +15,7 @@ export class RecordProxy<T extends JSORMBase> implements IResultProxy<T> {
     return this._raw_json;
   }
 
-  get data () : T | null {
+  get data () : T {
     return this._record;
   }
 

@@ -1,7 +1,7 @@
 import colorize from './util/colorize';
 import { MiddlewareStack } from './middleware-stack';
 import { ILogger, logger as defaultLogger } from './logger';
-import { 
+import {
   JsonapiResponseDoc,
   JsonapiRequestDoc
 } from './jsonapi-spec'
@@ -103,10 +103,14 @@ export class Request {
 
     if (response.status >= 500) {
       throw new ResponseError(response, 'Server Error')
-    } else if (response.status !== 422 && json['data'] === undefined) {
-      // Bad JSON, for instance an errors payload
       // Allow 422 since we specially handle validation errors
-      throw new ResponseError(response, 'invalid json')
+    } else if (response.status !== 422 && json['data'] === undefined) {
+      if (response.status === 404) {
+        throw new ResponseError(response, 'record not found')
+      } else {
+        // Bad JSON, for instance an errors payload
+        throw new ResponseError(response, 'invalid json')
+      }
     }
 
     ;(<any>response)['jsonPayload'] = json;

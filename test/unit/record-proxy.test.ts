@@ -45,21 +45,6 @@ describe('RecordProxy', function() {
       let record = new RecordProxy(modelRecord, personData)
       expect(record.data).to.be.instanceof(Person)
     })
-
-    context('record is null is null', function() {
-      beforeEach(() => {
-        personData = {
-          data: undefined
-        }
-
-        modelRecord = undefined
-      })
-
-      it('should assign data to null', function() {
-        let record = new RecordProxy(modelRecord, personData)
-        expect(record.data).to.eq(null)
-      })
-    })
   })
 
   describe('#meta', function() {
