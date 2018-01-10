@@ -1,9 +1,9 @@
-import { expect, sinon, fetchMock } from '../test-helper';
-import { Author, Book, Genre } from '../fixtures';
-import { tempId } from '../../src/util/temp-id';
+import { expect, sinon, fetchMock } from '../test-helper'
+import { Author, Book, Genre } from '../fixtures'
+import { tempId } from '../../src/util/temp-id'
 
 const resetMocks = function() {
-  fetchMock.restore();
+  fetchMock.restore()
 
   fetchMock.mock({
     matcher: '*',
@@ -83,15 +83,15 @@ const resetMocks = function() {
         ]
       }
     }
-  });
+  })
 }
 
 let instance : Author
-let tempIdIndex = 0;
+let tempIdIndex = 0
 describe('validations', function() {
   beforeEach(function () {
-    resetMocks();
-  });
+    resetMocks()
+  })
 
   beforeEach(function() {
     sinon.stub(tempId, 'generate').callsFake(function() {
@@ -107,29 +107,29 @@ describe('validations', function() {
   })
 
   afterEach(function() {
-    tempIdIndex = 0;
-    ;(<any>tempId.generate)['restore']();
+    tempIdIndex = 0
+    ;(<any>tempId.generate)['restore']()
   })
 
   it('applies errors to the instance', async function() {
     let isSuccess = await instance.save({ with: { books: 'genre' }})
 
-    expect(instance.isPersisted).to.eq(false);
-    expect(isSuccess).to.eq(false);
+    expect(instance.isPersisted).to.eq(false)
+    expect(isSuccess).to.eq(false)
     expect(instance.errors).to.deep.equal({
       firstName: 'cannot be blank',
       lastName: 'cannot be blank'
-    });
-  });
+    })
+  })
 
   describe('when camelizeKeys is false', function() {
     beforeEach(function() {
       instance.klass.camelizeKeys = false
-    });
+    })
 
     afterEach(function() {
       instance.klass.camelizeKeys = true
-    });
+    })
 
     it('does not camelize the error keys', async function() {
       await instance.save({ with: { books: 'genre' }})
@@ -137,63 +137,63 @@ describe('validations', function() {
       expect(instance.errors).to.deep.equal({
         first_name: 'cannot be blank',
         last_name: 'cannot be blank'
-      });
-    });
-  });
+      })
+    })
+  })
 
   it('clears errors on save', async function() {
     fetchMock.restore()
     fetchMock.mock({
       matcher: '*',
       response: { data: { id: '1', type: 'employees'} }
-    });
+    })
     instance.errors = { foo: 'bar' }
 
     await instance.save()
 
     expect(instance.errors).to.deep.eq({})
-  });
+  })
 
   it('instantiates a new error object instance after save', async function() {
-    let originalErrors = instance.errors = {foo: 'bar'};
-    let result = instance.save({ with: { books: 'genre' }});
-    let postSavePreValidateErrors = instance.errors;
+    let originalErrors = instance.errors = {foo: 'bar'}
+    let result = instance.save({ with: { books: 'genre' }})
+    let postSavePreValidateErrors = instance.errors
 
-    expect(postSavePreValidateErrors).not.to.equal(originalErrors);
+    expect(postSavePreValidateErrors).not.to.equal(originalErrors)
 
     await result
   })
 
   it('instantiates a new error object instance after validate', async function() {
-    let result = instance.save({ with: { books: 'genre' }});
-    let postSavePreValidateErrors = instance.errors;
+    let result = instance.save({ with: { books: 'genre' }})
+    let postSavePreValidateErrors = instance.errors
 
     await result
 
-    let postValidateErrors = instance.errors;
-    expect(postValidateErrors).not.to.equal(postSavePreValidateErrors);
+    let postValidateErrors = instance.errors
+    expect(postValidateErrors).not.to.equal(postSavePreValidateErrors)
   })
 
   it('applies errors to nested hasMany relationships', async function() {
     let isSuccess = await instance.save({ with: { books: 'genre' }})
 
-    expect(instance.isPersisted).to.eq(false);
-    expect(isSuccess).to.eq(false);
+    expect(instance.isPersisted).to.eq(false)
+    expect(isSuccess).to.eq(false)
     expect(instance.books[0].errors).to.deep.equal({
       title: 'cannot be blank',
-    });
-  });
+    })
+  })
 
   it('applies errors to nested belongsTo relationships', async function() {
     let isSuccess = await instance.save({ with: { books: 'genre' }})
 
-    expect(instance.isPersisted).to.eq(false);
-    expect(isSuccess).to.eq(false);
+    expect(instance.isPersisted).to.eq(false)
+    expect(isSuccess).to.eq(false)
 
     // note we're validating multiple properties
     expect(instance.books[0].genre.errors).to.deep.equal({
       name: 'cannot be blank',
       base: 'some error'
-    });
-  });
-});
+    })
+  })
+})

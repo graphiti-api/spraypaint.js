@@ -1,9 +1,9 @@
-import { expect, sinon } from '../test-helper';
+import { expect, sinon } from '../test-helper'
 import { JSORMBase } from '../../src/model'
 import { hasOne } from '../../src/associations'
 import { attr } from '../../src/attribute'
 import { JsonapiTypeRegistry } from '../../src/jsonapi-type-registry'
-import { StorageBackend } from '../../src/local-storage';
+import { StorageBackend } from '../../src/local-storage'
 import { JsonapiResource, JsonapiResponseDoc } from '../../src/index'
 
 import {
@@ -13,7 +13,7 @@ import {
   Author,
   Genre,
   Bio
-} from '../fixtures';
+} from '../fixtures'
 
 import { 
   Model, 
@@ -61,28 +61,28 @@ describe('Model', () => {
 
         describe('#getJWT', () => {
           beforeEach(() => {
-            BaseClass.jwt = 'g3tm3';
-          });
+            BaseClass.jwt = 'g3tm3'
+          })
 
           it('it grabs jwt from top-most parent', () => {
-            expect(SubClass.getJWT()).to.eq('g3tm3');
-          });
+            expect(SubClass.getJWT()).to.eq('g3tm3')
+          })
 
           describe('when no JWT owner', () => {
             it('returns undefined', () => {
               @Model()
               class NoJWT extends JSORMBase {}
 
-              expect(NoJWT.getJWT()).to.eq(undefined);
-            });
-          });
-        });
+              expect(NoJWT.getJWT()).to.eq(undefined)
+            })
+          })
+        })
 
         describe('#setJWT', () => {
           it('it sets jwt on the base class', () => {
-            SubClass.setJWT('n3wt0k3n');
-            expect(BaseClass.jwt).to.eq('n3wt0k3n');
-          });
+            SubClass.setJWT('n3wt0k3n')
+            expect(BaseClass.jwt).to.eq('n3wt0k3n')
+          })
           
           context('when user attempts to set jwt on JSORMBase', () => {
             it('throws an error', () => {
@@ -117,13 +117,13 @@ describe('Model', () => {
               })
 
               it('adds to localStorage', function() {
-                BaseClass.setJWT('n3wt0k3n');
+                BaseClass.setJWT('n3wt0k3n')
                 expect(backend.setItem).to.have.been.calledWith('MyJWT', 'n3wt0k3n')
               })
 
               context('when new token is undefined', () => {
                 it('correctly clears the token', function() {
-                  BaseClass.setJWT(undefined);
+                  BaseClass.setJWT(undefined)
                   expect(backend.removeItem).to.have.been.calledWith('MyJWT')
                 })
               })
@@ -149,7 +149,7 @@ describe('Model', () => {
               })
             })
           })
-        });
+        })
       })
 
       @Model()
@@ -465,33 +465,33 @@ describe('Model', () => {
     describe('Instance Behavior', () => {
       describe('isMarkedForDestruction', () => {
         it('toggles correctly', () => {
-          let instance = new Author();
+          let instance = new Author()
           expect(instance.isMarkedForDestruction).to.eq(false)
           instance.isMarkedForDestruction = true
           expect(instance.isMarkedForDestruction).to.eq(true)
           instance.isMarkedForDestruction = false
           expect(instance.isMarkedForDestruction).to.eq(false)
-        });
-      });
+        })
+      })
 
       describe('isMarkedForDisassociation', () => {
         it('toggles correctly', () => {
-          let instance = new Author();
+          let instance = new Author()
           expect(instance.isMarkedForDisassociation).to.eq(false)
           instance.isMarkedForDisassociation = true
           expect(instance.isMarkedForDisassociation).to.eq(true)
           instance.isMarkedForDisassociation = false
           expect(instance.isMarkedForDisassociation).to.eq(false)
-        });
-      });
+        })
+      })
 
       describe('#isType', () => {
         it('checks the jsonapiType of class', () => {
           let instance = new Author()
           expect(instance.isType('authors')).to.eq(true)
           expect(instance.isType('people')).to.eq(false)
-        });
-      });
+        })
+      })
 
     })
   })
@@ -620,61 +620,61 @@ describe('Model', () => {
           }
         }
       ]
-    };
+    }
 
     it('assigns id correctly', () => {
-      let instance = new Author();
-      instance.fromJsonapi(doc.data, doc);
-      expect(instance.id).to.eq('1');
-    });
+      let instance = new Author()
+      instance.fromJsonapi(doc.data, doc)
+      expect(instance.id).to.eq('1')
+    })
 
     it('instantiates the correct model for jsonapi type', () => {
-      let instance = ApplicationRecord.fromJsonapi(doc.data, doc);
-      expect(instance).to.be.instanceof(Author);
-    });
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
+      expect(instance).to.be.instanceof(Author)
+    })
 
     it('assigns attributes correctly', () => {
-      let instance = ApplicationRecord.fromJsonapi(doc.data, doc);
-      expect(instance.firstName).to.eq('Donald Budge');
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
+      expect(instance.firstName).to.eq('Donald Budge')
       expect(instance.attributes).to.eql({
         firstName: 'Donald Budge',
         nilly: null
       })
-    });
+    })
 
     it('camelizes relationship names', () => {
-      let instance = ApplicationRecord.fromJsonapi(doc.data, doc);
-      expect(instance.multiWords.length).to.eq(1);
-    });
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
+      expect(instance.multiWords.length).to.eq(1)
+    })
 
     it('does not assign unknown attributes', () => {
-      let instance = ApplicationRecord.fromJsonapi(doc.data, doc);
-      expect(instance).to.not.have.property('unknown');
-    });
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
+      expect(instance).to.not.have.property('unknown')
+    })
 
     it('does not assign unknown relationships', () => {
-      let instance = ApplicationRecord.fromJsonapi(doc.data, doc);
-      expect(instance).to.not.have.property('unknownrelationship');
-    });
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
+      expect(instance).to.not.have.property('unknownrelationship')
+    })
 
     it('does not blow up on null attributes', () => {
-      let instance = ApplicationRecord.fromJsonapi(doc.data, doc);
-      expect(instance.nilly).to.eq(null);
-    });
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
+      expect(instance.nilly).to.eq(null)
+    })
 
     it('assigns metadata correctly', () => {
-      let instance = ApplicationRecord.fromJsonapi(doc.data, doc);
+      let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
       expect(instance.__meta__).to.eql({
         big: true
       })
-    });
+    })
 
     it('assigns hasMany relationships correctly', () => {
       let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
       expect(instance.books.length).to.eq(2)
       let book = instance.books[0]
       expect(book).to.be.instanceof(Book)
-      expect(book.title).to.eq("Where's My Butt?"); 
+      expect(book.title).to.eq("Where's My Butt?") 
     })
 
     it('assigns hasMany relationships with same jsonapiType correctly', () => { 
@@ -690,14 +690,14 @@ describe('Model', () => {
       let genre = instance.genre
       expect(genre).to.be.instanceof(Genre)
       expect(genre.name).to.eq("Children's")
-    });
+    })
 
     it('assigns hasOnModelnships correctly', () => {
       let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
       let bio = instance.bio
       expect(bio).to.be.instanceof(Bio)
       expect(bio.description).to.eq("Some Dude.")
-    });
+    })
 
     it('assigns neste relationships correctly', () => {
       let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
@@ -706,8 +706,8 @@ describe('Model', () => {
       expect(authors[0]).to.be.instanceof(Author)
       expect(authors[1]).to.be.instanceof(Author)
       expect(authors[0].firstName).to.eq('Donald Budge')
-      expect(authors[1].firstName).to.eq('Maurice Sendak');
-    });
+      expect(authors[1].firstName).to.eq('Maurice Sendak')
+    })
 
     it('assigns duplicated nested relationships correctly', () => {
       let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
@@ -721,127 +721,127 @@ describe('Model', () => {
     it('skips relationships without data', () => {
       let instance = ApplicationRecord.fromJsonapi(doc.data, doc)
       expect(instance.tags).to.eql([])
-    });
+    })
 
     it('preserves other properties on the object', () => {
-      let instance : any = new Author({ id: '1' });
-      instance['fooble'] = 'bar';
-      let same = instance.fromJsonapi(doc.data, doc);
-      expect(same).to.eq(instance);
+      let instance : any = new Author({ id: '1' })
+      instance['fooble'] = 'bar'
+      let same = instance.fromJsonapi(doc.data, doc)
+      expect(same).to.eq(instance)
 
-      expect(instance.id).to.eq('1');
-      expect(instance.firstName).to.eq('Donald Budge');
-      expect(instance['fooble']).to.eq('bar');
-    });
+      expect(instance.id).to.eq('1')
+      expect(instance.firstName).to.eq('Donald Budge')
+      expect(instance['fooble']).to.eq('bar')
+    })
  
     it('preserves other properties on relationships', () => {
-      let genre : any = new Genre({ id: '1' });
+      let genre : any = new Genre({ id: '1' })
       genre['bar'] = 'baz'
-      let book : any = new Book({ id: '1', genre: genre });
+      let book : any = new Book({ id: '1', genre: genre })
       book['foo'] = 'bar'
-      let instance : any= new Author({ id: '1', books: [book] });
-      instance.fromJsonapi(doc.data, doc);
+      let instance : any= new Author({ id: '1', books: [book] })
+      instance.fromJsonapi(doc.data, doc)
 
-      expect(instance.books[0]).to.eq(book);
-      expect(instance.books[0].genre).to.eq(genre);
+      expect(instance.books[0]).to.eq(book)
+      expect(instance.books[0].genre).to.eq(genre)
 
-      expect(book.title).to.eq("Where's My Butt?");
-      expect(book['foo']).to.eq('bar');
-      expect(genre['bar']).to.eq('baz');
+      expect(book.title).to.eq("Where's My Butt?")
+      expect(book['foo']).to.eq('bar')
+      expect(genre['bar']).to.eq('baz')
     })
   })
 
   describe('changes', () => {
     describe('when unpersisted', () => {
       it('counts everything but nulls', () => {
-        let instance = new Author({ firstName: 'foo' });
+        let instance = new Author({ firstName: 'foo' })
         expect(instance.changes()).to.deep.equal({
           firstName: [null, 'foo']
-        });
-      });
-    });
+        })
+      })
+    })
 
     describe('when persisted', () => {
       it('only counts dirty attrs', () => {
-        let instance = new Author({ firstName: 'foo' });
+        let instance = new Author({ firstName: 'foo' })
         instance.isPersisted = true
-        expect(instance.changes()).to.deep.equal({});
+        expect(instance.changes()).to.deep.equal({})
         instance.firstName = 'bar'
 
         expect(instance.changes()).to.deep.equal({
           firstName: ['foo', 'bar']
-        });
+        })
         instance.isPersisted = true
-        expect(instance.changes()).to.deep.equal({});
-      });
-    });
-  });
+        expect(instance.changes()).to.deep.equal({})
+      })
+    })
+  })
 
   describe('isDirty', () => {
     describe('when an attribute changes', () => {
       it('is marked as dirty', () => {
-        let instance = new Author();
+        let instance = new Author()
         instance.isPersisted = true
-        expect(instance.isDirty()).to.eq(false);
-        instance.firstName = 'Joe';
-        expect(instance.isDirty()).to.eq(true);
+        expect(instance.isDirty()).to.eq(false)
+        instance.firstName = 'Joe'
+        expect(instance.isDirty()).to.eq(true)
         instance.isPersisted = true
-      });
-    });
+      })
+    })
 
     describe('when not persisted', () => {
       describe('and no attributes', () => {
         it('is not dirty', () => {
-          let instance = new Author();
-          expect(instance.isDirty()).to.eq(false);
-        });
-      });
+          let instance = new Author()
+          expect(instance.isDirty()).to.eq(false)
+        })
+      })
 
       describe('and has attributes', () => {
         it('is dirty', () => {
-          let instance = new Author({ firstName: 'Stephen' });
-          expect(instance.isDirty()).to.eq(true);
+          let instance = new Author({ firstName: 'Stephen' })
+          expect(instance.isDirty()).to.eq(true)
           instance.isPersisted = true
-          expect(instance.isDirty()).to.eq(false);
-        });
-      });
-    });
+          expect(instance.isDirty()).to.eq(false)
+        })
+      })
+    })
 
     describe('when dirty, then persisted', () => {
       it('is no longer dirty', () => {
-        let instance = new Author();
-        instance.firstName = 'foo';
-        expect(instance.isDirty()).to.eq(true);
-      });
-    });
+        let instance = new Author()
+        instance.firstName = 'foo'
+        expect(instance.isDirty()).to.eq(true)
+      })
+    })
 
     describe('when marked for destruction', () => {
       it('is dirty', () => {
-        let instance = new Author();
+        let instance = new Author()
         instance.isPersisted = true
-        expect(instance.isDirty()).to.eq(false);
+        expect(instance.isDirty()).to.eq(false)
         instance.isMarkedForDestruction = true
-        expect(instance.isDirty()).to.eq(true);
-      });
-    });
+        expect(instance.isDirty()).to.eq(true)
+      })
+    })
 
     describe('when marked for disassociation', () => {
       it('is dirty', () => {
-        let instance = new Author();
+        let instance = new Author()
         instance.isPersisted = true
-        expect(instance.isDirty()).to.eq(false);
+        expect(instance.isDirty()).to.eq(false)
         instance.isMarkedForDisassociation = true
-        expect(instance.isDirty()).to.eq(true);
-      });
-    });
+        expect(instance.isDirty()).to.eq(true)
+      })
+    })
 
     describe('when passed relationships', () => {
       let instance : Author
 
       beforeEach(() => {
-        let book = new Book({ id: 1, title: 'original' });
-        instance = new Author({ books: [book] });
-      });
+        let book = new Book({ id: 1, title: 'original' })
+        instance = new Author({ books: [book] })
+      })
 
       it('works with string/object/array include graph', () => {
         instance.books[0].isPersisted = true
@@ -855,111 +855,111 @@ describe('Model', () => {
         instance.isPersisted = true
 
         let check = () => {
-          return instance.isDirty(['genre', { books: 'genre' }]);
+          return instance.isDirty(['genre', { books: 'genre' }])
         }
 
-        expect(check()).to.eq(false);
-        instance.genre.name = 'changed';
-        expect(check()).to.eq(true);
+        expect(check()).to.eq(false)
+        instance.genre.name = 'changed'
+        expect(check()).to.eq(true)
         instance.genre.isPersisted = true
 
-        expect(check()).to.eq(false);
-        instance.books[0].title = 'changed';
-        expect(check()).to.eq(true);
+        expect(check()).to.eq(false)
+        instance.books[0].title = 'changed'
+        expect(check()).to.eq(true)
         instance.books[0].isPersisted = true
 
-        expect(check()).to.eq(false);
-        instance.books[0].genre.name = 'changed';
-        expect(check()).to.eq(true);
-      });
+        expect(check()).to.eq(false)
+        instance.books[0].genre.name = 'changed'
+        expect(check()).to.eq(true)
+      })
 
       it('is not dirty when relationship not passed, even if relationship is dirty', () => {
         instance.books[0].isPersisted = true
         instance.isPersisted = true
 
-        expect(instance.isDirty('genre')).to.eq(false);
-        expect(instance.isDirty('books')).to.eq(false);
-        instance.books[0].title = 'dirty';
-        expect(instance.isDirty('books')).to.eq(true);
-        expect(instance.isDirty('genre')).to.eq(false);
-      });
+        expect(instance.isDirty('genre')).to.eq(false)
+        expect(instance.isDirty('books')).to.eq(false)
+        instance.books[0].title = 'dirty'
+        expect(instance.isDirty('books')).to.eq(true)
+        expect(instance.isDirty('genre')).to.eq(false)
+      })
 
       describe('when a hasMany relationship adds a new unpersisted member', () => {
         it('is dirty', () => {
-          instance.books = [];
+          instance.books = []
           instance.isPersisted = true
-          expect(instance.isDirty('books')).to.eq(false);
-          instance.books.push(new Book({ title: 'asdf' }));
-          expect(instance.isDirty('books')).to.eq(true);
-        });
-      });
+          expect(instance.isDirty('books')).to.eq(false)
+          instance.books.push(new Book({ title: 'asdf' }))
+          expect(instance.isDirty('books')).to.eq(true)
+        })
+      })
 
       describe('when a hasMany relationship adds a new persisted member', () => {
         it('is dirty', () => {
-          let instance = new Author({ id: 1 });
+          let instance = new Author({ id: 1 })
           instance.isPersisted = true
-          instance.books = [];
+          instance.books = []
           instance.isPersisted = true
-          expect(instance.isDirty('books')).to.eq(false);
-          let book = new Book({ id: 99 });
+          expect(instance.isDirty('books')).to.eq(false)
+          let book = new Book({ id: 99 })
           book.isPersisted = true
-          instance.books.push(book);
+          instance.books.push(book)
 
-          expect(instance.isDirty('books')).to.eq(true);
+          expect(instance.isDirty('books')).to.eq(true)
           instance.isPersisted = true
-          expect(instance.isDirty('books')).to.eq(false);
-        });
-      });
+          expect(instance.isDirty('books')).to.eq(false)
+        })
+      })
 
       describe('when a belongsTo changes a persisted member', () => {
         it('is dirty', () => {
-          let instance = new Author();
-          let genre = new Genre({ id: 1 });
+          let instance = new Author()
+          let genre = new Genre({ id: 1 })
           genre.isPersisted = true
-          let otherGenre = new Genre({ id: 2 });
+          let otherGenre = new Genre({ id: 2 })
           otherGenre.isPersisted = true
 
           instance.genre = genre
           instance.isPersisted = true
 
-          expect(instance.isDirty()).to.eq(false);
-          instance.genre = otherGenre;
-          expect(instance.isDirty('genre')).to.eq(true);
-          expect(instance.isDirty()).to.eq(false);
+          expect(instance.isDirty()).to.eq(false)
+          instance.genre = otherGenre
+          expect(instance.isDirty('genre')).to.eq(true)
+          expect(instance.isDirty()).to.eq(false)
 
           instance.isPersisted = true
-          expect(instance.isDirty('genre')).to.eq(false);
-        });
-      });
+          expect(instance.isDirty('genre')).to.eq(false)
+        })
+      })
 
       describe('when a hasMany relationship has a member marked for destruction', () => {
         it('is dirty', () => {
-          let book = new Book({ id: 1 });
+          let book = new Book({ id: 1 })
           book.isPersisted = true
-          instance.books = [book];
+          instance.books = [book]
           instance.isPersisted = true
 
-          expect(instance.isDirty('books')).to.eq(false);
+          expect(instance.isDirty('books')).to.eq(false)
           book.isMarkedForDestruction = true
-          expect(instance.isDirty('books')).to.eq(true);
-          expect(instance.isDirty()).to.eq(false);
-        });
-      });
+          expect(instance.isDirty('books')).to.eq(true)
+          expect(instance.isDirty()).to.eq(false)
+        })
+      })
 
       describe('when a hasMany relationship has a member marked for disassociation', () => {
         it('is dirty', () => {
-          let book = new Book({ id: 1 });
+          let book = new Book({ id: 1 })
           book.isPersisted = true
-          instance.books = [book];
+          instance.books = [book]
           instance.isPersisted = true
 
-          expect(instance.isDirty('books')).to.eq(false);
+          expect(instance.isDirty('books')).to.eq(false)
           book.isMarkedForDisassociation = true
-          expect(instance.isDirty('books')).to.eq(true);
-          expect(instance.isDirty()).to.eq(false);
-        });
-      });
-    });
+          expect(instance.isDirty('books')).to.eq(true)
+          expect(instance.isDirty()).to.eq(false)
+        })
+      })
+    })
 
     describe('when a has-many is marked for destruction', () => {
       let newDoc : JsonapiResponseDoc
@@ -967,11 +967,11 @@ describe('Model', () => {
       let book : Book
 
       beforeEach(() => {
-        book = new Book({ id: '1' });
+        book = new Book({ id: '1' })
         book.isPersisted = true
         book.isMarkedForDestruction = true
 
-        instance = new Author({ books: [book] });
+        instance = new Author({ books: [book] })
 
         newDoc = {
           data: {
@@ -979,24 +979,24 @@ describe('Model', () => {
             type: 'authors'
           }
         }
-      });
+      })
 
       describe('when the relation is part of the include directive', () => {
         it('is removed from the array', () => {
-          expect(instance.books.length).to.eq(1);
-          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: {} });
-          expect(instance.books.length).to.eq(0);
-        });
-      });
+          expect(instance.books.length).to.eq(1)
+          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: {} })
+          expect(instance.books.length).to.eq(0)
+        })
+      })
 
       describe('when the relation is not part of the include directive', () => {
         it('is NOT removed from the array', () => {
-          expect(instance.books.length).to.eq(1);
-          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, {});
-          expect(instance.books.length).to.eq(1);
-        });
-      });
-    });
+          expect(instance.books.length).to.eq(1)
+          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, {})
+          expect(instance.books.length).to.eq(1)
+        })
+      })
+    })
 
     describe('when a has-many is marked for disassociation', () => {
       let newDoc : JsonapiResponseDoc
@@ -1004,11 +1004,11 @@ describe('Model', () => {
       let book : Book
 
       beforeEach(() => {
-        book = new Book({ id: '1' });
+        book = new Book({ id: '1' })
         book.isPersisted = true
         book.isMarkedForDisassociation = true
 
-        instance = new Author({ books: [book] });
+        instance = new Author({ books: [book] })
 
         newDoc = {
           data: {
@@ -1016,24 +1016,24 @@ describe('Model', () => {
             type: 'authors'
           }
         }
-      });
+      })
 
       describe('when the relation is part of the include directive', () => {
         it('is removed from the array', () => {
-          expect(instance.books.length).to.eq(1);
-          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: {} });
-          expect(instance.books.length).to.eq(0);
-        });
-      });
+          expect(instance.books.length).to.eq(1)
+          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: {} })
+          expect(instance.books.length).to.eq(0)
+        })
+      })
 
       describe('when the relation is not part of the include directive', () => {
         it('is NOT removed from the array', () => {
-          expect(instance.books.length).to.eq(1);
-          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, {});
-          expect(instance.books.length).to.eq(1);
-        });
-      });
-    });
+          expect(instance.books.length).to.eq(1)
+          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, {})
+          expect(instance.books.length).to.eq(1)
+        })
+      })
+    })
 
     describe('when a belongs-to is marked for destruction', function() {
       let newDoc : JsonapiResponseDoc
@@ -1041,14 +1041,14 @@ describe('Model', () => {
       let book : Book
 
       beforeEach(function() {
-        let genre = new Genre({ id: '1' });
+        let genre = new Genre({ id: '1' })
         genre.isPersisted = true
         genre.isMarkedForDestruction = true
 
-        book = new Book({ id: '1', genre: genre });
+        book = new Book({ id: '1', genre: genre })
         book.isPersisted = true
 
-        instance = new Author({ books: [book] });
+        instance = new Author({ books: [book] })
 
         newDoc = {
           data: {
@@ -1070,25 +1070,25 @@ describe('Model', () => {
             }
           ]
         }
-      });
+      })
 
       it('is set to null', function() {
-        expect(instance.books[0].genre).to.be.instanceof(Genre);
-        instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }});
-        expect(instance.books[0].genre).to.eq(null);
-      });
+        expect(instance.books[0].genre).to.be.instanceof(Genre)
+        instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
+        expect(instance.books[0].genre).to.eq(null)
+      })
 
       describe('within a nested destruction', function() {
         beforeEach(function() {
           book.isMarkedForDestruction = true
-        });
+        })
 
         it('is removed via the parent', function() {
-          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }});
-          expect(instance.books.length).to.eq(0);
-        });
-      });
-    });
+          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
+          expect(instance.books.length).to.eq(0)
+        })
+      })
+    })
 
     describe('when a belongs-to is marked for disassociation', function() {
       let newDoc : JsonapiResponseDoc
@@ -1097,14 +1097,14 @@ describe('Model', () => {
 
 
       beforeEach(function() {
-        let genre = new Genre({ id: '1' });
+        let genre = new Genre({ id: '1' })
         genre.isPersisted = true
         genre.isMarkedForDisassociation = true
 
-        book = new Book({ id: '1', genre: genre });
+        book = new Book({ id: '1', genre: genre })
         book.isPersisted = true
 
-        instance = new Author({ books: [book] });
+        instance = new Author({ books: [book] })
 
         newDoc = {
           data: {
@@ -1126,25 +1126,25 @@ describe('Model', () => {
             }
           ]
         }
-      });
+      })
 
       it('is set to null', function() {
-        expect(instance.books[0].genre).to.be.instanceof(Genre);
-        instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }});
-        expect(instance.books[0].genre).to.eq(null);
-      });
+        expect(instance.books[0].genre).to.be.instanceof(Genre)
+        instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
+        expect(instance.books[0].genre).to.eq(null)
+      })
 
       describe('within a nested destruction', function() {
         beforeEach(function() {
           book.isMarkedForDisassociation = true
-        });
+        })
 
         it('is removed via the parent', function() {
-          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }});
-          expect(instance.books.length).to.eq(0);
-        });
-      });
-    });
+          instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
+          expect(instance.books.length).to.eq(0)
+        })
+      })
+    })
   })
 
   describe('#relationshipResourceIdentifiers()', () => {
@@ -1159,42 +1159,42 @@ describe('Model', () => {
 
     describe('when no relations set', () => {
       it('is empty', () => {
-        instance = new RelationGraph();
-        let relationNames = Object.keys(instance.relationships);
+        instance = new RelationGraph()
+        let relationNames = Object.keys(instance.relationships)
         expect(instance.relationshipResourceIdentifiers(relationNames))
-          .to.deep.equal({});
-      });
-    });
+          .to.deep.equal({})
+      })
+    })
 
     describe('when relations set', () => {
       it('returns correct object', () => {
-        let author = new Author({ id: 1 });
+        let author = new Author({ id: 1 })
         author.isPersisted = true
-        let book = new Book({ id: 1 });
+        let book = new Book({ id: 1 })
         book.isPersisted = true
-        let bio = new Bio({ id: 1 });
+        let bio = new Bio({ id: 1 })
         bio.isPersisted = true
         instance = new RelationGraph({ author, bio, books: [book] })
-        let relationNames = Object.keys(instance.relationships);
+        let relationNames = Object.keys(instance.relationships)
         expect(instance.relationshipResourceIdentifiers(relationNames)).to.deep.equal({
           author: [{ id: 1, type: 'authors' }],
           books: [{ id: 1, type: 'books' }],
           bio: [{ id: 1, type: 'bios' }]
-        });
-      });
+        })
+      })
 
       it('does not contain identifiers without ids', () => {
-        let book1 = new Book({ id: 1 });
-        let book2 = new Book();
+        let book1 = new Book({ id: 1 })
+        let book2 = new Book()
         book1.isPersisted = true
-        instance = new RelationGraph({ books: [book1, book2] });
-        let relationNames = Object.keys(instance.relationships);
+        instance = new RelationGraph({ books: [book1, book2] })
+        let relationNames = Object.keys(instance.relationships)
         expect(instance.relationshipResourceIdentifiers(relationNames)).to.deep.equal({
           books: [{ id: 1, type: 'books' }]
-        });
-      });
-    });
-  });
+        })
+      })
+    })
+  })
 
   describe('#url', () => {
     context('Default base URL generation method', () => {
@@ -1226,16 +1226,16 @@ describe('Model', () => {
   describe('#fetchOptions', () => {
     context('jwt is set', () => {
       beforeEach(() => {
-        ApplicationRecord.jwt = 'g3tm3';
-      });
+        ApplicationRecord.jwt = 'g3tm3'
+      })
 
       afterEach(() => {
-        ApplicationRecord.jwt = undefined;
-      });
+        ApplicationRecord.jwt = undefined
+      })
 
       it('sets the auth header', () => {
-        expect((<any>Author.fetchOptions().headers).Authorization).to.eq('Token token="g3tm3"');
-      });
+        expect((<any>Author.fetchOptions().headers).Authorization).to.eq('Token token="g3tm3"')
+      })
     })
 
     it('includes the content headers', () => {

@@ -1,6 +1,6 @@
-import { Attribute, AttrRecord, Attr } from './attribute';
-import { JSORMBase } from './model';
-import { JsonapiTypeRegistry } from './jsonapi-type-registry';
+import { Attribute, AttrRecord, Attr } from './attribute'
+import { JSORMBase } from './model'
+import { JsonapiTypeRegistry } from './jsonapi-type-registry'
 
 export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
   type? : Attr<T>
@@ -20,7 +20,7 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
   private _klass : typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {
-    super(options);
+    super(options)
 
     if (options.jsonapiType) {
       this.jsonapiType = options.jsonapiType
@@ -39,17 +39,17 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T> imp
   }
 
   getter(context: JSORMBase) {
-    return context.relationships[this.name];
+    return context.relationships[this.name]
   }
 
   setter(context: JSORMBase, val: any) : void {
     if (val && !val.hasOwnProperty('isRelationship')) {
       if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
-        val = new this.klass(val);
+        val = new this.klass(val)
       }
-      context.relationships[this.name] = val;
+      context.relationships[this.name] = val
     } else if (val === null || val === undefined) {
-      context.relationships[this.name] = val;
+      context.relationships[this.name] = val
     }
   }
 }
@@ -61,7 +61,7 @@ export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements
   private _klass : typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {
-    super(options as any);
+    super(options as any)
 
     if (options.jsonapiType) {
       this.jsonapiType = options.jsonapiType
@@ -82,21 +82,21 @@ export class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements
   getter(context: JSORMBase) {
     let gotten = context.relationships[this.name]
     if (!gotten) {
-      this.setter(context, []);
+      this.setter(context, [])
       return context.relationships[this.name]
     } else {
-      return gotten;
+      return gotten
     }
   }
 
   setter(context: JSORMBase, val: any) : void {
     if (val && !val.hasOwnProperty('isRelationship')) {
       if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
-        val = new this.klass(val);
+        val = new this.klass(val)
       }
-      context.relationships[this.name] = val;
+      context.relationships[this.name] = val
     } else if (val === null || val === undefined) {
-      context.relationships[this.name] = val;
+      context.relationships[this.name] = val
     }
   }
 }

@@ -5,7 +5,7 @@ import {
   hasMany, 
   belongsTo, 
   hasOne 
-} from '../src/index';
+} from '../src/index'
 
 import { 
   Attr,
@@ -23,8 +23,8 @@ export class ApplicationRecord extends JSORMBase {
 
 @Model()
 export class Person extends ApplicationRecord {
-  static endpoint = '/v1/people';
-  static jsonapiType = 'people';
+  static endpoint = '/v1/people'
+  static jsonapiType = 'people'
 
   @Attr firstName : string | null
   @Attr lastName : string | null
@@ -32,7 +32,7 @@ export class Person extends ApplicationRecord {
 
 @Model()
 export class PersonWithExtraAttr extends Person {
-  @Attr({persist: false}) extraThing: string;
+  @Attr({persist: false}) extraThing: string
 }
 
 @Model({camelizeKeys: false})
@@ -56,7 +56,7 @@ export class Author extends Person {
 
 @Model()
 export class Book extends ApplicationRecord {
-  static jsonapiType = 'books';
+  static jsonapiType = 'books'
 
   @Attr title: string
 
@@ -82,11 +82,11 @@ export const NonFictionAuthor = Author.extend({
     genre:         belongsTo({type: 'genres'}),
     bio:           hasOne({type: 'bios'})
   }
-});
+})
 
 @Model()
 export class Genre extends ApplicationRecord {
-  static jsonapiType = 'genres';
+  static jsonapiType = 'genres'
 
   @Attr name : string 
   @HasMany('authors') authors: any
@@ -94,23 +94,23 @@ export class Genre extends ApplicationRecord {
 
 @Model()
 export class Bio extends ApplicationRecord {
-  static jsonapiType = 'bios';
+  static jsonapiType = 'bios'
 
   @Attr description : string 
 }
 
 @Model()
 export class Tag extends ApplicationRecord {
-  static jsonapiType = 'tags';
+  static jsonapiType = 'tags'
 
   @Attr name: string 
 }
 
 @Model()
 export class MultiWord extends ApplicationRecord {
-  static jsonapiType = 'multi_words';
+  static jsonapiType = 'multi_words'
 }
 
-export const TestJWTSubclass = ApplicationRecord.extend({});
+export const TestJWTSubclass = ApplicationRecord.extend({})
 
-export const NonJWTOwner = JSORMBase.extend({});
+export const NonJWTOwner = JSORMBase.extend({})

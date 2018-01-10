@@ -3,7 +3,7 @@ export function nonenumerable(target: any, key: string) {
   // (otherwise assignment in object will override property in prototype)
   Object.defineProperty(target, key, {
     get: function() {
-      return undefined;
+      return undefined
     },
     set: function(this: any, val) {
       // here we have reference to instance and can set property directly to it
@@ -11,9 +11,9 @@ export function nonenumerable(target: any, key: string) {
         value: val,
         writable: true,
         enumerable: false,
-      });
+      })
     },
     configurable: true,
     enumerable: false,
-  });
+  })
 }

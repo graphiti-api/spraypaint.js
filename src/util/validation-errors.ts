@@ -1,4 +1,4 @@
-import { JSORMBase } from '../model';
+import { JSORMBase } from '../model'
 import { camelize } from 'inflected'
 import { 
   JsonapiResponseDoc,
@@ -6,17 +6,17 @@ import {
 } from '../jsonapi-spec'
 
 export class ValidationErrors {
-  model: JSORMBase;
+  model: JSORMBase
   payload: JsonapiResponseDoc
 
   constructor(model: JSORMBase, payload: JsonapiResponseDoc) {
-    this.model = model;
-    this.payload = payload;
+    this.model = model
+    this.payload = payload
   }
 
   static apply(model: JSORMBase, payload: JsonapiResponseDoc) : void {
-    let instance = new ValidationErrors(model, payload);
-    instance.apply();
+    let instance = new ValidationErrors(model, payload)
+    instance.apply()
   }
 
   apply() {
@@ -29,11 +29,11 @@ export class ValidationErrors {
       let metaRelationship = meta.relationship
 
       if (metaRelationship) {
-        this._processRelationship(this.model, metaRelationship);
+        this._processRelationship(this.model, metaRelationship)
       } else {
-        this._processResource(errorsAccumulator, meta);
+        this._processResource(errorsAccumulator, meta)
       }
-    });
+    })
 
     this.model.errors = errorsAccumulator
   }
@@ -45,22 +45,22 @@ export class ValidationErrors {
       attribute = camelize(attribute, false)
     }
 
-    errorsAccumulator[attribute] = meta['message'];
+    errorsAccumulator[attribute] = meta['message']
   }
 
   private _processRelationship(model: JSORMBase, meta: JsonapiErrorMeta) {
     let relatedObject = (<any>model)[meta.name]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find((r) => {
-        return (r.id === meta['id'] || r.temp_id === meta['temp-id']);
-      });
+        return (r.id === meta['id'] || r.temp_id === meta['temp-id'])
+      })
     }
 
     if (meta['relationship']) {
-      this._processRelationship(relatedObject, meta['relationship']);
+      this._processRelationship(relatedObject, meta['relationship'])
     } else {
       let relatedAccumulator : Record<string, string> = {}
-      this._processResource(relatedAccumulator, meta);
+      this._processResource(relatedAccumulator, meta)
 
       // make sure to assign a new error object, instead of mutating
       // the existing one, otherwise js frameworks with object tracking

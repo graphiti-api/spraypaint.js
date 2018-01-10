@@ -1,7 +1,7 @@
-import { JSORMBase, ModelRecord } from '../model';
-import { IncludeDirective, IncludeScopeHash } from './include-directive';
-import { IncludeScope } from '../scope';
-import { tempId } from './temp-id';
+import { JSORMBase, ModelRecord } from '../model'
+import { IncludeDirective, IncludeScopeHash } from './include-directive'
+import { IncludeScope } from '../scope'
+import { tempId } from './temp-id'
 import { underscore } from 'inflected'
 import {
   JsonapiRequestDoc,
@@ -31,70 +31,70 @@ export class WritePayload<T extends JSORMBase> {
     let attrs : ModelRecord<T> = {}
 
     this._eachAttribute((key, value) => {
-      let snakeKey    = underscore(key);
+      let snakeKey    = underscore(key)
 
       if (!this.model.isPersisted || this.model.changes()[key]) {
-        attrs[snakeKey] = value;
+        attrs[snakeKey] = value
       }
-    });
+    })
 
-    return attrs;
+    return attrs
   }
 
   removeDeletions(model: T, includeDirective: IncludeScope) {
     Object.keys(includeDirective).forEach((key) => {
-      let nested = (<any>includeDirective)[key];
+      let nested = (<any>includeDirective)[key]
 
       let modelIdx = (<any>model)
-      let relatedObjects = modelIdx[key];
+      let relatedObjects = modelIdx[key]
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
             if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
-              modelIdx[key].splice(index, 1);
+              modelIdx[key].splice(index, 1)
             } else {
-              this.removeDeletions(relatedObject, nested);
+              this.removeDeletions(relatedObject, nested)
             }
-          });
+          })
         } else {
-          let relatedObject = relatedObjects;
+          let relatedObject = relatedObjects
           if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
-            modelIdx[key] = null;
+            modelIdx[key] = null
           } else {
-            this.removeDeletions(relatedObject, nested);
+            this.removeDeletions(relatedObject, nested)
           }
         }
       }
-    });
+    })
   }
 
   postProcess() {
-    this.removeDeletions(this.model, this.includeDirective);
-    this.model.resetRelationTracking(this.includeDirective);
+    this.removeDeletions(this.model, this.includeDirective)
+    this.model.resetRelationTracking(this.includeDirective)
   }
 
   relationships() : Object {
-    let _relationships : any = {};
+    let _relationships : any = {}
 
     Object.keys(this.includeDirective).forEach((key : any) => {
-      let nested = (<any>this.includeDirective)[key];
+      let nested = (<any>this.includeDirective)[key]
 
       let data : any
-      let relatedModels = (<any>this.model)[key];
+      let relatedModels = (<any>this.model)[key]
       if (relatedModels) {
         if (Array.isArray(relatedModels)) {
-          data = [];
+          data = []
           relatedModels.forEach((relatedModel) => {
             if (this.model.hasDirtyRelation(key, relatedModel) || relatedModel.isDirty(nested)) {
-              data.push(this._processRelatedModel(relatedModel, nested));
+              data.push(this._processRelatedModel(relatedModel, nested))
             }
-          });
-          if (data.length === 0) data = null;
+          })
+          if (data.length === 0) data = null
         } else {
           // Either the related model is dirty, or it's a dirty relation
           // (maybe the "department" is not dirty, but the employee changed departments
           if (this.model.hasDirtyRelation(key, relatedModels) || relatedModels.isDirty(nested)) {
-            data = this._processRelatedModel(relatedModels, nested);
+            data = this._processRelatedModel(relatedModels, nested)
           }
         }
 
@@ -102,9 +102,9 @@ export class WritePayload<T extends JSORMBase> {
           _relationships[underscore(key)] = { data }
         }
       }
-    });
+    })
 
-    return _relationships;
+    return _relationships
   }
 
   asJSON() : JsonapiRequestDoc {
@@ -112,24 +112,24 @@ export class WritePayload<T extends JSORMBase> {
       type: this.jsonapiType
     }
 
-    this.model.clearErrors();
+    this.model.clearErrors()
 
     if (this.model.id) {
-      data['id'] = this.model.id;
+      data['id'] = this.model.id
     }
 
     if (this.model.temp_id) {
-      data['temp-id'] = this.model.temp_id;
+      data['temp-id'] = this.model.temp_id
     }
 
     let _attributes = this.attributes()
     if (Object.keys(_attributes).length > 0) {
-      data['attributes'] = _attributes;
+      data['attributes'] = _attributes
     }
 
-    let relationshipData = this.relationships();
+    let relationshipData = this.relationships()
     if (Object.keys(relationshipData).length > 0) {
-      data['relationships'] = relationshipData;
+      data['relationships'] = relationshipData
     }
 
     let json : JsonapiRequestDoc = { data }
@@ -144,21 +144,21 @@ export class WritePayload<T extends JSORMBase> {
   // private
 
   private _processRelatedModel(model: T, nested: IncludeScopeHash) {
-    model.clearErrors();
+    model.clearErrors()
 
     if (!model.isPersisted) {
       model.temp_id = tempId.generate()
     }
 
-    let wp            = new WritePayload(model, nested);
-    let relatedJSON   = wp.asJSON()['data'];
+    let wp            = new WritePayload(model, nested)
+    let relatedJSON   = wp.asJSON()['data']
 
-    let resourceIdentifier = this._resourceIdentifierFor(model);
-    this._pushInclude(relatedJSON);
+    let resourceIdentifier = this._resourceIdentifierFor(model)
+    this._pushInclude(relatedJSON)
     wp.included.forEach((incl) => {
-      this._pushInclude(incl);
-    });
-    return resourceIdentifier;
+      this._pushInclude(incl)
+    })
+    return resourceIdentifier
   }
 
   private _resourceIdentifierFor(model: T) {
@@ -171,54 +171,54 @@ export class WritePayload<T extends JSORMBase> {
     }
 
     if (model.id) {
-      identifier['id'] = model.id;
+      identifier['id'] = model.id
     }
 
     if (model.temp_id) {
-      identifier['temp-id'] = model.temp_id;
+      identifier['temp-id'] = model.temp_id
     }
 
     let method : JsonapiResourceMethod
     if (model.isPersisted) {
       if (model.isMarkedForDestruction) {
-        method = 'destroy';
+        method = 'destroy'
       } else if (model.isMarkedForDisassociation) {
-        method = 'disassociate';
+        method = 'disassociate'
       } else {
-        method = 'update';
+        method = 'update'
       }
     } else {
-      method = 'create';
+      method = 'create'
     }
-    identifier.method = method;
+    identifier.method = method
 
-    return identifier;
+    return identifier
   }
 
   private _pushInclude(include: any) {
     if (!this._isIncluded(include)) {
-      this.included.push(include);
-    };
+      this.included.push(include)
+    }
   }
 
   private _isIncluded(include: any) {
     this.included.forEach((incl) => {
       if (incl['type'] === include['type']) {
         if (incl['id'] === include['id'] || incl['temp-id'] === include['temp-id']) {
-          return true;
+          return true
         }
       }
-    });
-    return false;
+    })
+    return false
   }
 
   private _eachAttribute(callback: (key : keyof T, val : any) => void) : void {
-    let modelAttrs = this.model.typedAttributes;
+    let modelAttrs = this.model.typedAttributes
 
     Object.keys(modelAttrs).forEach((key) => {
       if (this.model.klass.attributeList[key].persist) {
-        let value = modelAttrs[key];
-        callback(key as keyof T, value);
+        let value = modelAttrs[key]
+        callback(key as keyof T, value)
       }
     })
   }

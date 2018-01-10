@@ -1,9 +1,9 @@
-import { expect, sinon, fetchMock } from '../test-helper';
-import { Author, ApplicationRecord } from '../fixtures';
+import { expect, sinon, fetchMock } from '../test-helper'
+import { Author, ApplicationRecord } from '../fixtures'
 import { MiddlewareStack, BeforeFilter, AfterFilter } from '../../src/middleware-stack'
 
 const mock401 = function() {
-  fetchMock.restore();
+  fetchMock.restore()
 
   fetchMock.mock({
     matcher: '*',
@@ -47,7 +47,7 @@ const mock404 = function() {
 }
 
 const mockBadJSON = function() {
-  fetchMock.restore();
+  fetchMock.restore()
 
   fetchMock.mock({
     matcher: '*',
@@ -59,7 +59,7 @@ const mockBadJSON = function() {
 }
 
 const mock500 = function() {
-  fetchMock.restore();
+  fetchMock.restore()
 
   fetchMock.mock({
     matcher: '*',
@@ -73,7 +73,7 @@ const mock500 = function() {
 }
 
 const mockSuccess = function() {
-  fetchMock.restore();
+  fetchMock.restore()
 
   fetchMock.mock({
     matcher: '*',
@@ -93,7 +93,7 @@ describe('fetch middleware', function() {
   let oldStack = ApplicationRecord.middlewareStack
 
   beforeEach(function () {
-    mockSuccess();
+    mockSuccess()
 
     let middleware = new MiddlewareStack()
 
@@ -122,7 +122,7 @@ describe('fetch middleware', function() {
     })
 
     ApplicationRecord.middlewareStack = middleware
-  });
+  })
 
   afterEach(function() {
     fetchMock.restore()
@@ -244,8 +244,8 @@ describe('fetch middleware', function() {
     })
 
     describe('when the model overrides the hooks', function() {
-      let originalBeforeFetch : BeforeFilter | undefined;
-      let originalAfterFetch : AfterFilter | undefined;
+      let originalBeforeFetch : BeforeFilter | undefined
+      let originalAfterFetch : AfterFilter | undefined
 
       beforeEach(function() {
         originalBeforeFetch = Author.beforeFetch

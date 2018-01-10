@@ -29,7 +29,7 @@ export type AttributeOptions = Partial<{
 }>
 
 export class Attribute<T=any> {
-  public isRelationship = false;
+  public isRelationship = false
   public name : string | symbol
   public type? : T = undefined
   public persist : boolean = true
@@ -58,28 +58,28 @@ export class Attribute<T=any> {
   // The model calls this setter
   setter(context: JSORMBase, val: any) : void {
     let privateContext : any = context
-    privateContext._attributes[this.name] = val;
+    privateContext._attributes[this.name] = val
   }
 
   // The model calls this getter
   getter(context: JSORMBase) : any {
     let privateContext : any = context
-    return privateContext._attributes[this.name];
+    return privateContext._attributes[this.name]
   }
 
   // This returns the getters/setters for use on the *model*
   descriptor() : PropertyDescriptor {
-    let attr = this;
+    let attr = this
 
     return {
       configurable: true,
       enumerable: true,
       get(this: JSORMBase) : any {
-        return attr.getter(this);
+        return attr.getter(this)
       },
 
       set(this: JSORMBase, value) : void {
-        attr.setter(this, value);
+        attr.setter(this, value)
       }
     }
   }

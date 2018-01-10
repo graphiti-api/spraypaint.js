@@ -1,8 +1,8 @@
-import { expect } from '../test-helper';
-import { JSORMBase, Model, Scope, attr } from '../../src/index';
-import { WhereClause, SortScope, FieldScope, IncludeScope, StatsScope } from '../../src/scope';
-import { RecordProxy } from '../../src/proxies/record-proxy';
-import { CollectionProxy } from '../../src/proxies/collection-proxy';
+import { expect } from '../test-helper'
+import { JSORMBase, Model, Scope, attr } from '../../src/index'
+import { WhereClause, SortScope, FieldScope, IncludeScope, StatsScope } from '../../src/scope'
+import { RecordProxy } from '../../src/proxies/record-proxy'
+import { CollectionProxy } from '../../src/proxies/collection-proxy'
 
 /*
  *
@@ -45,9 +45,9 @@ describe('Model Class static attributes typings',() => {
 
       function strEnum<T extends string>(o: Array<T>): {[K in T]: K} {
         return o.reduce((res, key) => {
-          res[key] = key;
-          return res;
-        }, Object.create(null));
+          res[key] = key
+          return res
+        }, Object.create(null))
       }
 
       describe('Scope delegators', () => {

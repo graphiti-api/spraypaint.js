@@ -1,4 +1,4 @@
-import { JSORMBase } from '../model';
+import { JSORMBase } from '../model'
 import { JsonapiResourceIdentifier } from '../jsonapi-spec'
 
 // Build a hash like
@@ -10,20 +10,20 @@ import { JsonapiResourceIdentifier } from '../jsonapi-spec'
 // This will only contain persisted objects
 // Used for dirty tracking associations
 export default function(model: JSORMBase, relationNames: Array<string>) {
-  let identifiers : Record<string, JsonapiResourceIdentifier[]>= {};
+  let identifiers : Record<string, JsonapiResourceIdentifier[]>= {}
   relationNames.forEach((relationName) => {
     let relatedObjects = model.relationship(relationName)
     if (relatedObjects) {
-      if (!Array.isArray(relatedObjects)) relatedObjects = [relatedObjects];
+      if (!Array.isArray(relatedObjects)) relatedObjects = [relatedObjects]
       relatedObjects.forEach((r) => {
         if (r.isPersisted) {
           if (!identifiers[relationName]) {
-            identifiers[relationName] = [];
+            identifiers[relationName] = []
           }
-          identifiers[relationName].push(r.resourceIdentifier);
+          identifiers[relationName].push(r.resourceIdentifier)
         }
-      });
+      })
     }
-  });
-  return identifiers;
+  })
+  return identifiers
 }

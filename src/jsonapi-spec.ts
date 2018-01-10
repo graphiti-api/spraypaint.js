@@ -3,8 +3,8 @@ export type JsonapiSuccessDoc = JsonapiCollectionDoc | JsonapiResourceDoc
 export type JsonapiRequestDoc  = JsonapiResourceRequest
 
 export interface JsonapiDocMeta {
-  included?: Array<JsonapiResource>;
-  meta?: Record<string, any>;
+  included?: Array<JsonapiResource>
+  meta?: Record<string, any>
 }
 
 export interface JsonapiCollectionDoc extends JsonapiDocMeta {
@@ -28,7 +28,7 @@ export interface JsonapiErrorDoc extends JsonapiDocMeta {
 
 export interface JsonapiResourceIdentifier {
   type : string
-  id? : string;
+  id? : string
   temp_id? : string
   'temp-id'? : string
   method? : JsonapiResourceMethod
@@ -37,10 +37,10 @@ export interface JsonapiResourceIdentifier {
 export type JsonapiResourceMethod = 'create' | 'update' | 'destroy' | 'disassociate'
 
 export interface JsonapiResource extends JsonapiResourceIdentifier {
-  attributes?: object;
-  relationships?: object;
-  meta?: Record<string, any>;
-  links?: object;
+  attributes?: object
+  relationships?: object
+  meta?: Record<string, any>
+  links?: object
 }
 
 export interface JsonapiError {

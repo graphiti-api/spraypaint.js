@@ -1,6 +1,6 @@
-import { sinon, expect, fetchMock } from '../test-helper';
-import { Author, Book, Genre } from '../fixtures';
-import { tempId } from '../../src/util/temp-id';
+import { sinon, expect, fetchMock } from '../test-helper'
+import { Author, Book, Genre } from '../fixtures'
+import { tempId } from '../../src/util/temp-id'
 import { JsonapiRequestDoc, JsonapiResponseDoc } from '../../src/index'
 
 let instance : Author
@@ -12,22 +12,22 @@ let serverResponse : JsonapiResponseDoc
 type method = 'update' | 'destroy' | 'disassociate'
 
 const resetMocks = function() {
-  fetchMock.restore();
+  fetchMock.restore()
 
   fetchMock.post('http://example.com/api/v1/authors', function(url, payload : any) {
-    payloads.push(JSON.parse(payload.body));
-    return serverResponse;
-  });
+    payloads.push(JSON.parse(payload.body))
+    return serverResponse
+  })
 
   fetchMock.put('http://example.com/api/v1/authors/1', function(url, payload : any) {
-    putPayloads.push(JSON.parse(payload.body));
-    return serverResponse;
-  });
+    putPayloads.push(JSON.parse(payload.body))
+    return serverResponse
+  })
 
   fetchMock.delete('http://example.com/api/v1/authors/1', function(url, payload : any) {
-    deletePayloads.push({});
-    return serverResponse;
-  });
+    deletePayloads.push({})
+    return serverResponse
+  })
 }
 
 let expectedCreatePayload : JsonapiResponseDoc = {
@@ -87,7 +87,7 @@ let expectedCreatePayload : JsonapiResponseDoc = {
       }
     }
   ]
-};
+}
 
 let expectedUpdatePayload = function(method : method) : JsonapiResponseDoc {
   return {
@@ -132,29 +132,29 @@ let expectedUpdatePayload = function(method : method) : JsonapiResponseDoc {
       }
     ]
   }
-};
+}
 
 const seedPersistedData = function() {
-  let genre = new Genre({ id: '20', name: 'Horror' });
+  let genre = new Genre({ id: '20', name: 'Horror' })
   genre.isPersisted = true
   let book = new Book({ id: '10', title: 'The Shining', genre: genre })
   book.isPersisted = true
-  let specialBook = new Book({ id: '30', title: 'The Stand' });
+  let specialBook = new Book({ id: '30', title: 'The Stand' })
   specialBook.isPersisted = true
   instance.id = '1'
-  instance.books = [book];
+  instance.books = [book]
   instance.specialBooks = [specialBook]
-  instance.isPersisted = true;
-  genre.name = 'Updated Genre Name';
-  book.title = 'Updated Book Title';
+  instance.isPersisted = true
+  genre.name = 'Updated Genre Name'
+  book.title = 'Updated Book Title'
 }
 
 describe('nested persistence', function() {
   beforeEach(function() {
-    payloads = [];
-    putPayloads = [];
-    deletePayloads = [];
-    instance = new Author({ firstName: 'Stephen' });
+    payloads = []
+    putPayloads = []
+    deletePayloads = []
+    instance = new Author({ firstName: 'Stephen' })
     serverResponse = {
       data: {
         id: '1',
@@ -198,37 +198,37 @@ describe('nested persistence', function() {
         }
       ]
     }
-  });
+  })
 
   afterEach(function () {
-    fetchMock.restore();
-  });
+    fetchMock.restore()
+  })
 
   beforeEach(function () {
-    resetMocks();
-  });
+    resetMocks()
+  })
 
-  let tempIdIndex = 0;
+  let tempIdIndex = 0
   beforeEach(function() {
     sinon.stub(tempId, 'generate').callsFake(function() {
       tempIdIndex++
-      return `abc${tempIdIndex}`;
-    });
-  });
+      return `abc${tempIdIndex}`
+    })
+  })
 
   afterEach(function() {
     tempIdIndex = 0
     ;(<any>tempId.generate)['restore']()
-  });
+  })
 
   describe('basic nested create', function() {
     beforeEach(function() {
-      let genre = new Genre({ name: 'Horror' });
-      let book = new Book({ title: 'The Shining', genre: genre });
-      let specialBook = new Book({ title: 'The Stand' });
-      instance.books = [book];
+      let genre = new Genre({ name: 'Horror' })
+      let book = new Book({ title: 'The Shining', genre: genre })
+      let specialBook = new Book({ title: 'The Stand' })
+      instance.books = [book]
       instance.specialBooks = [specialBook]
-    });
+    })
 
     // todo test on the way back - id set, attrs updated, isPersisted
     // todo remove #destroy? and just save when markwithpersisted? combo? for ombined payload
@@ -236,16 +236,16 @@ describe('nested persistence', function() {
     it('sends the correct payload', async function() {
       await instance.save({ with: { books: 'genre', specialBooks: {} } })
 
-      expect(payloads[0]).to.deep.equal(expectedCreatePayload);
-    });
+      expect(payloads[0]).to.deep.equal(expectedCreatePayload)
+    })
 
     it('assigns ids from the response', async function() {
       await instance.save({ with: { books: 'genre' } })
 
-      expect(instance.id).to.eq('1');
-      expect(instance.books[0].id).to.eq('10');
-      expect(instance.books[0].genre.id).to.eq('20');
-    });
+      expect(instance.id).to.eq('1')
+      expect(instance.books[0].id).to.eq('10')
+      expect(instance.books[0].genre.id).to.eq('20')
+    })
 
     // Commenting out to avoid thinking something is wrong
     // every time I see a pending test. We may be able to delete this?
@@ -260,88 +260,88 @@ describe('nested persistence', function() {
     it('updates attributes with data from server', async function() {
       await instance.save({ with: { books: 'genre' } })
 
-      expect(instance.firstName).to.eq('first name from server');
-      expect(instance.books[0].title).to.eq('title from server');
-      expect(instance.books[0].genre.name).to.eq('name from server');
-    });
+      expect(instance.firstName).to.eq('first name from server')
+      expect(instance.books[0].title).to.eq('title from server')
+      expect(instance.books[0].genre.name).to.eq('name from server')
+    })
 
     describe('when a hasMany relationship has no dirty members', function() {
       beforeEach(function() {
-        instance.books[0] = new Book();
-      });
+        instance.books[0] = new Book()
+      })
 
       it('should not be sent in the payload', async function() {
         await instance.save({ with: { books: 'genre' } })
         expect((<any>payloads)[0].data.relationships).to.eq(undefined)
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('basic nested update', function() {
     beforeEach(function() {
-      seedPersistedData();
-    });
+      seedPersistedData()
+    })
 
     it('sends the correct payload', async function() {
       await instance.save({ with: { books: 'genre' } })
 
-      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('update'));
-    });
-  });
+      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('update'))
+    })
+  })
 
   describe('basic nested destroy', function() {
     beforeEach(function() {
-      seedPersistedData();
-    });
+      seedPersistedData()
+    })
 
     it('sends the correct payload', async function() {
-      instance.books[0].isMarkedForDestruction = true;
-      instance.books[0].genre.isMarkedForDestruction = true;
+      instance.books[0].isMarkedForDestruction = true
+      instance.books[0].genre.isMarkedForDestruction = true
       await instance.save({ with: { books: 'genre' } })
 
-      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('destroy'));
-    });
+      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('destroy'))
+    })
 
     it('removes the associated has_many data', async function() {
-      instance.books[0].isMarkedForDestruction = true;
+      instance.books[0].isMarkedForDestruction = true
       await instance.save({ with: 'books' })
 
-      expect(instance.books.length).to.eq(0);
-    });
+      expect(instance.books.length).to.eq(0)
+    })
 
     it('removes the associated belongs_to data', async function() {
-      instance.books[0].genre.isMarkedForDestruction = true;
+      instance.books[0].genre.isMarkedForDestruction = true
       await instance.save({ with: { books: 'genre' } })
 
-      expect(instance.books[0].genre).to.eq(null);
-    });
-  });
+      expect(instance.books[0].genre).to.eq(null)
+    })
+  })
 
   describe('basic nested disassociate', function() {
     beforeEach(function() {
-      seedPersistedData();
-    });
+      seedPersistedData()
+    })
 
     it('sends the correct payload', async function() {
-      instance.books[0].isMarkedForDisassociation = true;
-      instance.books[0].genre.isMarkedForDisassociation = true;
+      instance.books[0].isMarkedForDisassociation = true
+      instance.books[0].genre.isMarkedForDisassociation = true
       await instance.save({ with: { books: 'genre' } })
 
-      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('disassociate'));
-    });
+      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('disassociate'))
+    })
 
     it('removes the associated has_many data', async function() {
-      instance.books[0].isMarkedForDisassociation = true;
+      instance.books[0].isMarkedForDisassociation = true
       await instance.save({ with: 'books' })
 
-      expect(instance.books.length).to.eq(0);
-    });
+      expect(instance.books.length).to.eq(0)
+    })
 
     it('removes the associated belongs_to data', async function() {
-      instance.books[0].genre.isMarkedForDisassociation = true;
+      instance.books[0].genre.isMarkedForDisassociation = true
       await instance.save({ with: { books: 'genre' } })
 
-      expect(instance.books[0].genre).to.eq(null);
-    });
-  });
-});
+      expect(instance.books[0].genre).to.eq(null)
+    })
+  })
+})

@@ -1,6 +1,6 @@
-import { expect, fetchMock } from '../test-helper';
-import { Author, NonFictionAuthor } from '../fixtures';
-import { IResultProxy } from '../../src/proxies/index';
+import { expect, fetchMock } from '../test-helper'
+import { Author, NonFictionAuthor } from '../fixtures'
+import { IResultProxy } from '../../src/proxies/index'
 
 let resultData = function<T>(promise : Promise<IResultProxy<T>>) : Promise<any> {
   return promise.then(function(proxyObject) {
@@ -50,33 +50,33 @@ let generateMockResponse = function(type: string) {
       }
     ]
   } as any
-};
+}
 
 describe('Relations', function() {
   describe('#find()', function() {
     beforeEach(function() {
-      fetchMock.get('http://example.com/api/v1/authors/1?include=books,multi_words', generateMockResponse('authors'));
-    });
+      fetchMock.get('http://example.com/api/v1/authors/1?include=books,multi_words', generateMockResponse('authors'))
+    })
 
-    afterEach(fetchMock.restore);
+    afterEach(fetchMock.restore)
 
     it('correctly includes relationships', function(done) {
       resultData(Author.includes(['books', 'multi_words']).find(1)).then(data => {
-        expect(data.multiWords).to.be.an('array');
-        expect(data.books).to.be.an('array');
+        expect(data.multiWords).to.be.an('array')
+        expect(data.books).to.be.an('array')
 
-        done();
-      });
-    });
+        done()
+      })
+    })
 
     it('contains the right records for each relationship', function(done) {
       resultData(Author.includes(['books', 'multi_words']).find(1)).then(data => {
-        expect(data.books[0].title).to.eql('The Shining');
-        expect(data.multiWords[0].id).to.eql('multi_word1');
+        expect(data.books[0].title).to.eql('The Shining')
+        expect(data.multiWords[0].id).to.eql('multi_word1')
 
-        done();
-      });
-    });
+        done()
+      })
+    })
 
     describe('when a belongsTo relationship has null data', function() {
       beforeEach(function() {
@@ -92,26 +92,26 @@ describe('Relations', function() {
         expect(data.genre).to.eq(undefined)
       })
     })
-  });
+  })
 
   describe('when camelizeKeys is false', function() {
     beforeEach(function() {
       fetchMock.get(
         'http://example.com/api/v1/non_fiction_authors/1?include=books,multi_words',
         generateMockResponse('non_fiction_authors')
-      );
-    });
+      )
+    })
 
-    afterEach(fetchMock.restore);
+    afterEach(fetchMock.restore)
 
     it("Doesn't convert relationships to snake_case if camelization is off", function(done) {
       resultData(NonFictionAuthor.includes(['books', 'multi_words']).find(1))
         .then(data => {
-          expect(data.multi_words[0].id).to.eql('multi_word1');
+          expect(data.multi_words[0].id).to.eql('multi_word1')
 
-          done();
+          done()
         })
-        .catch(done);
-    });
-  });
-});
+        .catch(done)
+    })
+  })
+})

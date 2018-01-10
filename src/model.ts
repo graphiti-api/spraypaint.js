@@ -1,19 +1,19 @@
-import { CollectionProxy, RecordProxy } from './proxies';
-import { ValidationErrors } from './util/validation-errors';
-import { refreshJWT } from './util/refresh-jwt';
-import relationshipIdentifiersFor from './util/relationship-identifiers';
-import { Request, RequestVerbs, JsonapiResponse } from './request';
-import { WritePayload } from './util/write-payload';
+import { CollectionProxy, RecordProxy } from './proxies'
+import { ValidationErrors } from './util/validation-errors'
+import { refreshJWT } from './util/refresh-jwt'
+import relationshipIdentifiersFor from './util/relationship-identifiers'
+import { Request, RequestVerbs, JsonapiResponse } from './request'
+import { WritePayload } from './util/write-payload'
 import { LocalStorage, NullStorageBackend, StorageBackend } from './local-storage'
 
-import { deserialize, deserializeInstance } from './util/deserialize';
-import { Attribute } from './attribute';
-import DirtyChecker from './util/dirty-check';
-import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope';
+import { deserialize, deserializeInstance } from './util/deserialize'
+import { Attribute } from './attribute'
+import DirtyChecker from './util/dirty-check'
+import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope'
 import { JsonapiTypeRegistry } from './jsonapi-type-registry'
 import { camelize } from 'inflected'
-import { ILogger, logger as defaultLogger } from './logger';
-import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
+import { ILogger, logger as defaultLogger } from './logger'
+import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack'
 
 import {
   JsonapiResource,
@@ -21,15 +21,15 @@ import {
   JsonapiResourceIdentifier,
 } from './jsonapi-spec'
 
-import { cloneDeep } from './util/clonedeep';
+import { cloneDeep } from './util/clonedeep'
 import { nonenumerable } from './util/decorators'
-import { IncludeScopeHash } from './util/include-directive';
+import { IncludeScopeHash } from './util/include-directive'
 
 export interface ModelConfiguration {
   baseUrl : string
   apiNamespace : string
   jsonapiType : string
-  endpoint : string;
+  endpoint : string
   jwt : string
   jwtLocalStorage : string | false
   camelizeKeys : boolean
@@ -77,7 +77,7 @@ export type AttrMap<T> = {
 }
 
 export type DefaultAttrs = Record<string, any>
-export type DefaultMethods<V> =  { [key: string]: (this: V, ...args: any[]) => any };
+export type DefaultMethods<V> =  { [key: string]: (this: V, ...args: any[]) => any }
 
 export interface ExtendOptions<
   M,
@@ -112,7 +112,7 @@ export class JSORMBase {
   static jsonapiType? : string
   static endpoint : string
   static isBaseClass : boolean
-  static jwt? : string;
+  static jwt? : string
   static camelizeKeys : boolean = true
   static strictAttributes : boolean = false
   static logger : ILogger = defaultLogger
@@ -171,13 +171,13 @@ export class JSORMBase {
   static readonly isJSORMModel : boolean = true
 
   static fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc) : any {
-    return deserialize(this.typeRegistry, resource, payload);
+    return deserialize(this.typeRegistry, resource, payload)
   }
 
   static inherited(subclass : typeof JSORMBase) : void {
-    subclass.parentClass = this;
-    subclass.currentClass = subclass;
-    subclass.prototype.klass = subclass;
+    subclass.parentClass = this
+    subclass.currentClass = subclass
+    subclass.prototype.klass = subclass
     subclass.attributeList = cloneDeep(subclass.attributeList)
   }
 
@@ -300,15 +300,15 @@ export class JSORMBase {
     return <any>Subclass
   }
 
-  id? : string;
-  temp_id? : string;
+  id? : string
+  temp_id? : string
 
   @nonenumerable relationships : Record<string, JSORMBase | JSORMBase[]> = {}
   @nonenumerable klass : typeof JSORMBase
 
-  @nonenumerable private _persisted : boolean = false;
-  @nonenumerable private _markedForDestruction: boolean = false;
-  @nonenumerable private _markedForDisassociation: boolean = false;
+  @nonenumerable private _persisted : boolean = false
+  @nonenumerable private _markedForDestruction: boolean = false
+  @nonenumerable private _markedForDisassociation: boolean = false
   @nonenumerable private _originalRelationships : Record<string, JsonapiResourceIdentifier[]> = {}
   @nonenumerable private _attributes : ModelRecord<this>
   @nonenumerable private _originalAttributes : ModelRecord<this>
@@ -316,7 +316,7 @@ export class JSORMBase {
   @nonenumerable private _errors : object = {}
 
   constructor(attrs? : Record<string, any>) {
-    this._initializeAttributes();
+    this._initializeAttributes()
     this.assignAttributes(attrs)
     this._originalAttributes = cloneDeep(this._attributes)
     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships))
@@ -340,8 +340,8 @@ export class JSORMBase {
     const attrs = this.klass.attributeList
 
     for (let key in attrs) {
-      let attr = attrs[key];
-      Object.defineProperty(this, key, attr.descriptor());
+      let attr = attrs[key]
+      Object.defineProperty(this, key, attr.descriptor())
     }
 
     [
@@ -358,27 +358,27 @@ export class JSORMBase {
   }
 
   isType(jsonapiType : string) {
-    return this.klass.jsonapiType === jsonapiType;
+    return this.klass.jsonapiType === jsonapiType
   }
 
   get isPersisted() : boolean {
-    return this._persisted;
+    return this._persisted
   }
   set isPersisted(val : boolean) {
-      this._persisted = val;
-      this._originalAttributes = cloneDeep(this._attributes);
-      this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
+      this._persisted = val
+      this._originalAttributes = cloneDeep(this._attributes)
+      this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships))
   }
 
   get isMarkedForDestruction() : boolean {
-    return this._markedForDestruction;
+    return this._markedForDestruction
   }
   set isMarkedForDestruction(val : boolean) {
     this._markedForDestruction = val
   }
 
   get isMarkedForDisassociation() : boolean {
-    return this._markedForDisassociation;
+    return this._markedForDisassociation
   }
   set isMarkedForDisassociation(val : boolean) {
     this._markedForDisassociation = val
@@ -389,8 +389,8 @@ export class JSORMBase {
   }
 
   set attributes(attrs : Record<string, any>) {
-    this._attributes = {};
-    this.assignAttributes(attrs);
+    this._attributes = {}
+    this.assignAttributes(attrs)
   }
 
   /*
@@ -415,14 +415,14 @@ export class JSORMBase {
   assignAttributes(attrs? : Record<string, any>) : void {
     if (!attrs) { return }
     for(var key in attrs) {
-      let attributeName = key;
+      let attributeName = key
 
       if (this.klass.camelizeKeys) {
-        attributeName = camelize(key, false);
+        attributeName = camelize(key, false)
       }
 
       if (key == 'id' || this.klass.attributeList[attributeName]) {
-        (<any>this)[attributeName] = attrs[key];
+        (<any>this)[attributeName] = attrs[key]
       } else if (this.klass.strictAttributes) {
         throw new Error(`Unknown attribute: ${key}`)
       }
@@ -434,11 +434,11 @@ export class JSORMBase {
   }
 
   relationshipResourceIdentifiers(relationNames: Array<string>) {
-    return relationshipIdentifiersFor(this, relationNames);
+    return relationshipIdentifiersFor(this, relationNames)
   }
 
   fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc, includeDirective: IncludeScopeHash = {}) : any {
-    return deserializeInstance(this, resource, payload, includeDirective);
+    return deserializeInstance(this, resource, payload, includeDirective)
   }
 
   get resourceIdentifier() : JsonapiResourceIdentifier {
@@ -461,16 +461,16 @@ export class JSORMBase {
   }
 
   get hasError() {
-    return Object.keys(this._errors).length > 1;
+    return Object.keys(this._errors).length > 1
   }
 
   clearErrors() {
-    this._errors = {};
+    this._errors = {}
   }
 
   isDirty(relationships?: IncludeScope) : boolean {
-    let dc = new DirtyChecker(this);
-    return dc.check(relationships);
+    let dc = new DirtyChecker(this)
+    return dc.check(relationships)
   }
 
   changes() : ModelAttributeChangeSet<this> {
@@ -479,12 +479,12 @@ export class JSORMBase {
   }
 
   hasDirtyRelation(relationName: string, relatedModel: JSORMBase) : boolean {
-    let dc = new DirtyChecker(this);
-    return dc.checkRelation(relationName, relatedModel);
+    let dc = new DirtyChecker(this)
+    return dc.checkRelation(relationName, relatedModel)
   }
 
   dup() : this {
-    return cloneDeep(this);
+    return cloneDeep(this)
   }
 
   /*
@@ -509,18 +509,18 @@ export class JSORMBase {
   }
 
   static url(id?: string | number) : string {
-    let endpoint = this.endpoint || `/${this.jsonapiType}`;
-    let base = `${this.fullBasePath()}${endpoint}`;
+    let endpoint = this.endpoint || `/${this.jsonapiType}`
+    let base = `${this.fullBasePath()}${endpoint}`
 
     if (id) {
-      base = `${base}/${id}`;
+      base = `${base}/${id}`
     }
 
-    return base;
+    return base
   }
 
   static fullBasePath() : string {
-    return `${this.baseUrl}${this.apiNamespace}`;
+    return `${this.baseUrl}${this.apiNamespace}`
   }
 
   static get middlewareStack() : MiddlewareStack {
@@ -553,50 +553,50 @@ export class JSORMBase {
   }
 
   static first<I extends typeof JSORMBase>(this: I) {
-    return this.scope().first();
+    return this.scope().first()
   }
   static all<I extends typeof JSORMBase>(this: I) {
-    return this.scope().all();
+    return this.scope().all()
   }
 
   static find<I extends typeof JSORMBase>(this: I, id : string | number) {
-    return this.scope().find(id);
+    return this.scope().find(id)
   }
 
   static where<I extends typeof JSORMBase>(this: I, clause: WhereClause) {
-    return this.scope().where(clause);
+    return this.scope().where(clause)
   }
 
   static page<I extends typeof JSORMBase>(this: I, number: number) {
-    return this.scope().page(number);
+    return this.scope().page(number)
   }
 
   static per<I extends typeof JSORMBase>(this: I, size: number) {
-    return this.scope().per(size);
+    return this.scope().per(size)
   }
 
   static order<I extends typeof JSORMBase>(this: I, clause: SortScope | string) {
-    return this.scope().order(clause);
+    return this.scope().order(clause)
   }
 
   static select<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
-    return this.scope().select(clause);
+    return this.scope().select(clause)
   }
 
   static selectExtra<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
-    return this.scope().selectExtra(clause);
+    return this.scope().selectExtra(clause)
   }
 
   static stats<I extends typeof JSORMBase>(this: I, clause: StatsScope) {
-    return this.scope().stats(clause);
+    return this.scope().stats(clause)
   }
 
   static includes<I extends typeof JSORMBase>(this: I, clause: IncludeScope) {
-    return this.scope().includes(clause);
+    return this.scope().includes(clause)
   }
 
   static merge<I extends typeof JSORMBase>(this: I, obj : Record<string, Scope>) {
-    return this.scope().merge(obj);
+    return this.scope().merge(obj)
   }
 
   static setJWT(token: string | undefined | null) : void {
@@ -604,7 +604,7 @@ export class JSORMBase {
       throw new Error(`Cannot set JWT on ${this.name}: No base class present.`)
     }
 
-    this.baseClass.jwt = token || undefined;
+    this.baseClass.jwt = token || undefined
     this.localStorage.setJWT(token)
   }
 
@@ -612,12 +612,12 @@ export class JSORMBase {
     let owner = this.baseClass
 
     if (owner) {
-      return owner.jwt;
+      return owner.jwt
     }
   }
 
   static generateAuthHeader(jwt: string) : string {
-    return `Token token="${jwt}"`;
+    return `Token token="${jwt}"`
   }
 
   static getJWTOwner() : typeof JSORMBase | undefined {
@@ -627,20 +627,20 @@ export class JSORMBase {
   }
 
   async destroy() : Promise<boolean> {
-    let url     = this.klass.url(this.id);
-    let verb    = 'delete';
-    let request = new Request(this._middleware(), this.klass.logger);
+    let url     = this.klass.url(this.id)
+    let verb    = 'delete'
+    let request = new Request(this._middleware(), this.klass.logger)
     let response : any
 
     try {
-      response = await request.delete(url, this._fetchOptions());
+      response = await request.delete(url, this._fetchOptions())
     } catch (err) {
       throw(err)
     }
 
     return await this._handleResponse(response, () => {
-      this.isPersisted = false;
-    });
+      this.isPersisted = false
+    })
   }
 
   async save(options: SaveOptions = {}) : Promise<boolean> {
@@ -655,7 +655,7 @@ export class JSORMBase {
       verb = 'put'
     }
 
-    let json = payload.asJSON();
+    let json = payload.asJSON()
 
     try {
       response = await request[verb](url, json, this._fetchOptions())
@@ -664,19 +664,19 @@ export class JSORMBase {
     }
 
     return await this._handleResponse(response, () => {
-      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
-      payload.postProcess();
-    });
+      this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective)
+      payload.postProcess()
+    })
   }
 
   private async _handleResponse(response: JsonapiResponse, callback: () => void) : Promise<boolean>  {
-    refreshJWT(this.klass, response);
+    refreshJWT(this.klass, response)
 
     if (response.status == 422) {
-      ValidationErrors.apply(this, response.jsonPayload);
+      ValidationErrors.apply(this, response.jsonPayload)
       return false
     } else {
-      callback();
+      callback()
       return true
     }
   }
@@ -695,11 +695,11 @@ export class JSORMBase {
   // only an issue with test setup)
   // * Make all calls go through resetRelationTracking();
   resetRelationTracking(includeDirective: Object) {
-    this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
+    this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective))
   }
 }
 
-;(<any>JSORMBase.prototype).klass = JSORMBase
+(<any>JSORMBase.prototype).klass = JSORMBase
 
 export function isModelClass(arg: any) : arg is typeof JSORMBase {
   if (!arg) { return false }

@@ -34,33 +34,33 @@ export class Logger implements ILogger {
 
   debug(stmt : any) : void {
     if (this._level <= LogLevel.debug) {
-      console.info(stmt);
+      console.info(stmt)
     }
   }
 
   info(stmt : any) : void {
     if (this._level <= LogLevel.info) {
-      console.info(stmt);
+      console.info(stmt)
     }
   }
 
   warn(stmt : any) : void {
     if (this._level <= LogLevel.warn) {
-      console.warn(stmt);
+      console.warn(stmt)
     }
   }
 
   error(stmt : any) : void {
     if (this._level <= LogLevel.warn) {
-      console.error(stmt);
+      console.error(stmt)
     }
   }
 
   set level(value : string) {
-    let lvlValue = LogLevel[value as LogLevelKey];
+    let lvlValue = LogLevel[value as LogLevelKey]
 
     if (lvlValue) {
-      this._level = lvlValue;
+      this._level = lvlValue
     } else {
       throw(`Log level must be one of ${Object.keys(LOG_LEVELS).join(', ')}`)
     }
@@ -70,7 +70,7 @@ export class Logger implements ILogger {
     let key : LogLevelKey
 
     for (key in LogLevel) {
-      let val = LogLevel[key as LogLevelKey];
+      let val = LogLevel[key as LogLevelKey]
       if (val === this._level) {
         return key
       }

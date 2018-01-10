@@ -6,36 +6,36 @@ let scope : Scope<typeof Author>
 let scopeImpl : any
 
 beforeEach(function() {
-  let model = sinon.stub();
-  scope = new Scope(model as any);
-});
+  let model = sinon.stub()
+  scope = new Scope(model as any)
+})
 
 describe('Scope', function() {
   describe('#page()', function() {
     it('sets correct pagination information', function() {
-      scope = scope.page(2);
-      expect((scope as any)._pagination).to.eql({ number: 2 });
-    });
+      scope = scope.page(2)
+      expect((scope as any)._pagination).to.eql({ number: 2 })
+    })
 
     it('returns a new scope', function() {
       let newScope = scope.page(2)
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
-    });
-  });
+    })
+  })
 
   describe('#per()', function() {
     it('sets correct pagination information', function() {
-      scope = scope.per(10);
-      expect((scope as any)._pagination).to.eql({ size: 10 });
-    });
+      scope = scope.per(10)
+      expect((scope as any)._pagination).to.eql({ size: 10 })
+    })
 
     it('returns a new scope', function() {
       let newScope = scope.per(10)
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
-    });
-  });
+    })
+  })
 
   describe('#where()', function() {
     it('updates filter criteria', function() {
@@ -45,50 +45,50 @@ describe('Scope', function() {
       expect((scope as any)._filter).to.eql({
         foo: 'bar2',
         bar: 'baz'
-      });
-    });
+      })
+    })
 
     it('returns a new scope', function() {
       let newScope = scope.where({ foo: 'bar' })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
-    });
-  });
+    })
+  })
 
   describe('#stats()', function() {
     it('updates stats request', function() {
       scope = scope.stats({ total: 'count' })
-        .stats({ average: 'cost' });
+        .stats({ average: 'cost' })
 
       expect((scope as any)._stats).to.eql({
         total: 'count',
         average: 'cost'
-      });
-    });
+      })
+    })
 
     it('returns a new scope', function() {
       let newScope = scope.stats({ total: 'count' })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
-    });
-  });
+    })
+  })
 
   describe('#order()', function() {
     it('updates sort criteria', function() {
       scope = scope.order('foo')
-        .order({ bar: 'desc' });
+        .order({ bar: 'desc' })
       expect((scope as any)._sort).to.eql({
         foo: 'asc',
         bar: 'desc'
-      });
-    });
+      })
+    })
 
     it('returns a new scope', function() {
       let newScope = scope.order('foo')
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
-    });
-  });
+    })
+  })
 
   describe('#select()', function() {
     it('updates fields criteria', function() {
@@ -97,15 +97,15 @@ describe('Scope', function() {
       expect((scope as any)._fields).to.eql({
         people: ['foo', 'bar'],
         things: ['baz']
-      });
-    });
+      })
+    })
 
     it('returns a new scope', function() {
       let newScope = scope.select({ people: ['foo'] })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
-    });
-  });
+    })
+  })
 
   describe('#includes()', function() {
     describe('when passed a string', function() {
@@ -113,23 +113,23 @@ describe('Scope', function() {
         scope = scope.includes('foo')
         expect((scope as any)._include).to.eql({
           foo: {}
-        });
-      });
-    });
+        })
+      })
+    })
 
     describe('when passed an array', function() {
       it('updates include criteria', function() {
-        scope = scope.includes(['foo', 'bar']);
+        scope = scope.includes(['foo', 'bar'])
         expect((scope as any)._include).to.eql({
           foo: {},
           bar: {}
-        });
-      });
-    });
+        })
+      })
+    })
 
     describe('when passed a nested object', function() {
       it('updates include criteria', function() {
-        scope = scope.includes({ a: ['b', { c: 'd' }] });
+        scope = scope.includes({ a: ['b', { c: 'd' }] })
         expect((scope as any)._include).to.eql({
           a: {
             b: {},
@@ -137,16 +137,16 @@ describe('Scope', function() {
               d: {}
             }
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
     it('returns a new scope', function() {
       let newScope = scope.includes('foo')
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
-    });
-  });
+    })
+  })
 
   describe('#scope()', function() {
     it('returns itself', function() {
@@ -168,7 +168,7 @@ describe('Scope', function() {
         .selectExtra({ people: ['net_worth'] })
         .stats({ total: 'count' })
         .includes({ a: ['b', { c: 'd' }] })
-      let qp = scope.asQueryParams();
+      let qp = scope.asQueryParams()
 
       expect(qp).to.eql({
         page: {
@@ -191,9 +191,9 @@ describe('Scope', function() {
           total: 'count'
         },
         include: 'a.b,a.c.d'
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('#toQueryParams', function() {
     it('transforms nested query parameter object to query string', function() {
@@ -206,20 +206,20 @@ describe('Scope', function() {
         .select({ people: ['name', 'age'] })
         .stats({ total: 'count' })
         .includes({ a: ['b', { c: 'd' }] })
-      expect(scope.toQueryParams()).to.eq('page[number]=2&page[size]=10&filter[foo]=bar&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b,a.c.d');
-    });
+      expect(scope.toQueryParams()).to.eq('page[number]=2&page[size]=10&filter[foo]=bar&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b,a.c.d')
+    })
 
     it('does not include empty objects', function() {
-      scope = scope.page(2);
-      expect((<string>scope.toQueryParams()).match(/field/) === null).to.eq(true);
-    });
+      scope = scope.page(2)
+      expect((<string>scope.toQueryParams()).match(/field/) === null).to.eq(true)
+    })
 
     describe('when no scoping criteria present', function() {
       it('returns undefined', function() {
-        expect(scope.toQueryParams()).to.eq(undefined);
+        expect(scope.toQueryParams()).to.eq(undefined)
       })
-    });
-  });
+    })
+  })
 
   describe('#copy', function() {
     it('should make a copy of the scope', function() {
@@ -238,4 +238,4 @@ describe('Scope', function() {
       expect(original._sort).to.deep.eq(copy._sort)
     })
   })
-});
+})

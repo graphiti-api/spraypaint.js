@@ -1,4 +1,4 @@
-import { expect } from '../test-helper';
+import { expect } from '../test-helper'
 import { 
   Model, 
   Attr,
@@ -7,7 +7,7 @@ import {
   BelongsTo, 
   initModel,
 } from '../../src/decorators'
-import { Association } from '../../src/associations';
+import { Association } from '../../src/associations'
 import { JSORMBase } from '../../src/model'
 
 describe('Decorators', () => {

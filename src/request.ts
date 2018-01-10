@@ -1,7 +1,7 @@
-import colorize from './util/colorize';
-import { MiddlewareStack } from './middleware-stack';
-import { ILogger, logger as defaultLogger } from './logger';
-import {
+import colorize from './util/colorize'
+import { MiddlewareStack } from './middleware-stack'
+import { ILogger, logger as defaultLogger } from './logger'
+import { 
   JsonapiResponseDoc,
   JsonapiRequestDoc
 } from './jsonapi-spec'
@@ -23,45 +23,45 @@ export class Request {
   }
 
   get(url : string, options: RequestInit) : Promise<any> {
-    options.method = 'GET';
-    return this._fetchWithLogging(url, options);
+    options.method = 'GET'
+    return this._fetchWithLogging(url, options)
   }
 
   post(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
-    options.method = 'POST';
-    options.body   = JSON.stringify(payload);
+    options.method = 'POST'
+    options.body   = JSON.stringify(payload)
 
-    return this._fetchWithLogging(url, options);
+    return this._fetchWithLogging(url, options)
   }
 
   put(url: string, payload: JsonapiRequestDoc, options: RequestInit) : Promise<any> {
-    options.method = 'PUT';
-    options.body   = JSON.stringify(payload);
+    options.method = 'PUT'
+    options.body   = JSON.stringify(payload)
 
-    return this._fetchWithLogging(url, options);
+    return this._fetchWithLogging(url, options)
   }
 
   delete(url: string, options: RequestInit) : Promise<any> {
-    options.method = 'DELETE';
-    return this._fetchWithLogging(url, options);
+    options.method = 'DELETE'
+    return this._fetchWithLogging(url, options)
   }
 
   // private
 
   private _logRequest(verb: string, url: string) : void {
-    this.logger.info(colorize('cyan', `${verb}: `) + colorize('magenta', url));
+    this.logger.info(colorize('cyan', `${verb}: `) + colorize('magenta', url))
   }
 
   private _logResponse(responseJSON : string) : void {
-    this.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)));
+    this.logger.debug(colorize('bold', JSON.stringify(responseJSON, null, 4)))
   }
 
   private async _fetchWithLogging(url: string, options: RequestInit) : Promise<any> {
-    this._logRequest(options.method || 'UNDEFINED METHOD', url);
+    this._logRequest(options.method || 'UNDEFINED METHOD', url)
 
-    let response = await this._fetch(url, options);
+    let response = await this._fetch(url, options)
 
-    this._logResponse(response['jsonPayload']);
+    this._logResponse(response['jsonPayload'])
 
     return response
   }
@@ -113,7 +113,7 @@ export class Request {
       }
     }
 
-    ;(<any>response)['jsonPayload'] = json;
+    (<any>response)['jsonPayload'] = json
   }
 }
 

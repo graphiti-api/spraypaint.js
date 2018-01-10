@@ -1,5 +1,5 @@
-import { expect } from '../test-helper';
-import { Person } from '../fixtures';
+import { expect } from '../test-helper'
+import { Person } from '../fixtures'
 import { JsonapiCollectionDoc, JsonapiResource } from '../../src/index'
 
 import { CollectionProxy } from '../../src/proxies/collection-proxy'
@@ -35,8 +35,8 @@ describe('CollectionProxy', function() {
     recordArray = []
 
     personData.data.map((datum : JsonapiResource) => {
-      recordArray.push(Person.fromJsonapi(datum, personData));
-    });
+      recordArray.push(Person.fromJsonapi(datum, personData))
+    })
   })
 
   describe('initialization', function() {

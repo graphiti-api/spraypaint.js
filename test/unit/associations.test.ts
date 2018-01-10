@@ -1,4 +1,4 @@
-import { expect, sinon } from '../test-helper';
+import { expect, sinon } from '../test-helper'
 import  { JSORMBase } from '../../src/model'
 import { 
   hasMany, 
@@ -8,7 +8,7 @@ import {
   HasOne,
   BelongsTo,
 } from '../../src/associations'
-import { Attribute } from '../../src/attribute';
+import { Attribute } from '../../src/attribute'
 
 class Employee extends JSORMBase {
   position = hasMany({ type: Positions })

@@ -1,4 +1,4 @@
-import { expect, sinon } from '../test-helper';
+import { expect, sinon } from '../test-helper'
 import { attr, Attribute } from '../../src/attribute'
 
 describe('Attributes', () => {
