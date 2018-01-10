@@ -15,6 +15,12 @@ import { camelize } from 'inflected'
 import { ILogger, logger as defaultLogger } from './logger';
 import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
 
+import { 
+  JsonapiResource,
+  JsonapiResponseDoc,
+  JsonapiResourceIdentifier, 
+} from './jsonapi-spec'
+
 import { cloneDeep } from './util/clonedeep';
 import { nonenumerable } from './util/decorators'
 import { IncludeScopeHash } from './util/include-directive';

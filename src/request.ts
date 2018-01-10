@@ -1,6 +1,11 @@
 import colorize from './util/colorize';
 import { MiddlewareStack } from './middleware-stack';
 import { ILogger, logger as defaultLogger } from './logger';
+import { 
+  JsonapiResponseDoc,
+  JsonapiRequestDoc
+} from './jsonapi-spec'
+
 
 export type RequestVerbs = keyof Request
 

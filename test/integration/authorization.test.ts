@@ -144,7 +144,8 @@ describe('authorization headers', function() {
     describe('local storage', function() {
       let localStorageMock : {
         getItem: SinonSpy,
-        setItem: SinonSpy
+        setItem: SinonSpy,
+        removeItem: SinonSpy,
       }
 
       beforeEach(function() {
@@ -156,7 +157,8 @@ describe('authorization headers', function() {
 
         localStorageMock = { 
           setItem: sinon.spy(),
-          getItem: sinon.spy() 
+          getItem: sinon.spy(),
+          removeItem: sinon.spy(),
         }
         JSORMBase.localStorageBackend = localStorageMock
       });

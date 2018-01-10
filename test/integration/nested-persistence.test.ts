@@ -1,6 +1,7 @@
 import { sinon, expect, fetchMock } from '../test-helper';
 import { Author, Book, Genre } from '../fixtures';
 import { tempId } from '../../src/util/temp-id';
+import { JsonapiRequestDoc, JsonapiResponseDoc } from '../../src/index'
 
 let instance : Author
 let payloads : Array<JsonapiRequestDoc>

@@ -29,3 +29,12 @@ export {
   StatsScope,
   IncludeScope,
 } from './scope'
+
+export {
+  JsonapiResponseDoc,
+  JsonapiRequestDoc,
+  JsonapiErrorDoc,
+  JsonapiResourceDoc,
+  JsonapiCollectionDoc,
+  JsonapiResource,
+} from './jsonapi-spec'

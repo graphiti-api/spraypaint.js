@@ -1,5 +1,9 @@
 import { JSORMBase } from '../model';
 import { camelize } from 'inflected'
+import { 
+  JsonapiResponseDoc,
+  JsonapiErrorMeta,
+} from '../jsonapi-spec'
 
 export class ValidationErrors {
   model: JSORMBase;

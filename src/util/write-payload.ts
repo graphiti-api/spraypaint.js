@@ -3,6 +3,12 @@ import { IncludeDirective, IncludeScopeHash } from './include-directive';
 import { IncludeScope } from '../scope';
 import { snakeCase } from './snakecase';
 import { tempId } from './temp-id';
+import { 
+  JsonapiRequestDoc,
+  JsonapiResourceIdentifier,
+  JsonapiResourceMethod,
+  JsonapiResource,
+} from '../jsonapi-spec'
 
 export class WritePayload<T extends JSORMBase> {
   model: T

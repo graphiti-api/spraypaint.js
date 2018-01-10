@@ -5,6 +5,12 @@ import { CollectionProxy, RecordProxy } from './proxies';
 import { Request } from './request';
 import { refreshJWT } from './util/refresh-jwt';
 import { cloneDeep } from './util/clonedeep';
+import { 
+  JsonapiResource,
+  JsonapiResponseDoc,
+  JsonapiCollectionDoc,
+  JsonapiResourceDoc,
+} from './jsonapi-spec'
 
 export interface JsonapiQueryParams {
   page: AnyRecord,

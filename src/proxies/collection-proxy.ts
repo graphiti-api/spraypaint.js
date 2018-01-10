@@ -1,7 +1,8 @@
 import { JSORMBase } from '../model'
 import { IResultProxy } from './index'
+import { JsonapiResponseDoc } from '../jsonapi-spec'
 
-export class CollectionProxy<T> implements IResultProxy<T> {
+export class CollectionProxy<T extends JSORMBase> implements IResultProxy<T> {
   private _raw_json : JsonapiResponseDoc
   private _collection : Array<T>
 

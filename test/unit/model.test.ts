@@ -4,6 +4,7 @@ import { hasOne } from '../../src/associations'
 import { attr } from '../../src/attribute'
 import { JsonapiTypeRegistry } from '../../src/jsonapi-type-registry'
 import { StorageBackend } from '../../src/local-storage';
+import { JsonapiResource, JsonapiResponseDoc } from '../../src/index'
 
 import {
   ApplicationRecord,
@@ -109,14 +110,22 @@ describe('Model', () => {
               beforeEach(() => {
                 backend = {
                   setItem: sinon.spy(),
-                  getItem: sinon.spy()
+                  getItem: sinon.spy(),
+                  removeItem: sinon.spy()
                 }
                 buildModel()
               })
 
               it('adds to localStorage', function() {
                 BaseClass.setJWT('n3wt0k3n');
-                expect(backend.setItem).to.have.been.calledWith('MyJWT', 'n3wt0k3n');
+                expect(backend.setItem).to.have.been.calledWith('MyJWT', 'n3wt0k3n')
+              })
+
+              context('when new token is undefined', () => {
+                it('correctly clears the token', function() {
+                  BaseClass.setJWT(undefined);
+                  expect(backend.removeItem).to.have.been.calledWith('MyJWT')
+                })
               })
             })
 
@@ -124,7 +133,8 @@ describe('Model', () => {
               beforeEach(() => {
                 backend = {
                   setItem: sinon.spy(),
-                  getItem: sinon.stub().returns('or!g!nalt0k3n')
+                  getItem: sinon.stub().returns('or!g!nalt0k3n'),
+                  removeItem: sinon.spy()
                 }
                 buildModel()
               })

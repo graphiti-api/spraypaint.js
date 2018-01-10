@@ -1,4 +1,5 @@
 import { JSORMBase } from '../model';
+import { JsonapiResourceIdentifier } from '../jsonapi-spec'
 
 // Build a hash like
 // {

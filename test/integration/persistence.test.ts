@@ -1,5 +1,6 @@
 import { expect, fetchMock } from '../test-helper';
 import { Person, PersonWithExtraAttr } from '../fixtures';
+import { JsonapiRequestDoc, JsonapiResponseDoc } from '../../src/index'
 
 after(function () {
   fetchMock.restore();

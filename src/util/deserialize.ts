@@ -2,6 +2,10 @@ import { JsonapiTypeRegistry } from '../jsonapi-type-registry'
 import { JSORMBase } from '../model';
 import { camelize } from './string';
 import { IncludeDirective, IncludeScopeHash, IncludeArgHash } from './include-directive';
+import { 
+  JsonapiResource,
+  JsonapiResponseDoc 
+} from '../jsonapi-spec'
 
 function deserialize(registry : JsonapiTypeRegistry, datum : JsonapiResource, payload: JsonapiResponseDoc) : JSORMBase {
   let deserializer = new Deserializer(registry, payload);

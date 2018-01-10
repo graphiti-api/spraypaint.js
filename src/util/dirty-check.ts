@@ -1,6 +1,7 @@
 import { JSORMBase, ModelRecord, ModelAttributeChangeSet } from '../model';
 import { IncludeDirective, IncludeScopeHash } from './include-directive';
 import { IncludeScope } from '../scope'
+import { JsonapiResourceIdentifier } from '../jsonapi-spec'
 
 class DirtyChecker<T extends JSORMBase> {
   model: T;

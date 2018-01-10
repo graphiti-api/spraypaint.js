@@ -1,6 +1,7 @@
 import { expect } from '../test-helper';
 import { Person } from '../fixtures';
 import { RecordProxy } from '../../src/proxies'
+import { JsonapiResourceDoc, JsonapiResource } from '../../src/index'
 
 describe('RecordProxy', function() {
   let modelRecord : Person | undefined
