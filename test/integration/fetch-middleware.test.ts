@@ -2,7 +2,7 @@ import { expect, sinon, fetchMock } from '../test-helper'
 import { Author, ApplicationRecord } from '../fixtures'
 import { MiddlewareStack, BeforeFilter, AfterFilter } from '../../src/middleware-stack'
 
-const mock401 = function() {
+const mock401 = () => {
   fetchMock.restore()
 
   fetchMock.mock({
@@ -24,8 +24,8 @@ const mock401 = function() {
   })
 }
 
-const mock404 = function() {
-  fetchMock.restore();
+const mock404 = () => {
+  fetchMock.restore()
 
   fetchMock.mock({
     matcher: '*',
@@ -46,7 +46,7 @@ const mock404 = function() {
   })
 }
 
-const mockBadJSON = function() {
+const mockBadJSON = () => {
   fetchMock.restore()
 
   fetchMock.mock({
@@ -58,7 +58,7 @@ const mockBadJSON = function() {
   })
 }
 
-const mock500 = function() {
+const mock500 = () => {
   fetchMock.restore()
 
   fetchMock.mock({
@@ -72,7 +72,7 @@ const mock500 = function() {
   })
 }
 
-const mockSuccess = function() {
+const mockSuccess = () => {
   fetchMock.restore()
 
   fetchMock.mock({
@@ -89,15 +89,15 @@ const mockSuccess = function() {
 
 let before = {} as any
 let after = {} as any
-describe('fetch middleware', function() {
+describe('fetch middleware', () => {
   let oldStack = ApplicationRecord.middlewareStack
 
-  beforeEach(function () {
+  beforeEach(() => {
     mockSuccess()
 
     let middleware = new MiddlewareStack()
 
-    middleware.beforeFilters.push(function(url, options) {
+    middleware.beforeFilters.push((url, options) => {
       before = { url, options }
 
       // Author.first, or saving author with name 'abortme'
@@ -113,7 +113,7 @@ describe('fetch middleware', function() {
       }
     })
 
-    middleware.afterFilters.push(function(response, json) {
+    middleware.afterFilters.push((response, json) => {
       after = { response, json }
 
       if (response.status == 401) {
@@ -124,22 +124,22 @@ describe('fetch middleware', function() {
     ApplicationRecord.middlewareStack = middleware
   })
 
-  afterEach(function() {
+  afterEach(() => {
     fetchMock.restore()
     ApplicationRecord.middlewareStack = oldStack
     before = {}
     after = {}
   })
 
-  describe('reads', function() {
-    describe('on successful response', function() {
-      it('correctly resolves the promise', async function() {
+  describe('reads', () => {
+    describe('on successful response', () => {
+      it('correctly resolves the promise', async () => {
         let { data } = await Author.all()
 
         expect(data).to.deep.eq([])
       })
 
-      it('runs beforeEach hooks', function() {
+      it('runs beforeEach hooks', () => {
         return Author.all().then(({data}) => {
           expect(before.url).to.eq('http://example.com/api/v1/authors')
           expect(before.options).to.deep.eq({
@@ -152,19 +152,19 @@ describe('fetch middleware', function() {
         })
       })
 
-      it('runs afterEach hooks', function() {
+      it('runs afterEach hooks', () => {
         return Author.all().then(({data}) => {
           expect(after.response.status).to.eq(200)
         })
       })
     })
 
-    describe('when beforeFetch middleware aborts', function() {
-      beforeEach(function() {
+    describe('when beforeFetch middleware aborts', () => {
+      beforeEach(() => {
         mockSuccess()
       })
 
-      it('rejects the promise w/correct RequestError class', function() {
+      it('rejects the promise w/correct RequestError class', () => {
         return Author.first().then(({data}) => {
           expect('dont get here!').to.eq(true)
         })
@@ -177,12 +177,12 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('when afterFetch middleware aborts', function() {
-      beforeEach(function() {
+    describe('when afterFetch middleware aborts', () => {
+      beforeEach(() => {
         mock401()
       })
 
-      it('rejects the promise w/correct ResponseError class', function() {
+      it('rejects the promise w/correct ResponseError class', () => {
         return Author.all().then(({data}) => {
           expect('dont get here!').to.eq(true)
         })
@@ -195,12 +195,12 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('on 500 response', function() {
-      beforeEach(function() {
+    describe('on 500 response', () => {
+      beforeEach(() => {
         mock500()
       })
 
-      it('rejects the promise with the response', function() {
+      it('rejects the promise with the response', () => {
         return Author.all().then(({data}) => {
           expect('dont get here!').to.eq(true)
         })
@@ -210,12 +210,12 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('on a 404 response', function() {
-      beforeEach(function() {
+    describe('on a 404 response', () => {
+      beforeEach(() => {
         mock404()
       })
 
-      it('rejects the promise with RecordNotFound error', function() {
+      it('rejects the promise with RecordNotFound error', () => {
         return Author.all().then(({data}) => {
           expect('dont get here!').to.eq(true)
         })
@@ -226,12 +226,12 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('on bad json response', function() {
-      beforeEach(function() {
+    describe('on bad json response', () => {
+      beforeEach(() => {
         mockBadJSON()
       })
 
-      it('rejects the promise with original error', function() {
+      it('rejects the promise with original error', () => {
         return Author.all().then(({data}) => {
           expect('dont get here!').to.eq(true)
         })
@@ -243,29 +243,29 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('when the model overrides the hooks', function() {
+    describe('when the model overrides the hooks', () => {
       let originalBeforeFetch : BeforeFilter | undefined
       let originalAfterFetch : AfterFilter | undefined
 
-      beforeEach(function() {
+      beforeEach(() => {
         originalBeforeFetch = Author.beforeFetch
         originalAfterFetch = Author.afterFetch
 
-        Author.beforeFetch = function(url, options) {
+        Author.beforeFetch = (url, options) => {
           before.overridden = true
         }
 
-        Author.afterFetch = function(url, options) {
+        Author.afterFetch = (url, options) => {
           after.overridden = true
         }
       })
 
-      afterEach(function() {
+      afterEach(() => {
         Author.beforeFetch = originalBeforeFetch
         Author.afterFetch = originalAfterFetch
       })
 
-      it('uses the override', async function() {
+      it('uses the override', async () => {
         let a = Author
         await Author.all()
 
@@ -275,16 +275,16 @@ describe('fetch middleware', function() {
     })
   })
 
-  describe('writes', function() {
-    describe('on successful response', function() {
-      it('correctly resolves the promise', function() {
+  describe('writes', () => {
+    describe('on successful response', () => {
+      it('correctly resolves the promise', () => {
         let author = new Author()
         return author.save().then((success) => {
           expect(success).to.eq(true)
         })
       })
 
-      it('runs beforeEach hooks', function() {
+      it('runs beforeEach hooks', () => {
         let author = new Author()
         return author.save().then(() => {
           expect(before.url).to.eq('http://example.com/api/v1/authors')
@@ -299,7 +299,7 @@ describe('fetch middleware', function() {
         })
       })
 
-      it('runs afterEach hooks', function() {
+      it('runs afterEach hooks', () => {
         let author = new Author()
         return author.save().then(() => {
           expect(after.response.status).to.eq(200)
@@ -307,8 +307,8 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('when beforeFetch middleware aborts', function() {
-      it('rejects the promise w/correct RequestError class', function() {
+    describe('when beforeFetch middleware aborts', () => {
+      it('rejects the promise w/correct RequestError class', () => {
         let author = new Author({ firstName: 'abortme' })
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
@@ -322,12 +322,12 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('when afterFetch middleware aborts', function() {
-      beforeEach(function() {
+    describe('when afterFetch middleware aborts', () => {
+      beforeEach(() => {
         mock401()
       })
 
-      it('rejects the promise w/correct ResponseError class', function() {
+      it('rejects the promise w/correct ResponseError class', () => {
         let author = new Author()
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
@@ -341,12 +341,12 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('on 500 response', function() {
-      beforeEach(function() {
+    describe('on 500 response', () => {
+      beforeEach(() => {
         mock500()
       })
 
-      it('rejects the promise with the response', function() {
+      it('rejects the promise with the response', () => {
         let author = new Author()
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
@@ -357,12 +357,12 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('on bad json response', function() {
-      beforeEach(function() {
+    describe('on bad json response', () => {
+      beforeEach(() => {
         mockBadJSON()
       })
 
-      it('rejects the promise with original error', function() {
+      it('rejects the promise with original error', () => {
         let author = new Author()
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
@@ -375,29 +375,29 @@ describe('fetch middleware', function() {
       })
     })
 
-    describe('when the model overrides the hooks', function() {
+    describe('when the model overrides the hooks', () => {
       let originalBeforeFetch : BeforeFilter | undefined
       let originalAfterFetch : AfterFilter | undefined
 
-      beforeEach(function() {
+      beforeEach(() => {
         originalBeforeFetch = Author.beforeFetch
         originalAfterFetch = Author.afterFetch
 
-        Author.beforeFetch = function(url, options) {
+        Author.beforeFetch = (url, options) => {
           before.overridden = true
         }
 
-        Author.afterFetch = function(url, options) {
+        Author.afterFetch = (url, options) => {
           after.overridden = true
         }
       })
 
-      afterEach(function() {
+      afterEach(() => {
         Author.beforeFetch = originalBeforeFetch
         Author.afterFetch = originalAfterFetch
       })
 
-      it('uses the override', async function() {
+      it('uses the override', async () => {
         let author = new Author()
 
         await author.save()

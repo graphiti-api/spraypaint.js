@@ -10,7 +10,7 @@ export interface AttrRecord<T> {
   persist? : boolean
 }
 
-export function attr<T=any>(options? : AttrRecord<T>) : Attribute<T> {
+export const attr = <T=any>(options? : AttrRecord<T>) : Attribute<T> => {
   if (!options) {
     options = {}
   }
@@ -95,10 +95,10 @@ const simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/
  *  to it so I'm keeping it around.
  *
  */
-function assertType<T>(value : any, type : Attr<T>) : {
+const assertType = <T>(value : any, type : Attr<T>) : {
   valid : boolean;
   expectedType : string;
-} {
+} => {
   let valid
   const expectedType = getType(type)
   if (simpleCheckRE.test(expectedType)) {
@@ -126,12 +126,12 @@ function assertType<T>(value : any, type : Attr<T>) : {
  * because a simple equality check will fail when running
  * across different vms / iframes.
  */
-function getType(fn : Function) {
+const getType = (fn : Function) => {
   const match = fn && fn.toString().match(/^\s*function (\w+)/)
   return match ? match[1] : ''
 }
 
-function isType<T>(type : Attr<T>, fn : Function) {
+const isType = <T>(type : Attr<T>, fn : Function) => {
   if (!Array.isArray(fn)) {
     return getType(fn) === getType(type)
   }
@@ -153,6 +153,6 @@ const _toString = Object.prototype.toString
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
  */
-function isPlainObject (obj : any) : obj is object {
+const isPlainObject = (obj : any) : obj is object => {
   return _toString.call(obj) === '[object Object]'
 }

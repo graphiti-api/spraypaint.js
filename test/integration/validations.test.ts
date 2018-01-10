@@ -2,7 +2,7 @@ import { expect, sinon, fetchMock } from '../test-helper'
 import { Author, Book, Genre } from '../fixtures'
 import { tempId } from '../../src/util/temp-id'
 
-const resetMocks = function() {
+const resetMocks = () => {
   fetchMock.restore()
 
   fetchMock.mock({
@@ -88,13 +88,13 @@ const resetMocks = function() {
 
 let instance : Author
 let tempIdIndex = 0
-describe('validations', function() {
-  beforeEach(function () {
+describe('validations', () => {
+  beforeEach(() => {
     resetMocks()
   })
 
-  beforeEach(function() {
-    sinon.stub(tempId, 'generate').callsFake(function() {
+  beforeEach(() => {
+    sinon.stub(tempId, 'generate').callsFake(() => {
       tempIdIndex++
       return `abc${tempIdIndex}`
     })
@@ -106,12 +106,12 @@ describe('validations', function() {
     instance.books = [book]
   })
 
-  afterEach(function() {
+  afterEach(() => {
     tempIdIndex = 0
     ;(<any>tempId.generate)['restore']()
   })
 
-  it('applies errors to the instance', async function() {
+  it('applies errors to the instance', async () => {
     let isSuccess = await instance.save({ with: { books: 'genre' }})
 
     expect(instance.isPersisted).to.eq(false)
@@ -122,16 +122,16 @@ describe('validations', function() {
     })
   })
 
-  describe('when camelizeKeys is false', function() {
-    beforeEach(function() {
+  describe('when camelizeKeys is false', () => {
+    beforeEach(() => {
       instance.klass.camelizeKeys = false
     })
 
-    afterEach(function() {
+    afterEach(() => {
       instance.klass.camelizeKeys = true
     })
 
-    it('does not camelize the error keys', async function() {
+    it('does not camelize the error keys', async () => {
       await instance.save({ with: { books: 'genre' }})
 
       expect(instance.errors).to.deep.equal({
@@ -141,7 +141,7 @@ describe('validations', function() {
     })
   })
 
-  it('clears errors on save', async function() {
+  it('clears errors on save', async () => {
     fetchMock.restore()
     fetchMock.mock({
       matcher: '*',
@@ -154,7 +154,7 @@ describe('validations', function() {
     expect(instance.errors).to.deep.eq({})
   })
 
-  it('instantiates a new error object instance after save', async function() {
+  it('instantiates a new error object instance after save', async () => {
     let originalErrors = instance.errors = {foo: 'bar'}
     let result = instance.save({ with: { books: 'genre' }})
     let postSavePreValidateErrors = instance.errors
@@ -164,7 +164,7 @@ describe('validations', function() {
     await result
   })
 
-  it('instantiates a new error object instance after validate', async function() {
+  it('instantiates a new error object instance after validate', async () => {
     let result = instance.save({ with: { books: 'genre' }})
     let postSavePreValidateErrors = instance.errors
 
@@ -174,7 +174,7 @@ describe('validations', function() {
     expect(postValidateErrors).not.to.equal(postSavePreValidateErrors)
   })
 
-  it('applies errors to nested hasMany relationships', async function() {
+  it('applies errors to nested hasMany relationships', async () => {
     let isSuccess = await instance.save({ with: { books: 'genre' }})
 
     expect(instance.isPersisted).to.eq(false)
@@ -184,7 +184,7 @@ describe('validations', function() {
     })
   })
 
-  it('applies errors to nested belongsTo relationships', async function() {
+  it('applies errors to nested belongsTo relationships', async () => {
     let isSuccess = await instance.save({ with: { books: 'genre' }})
 
     expect(instance.isPersisted).to.eq(false)

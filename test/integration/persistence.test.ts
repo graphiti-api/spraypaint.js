@@ -2,7 +2,7 @@ import { expect, fetchMock } from '../test-helper'
 import { Person, PersonWithExtraAttr } from '../fixtures'
 import { JsonapiRequestDoc, JsonapiResponseDoc } from '../../src/index'
 
-after(function () {
+after(() => {
   fetchMock.restore()
 })
 
@@ -12,7 +12,7 @@ let putPayloads : JsonapiRequestDoc[]
 let deletePayloads : object[]
 let serverResponse : JsonapiResponseDoc
 
-beforeEach(function() {
+beforeEach(() => {
   payloads = []
   putPayloads = []
   deletePayloads = []
@@ -26,33 +26,33 @@ beforeEach(function() {
   }
 })
 
-const resetMocks = function() {
+const resetMocks = () => {
   fetchMock.restore()
 
-  fetchMock.post('http://example.com/api/v1/people', function(url, payload : any) {
+  fetchMock.post('http://example.com/api/v1/people', (url, payload : any) => {
     payloads.push(JSON.parse(payload.body))
     return serverResponse
   })
 
-  fetchMock.put('http://example.com/api/v1/people/1', function(url, payload : any) {
+  fetchMock.put('http://example.com/api/v1/people/1', (url, payload : any) => {
     putPayloads.push(JSON.parse(payload.body))
     return serverResponse
   })
 
-  fetchMock.delete('http://example.com/api/v1/people/1', function(url, payload : any) {
+  fetchMock.delete('http://example.com/api/v1/people/1', (url, payload : any) => {
     deletePayloads.push({})
     return serverResponse
   })
 }
 
-describe('Model persistence', function() {
-  beforeEach(function () {
+describe('Model persistence', () => {
+  beforeEach(() => {
     resetMocks()
   })
 
-  describe('#save()', function() {
-    describe('when an unpersisted attr', function() {
-      it('does not send the attr to server', async function() {
+  describe('#save()', () => {
+    describe('when an unpersisted attr', () => {
+      it('does not send the attr to server', async () => {
         instance = new PersonWithExtraAttr({ extraThing: 'foo' })
         expect((<PersonWithExtraAttr>instance).extraThing).to.eq('foo')
 
@@ -62,13 +62,13 @@ describe('Model persistence', function() {
       })
     })
 
-    describe('when the model is already persisted', function() {
-      beforeEach(function() {
+    describe('when the model is already persisted', () => {
+      beforeEach(() => {
         instance.id = '1'
         instance.isPersisted = true
       })
 
-      it('updates instead of creates', async function() {
+      it('updates instead of creates', async () => {
         instance.firstName = 'Joe'
         await instance.save()
 
@@ -83,7 +83,7 @@ describe('Model persistence', function() {
         })
       })
 
-      it('preserves persistence data', async function() {
+      it('preserves persistence data', async () => {
         instance.firstName = 'Joe'
         let bool = await instance.save()
 
@@ -92,13 +92,13 @@ describe('Model persistence', function() {
         expect(instance.isPersisted).to.eq(true)
       })
 
-      describe('when no dirty attributes', function() {
-        beforeEach(function() {
+      describe('when no dirty attributes', () => {
+        beforeEach(() => {
           instance.firstName = 'Joe'
           instance.isPersisted = true
         })
 
-        it('does not send attributes to the server', async function() {
+        it('does not send attributes to the server', async () => {
           await instance.save()
 
           expect(putPayloads[0]).to.deep.equal({
@@ -111,8 +111,8 @@ describe('Model persistence', function() {
       })
     })
 
-    describe('when the model is not already persisted', function() {
-      it('makes the correct HTTP call', async function() {
+    describe('when the model is not already persisted', () => {
+      it('makes the correct HTTP call', async () => {
         instance.firstName = 'Joe'
         await instance.save()
 
@@ -126,8 +126,8 @@ describe('Model persistence', function() {
         })
       })
 
-      describe('when the response is 200', function() {
-        it('marks the instance as persisted', async function() {
+      describe('when the response is 200', () => {
+        it('marks the instance as persisted', async () => {
           expect(instance.isPersisted).to.eq(false)
 
           await instance.save()
@@ -135,7 +135,7 @@ describe('Model persistence', function() {
           expect(instance.isPersisted).to.eq(true)
         })
 
-        it('sets the id of the record', async function() {
+        it('sets the id of the record', async () => {
           expect(instance.isPersisted).to.eq(false)
 
           await instance.save()
@@ -143,13 +143,13 @@ describe('Model persistence', function() {
           expect(instance.id).to.eq('1')
         })
 
-        it('resolve the promise to true', async function() {
+        it('resolve the promise to true', async () => {
           let bool = await instance.save()
 
           expect(bool).to.eq(true)
         })
 
-        it('updates attributes set by the server', async function() {
+        it('updates attributes set by the server', async () => {
           serverResponse = {
             data: {
               id: '1',
@@ -167,8 +167,8 @@ describe('Model persistence', function() {
         })
       })
 
-      describe('when the response is 500', function() {
-        beforeEach(function () {
+      describe('when the response is 500', () => {
+        beforeEach(() => {
           fetchMock.restore()
 
           fetchMock.mock({
@@ -177,11 +177,11 @@ describe('Model persistence', function() {
           })
         })
 
-        afterEach(function() {
+        afterEach(() => {
           resetMocks()
         })
 
-        it('rejects the promise', async function() {
+        it('rejects the promise', async () => {
           try {
             await instance.save()
           } catch(err) {
@@ -190,8 +190,8 @@ describe('Model persistence', function() {
         })
       })
 
-      describe('when the response is 422', function() {
-        beforeEach(function () {
+      describe('when the response is 422', () => {
+        beforeEach(() => {
           fetchMock.restore()
 
           fetchMock.mock({
@@ -200,25 +200,25 @@ describe('Model persistence', function() {
           })
         })
 
-        afterEach(function() {
+        afterEach(() => {
           resetMocks()
         })
 
-        it('does not mark the instance as persisted', async function() {
+        it('does not mark the instance as persisted', async () => {
           await instance.save()
 
           expect(instance.isPersisted).to.eq(false)
         })
 
-        it('resolves the promise to false', async function() {
+        it('resolves the promise to false', async () => {
           let bool = await instance.save()
 
           expect(bool).to.eq(false)
         })
       })
 
-      describe('when an attribute is explicitly set as null', function() {
-        it('sends the attribute as part of the payload', async function() {
+      describe('when an attribute is explicitly set as null', () => {
+        it('sends the attribute as part of the payload', async () => {
           instance.firstName = 'Joe'
           instance.lastName = null
 
@@ -238,27 +238,27 @@ describe('Model persistence', function() {
     })
   })
 
-  describe('#destroy', function() {
-    beforeEach(function() {
+  describe('#destroy', () => {
+    beforeEach(() => {
       instance.id = '1'
       instance.isPersisted = true
     })
 
-    it('makes correct DELETE request', async function() {
+    it('makes correct DELETE request', async () => {
       await instance.destroy()
 
       expect(deletePayloads.length).to.eq(1)
     })
 
-    it('marks object as not persisted', async function() {
+    it('marks object as not persisted', async () => {
       expect(instance.isPersisted).to.eq(true)
       await instance.destroy()
 
       expect(instance.isPersisted).to.eq(false)
     })
 
-    describe('when the server returns 422', function() {
-      beforeEach(function () {
+    describe('when the server returns 422', () => {
+      beforeEach(() => {
         fetchMock.restore()
 
         fetchMock.mock({
@@ -267,19 +267,19 @@ describe('Model persistence', function() {
         })
       })
 
-      afterEach(function() {
+      afterEach(() => {
         resetMocks()
       })
 
-      it('does not mark the object as unpersisted', async function() {
+      it('does not mark the object as unpersisted', async () => {
         await instance.destroy()
 
         expect(instance.isPersisted).to.eq(true)
       })
     })
 
-    describe('when the server returns 500', function() {
-      beforeEach(function () {
+    describe('when the server returns 500', () => {
+      beforeEach(() => {
         fetchMock.restore()
 
         fetchMock.mock({
@@ -288,11 +288,11 @@ describe('Model persistence', function() {
         })
       })
 
-      afterEach(function() {
+      afterEach(() => {
         resetMocks()
       })
 
-      it('rejects the promise', async function() {
+      it('rejects the promise', async () => {
         try {
           await instance.destroy()
         } catch(err) {

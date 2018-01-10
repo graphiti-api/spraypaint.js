@@ -1,5 +1,9 @@
 {
+  "extends": [
+    "tslint-config-prettier"
+  ],
   "rules": {
+    "only-arrow-functions": true,
     "semicolon": [true, "never"],
     "array-type": [true, "array"],
     "typedef-whitespace": [ true, {

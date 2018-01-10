@@ -89,10 +89,10 @@ export interface ExtendOptions<
   methods? : ThisType<M & Attributes & Methods> & Methods
 }
 
-export function applyModelConfig<T extends typeof JSORMBase>(
+export const applyModelConfig = <T extends typeof JSORMBase> (
   ModelClass : T,
   config : ModelConfigurationOptions
-) : void {
+) : void => {
   let k : keyof ModelConfigurationOptions
 
   for(k in config) {
@@ -701,12 +701,12 @@ export class JSORMBase {
 
 (<any>JSORMBase.prototype).klass = JSORMBase
 
-export function isModelClass(arg : any) : arg is typeof JSORMBase {
+export const isModelClass = (arg : any) : arg is typeof JSORMBase => {
   if (!arg) { return false }
   return arg.currentClass && arg.currentClass.isJSORMModel
 }
 
-export function isModelInstance(arg : any) : arg is JSORMBase {
+export const isModelInstance = (arg : any) : arg is JSORMBase => {
   if (!arg) { return false }
   return isModelClass(arg.constructor.currentClass)
 }

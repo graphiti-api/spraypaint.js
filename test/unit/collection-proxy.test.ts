@@ -4,7 +4,7 @@ import { JsonapiCollectionDoc, JsonapiResource } from '../../src/index'
 
 import { CollectionProxy } from '../../src/proxies/collection-proxy'
 
-describe('CollectionProxy', function() {
+describe('CollectionProxy', () => {
   let personData : JsonapiCollectionDoc
   let recordArray : Person[]
 
@@ -39,13 +39,13 @@ describe('CollectionProxy', function() {
     })
   })
 
-  describe('initialization', function() {
-    it('should assign the response correctly', function() {
+  describe('initialization', () => {
+    it('should assign the response correctly', () => {
       let collection = new CollectionProxy(recordArray, personData)
       expect(collection.raw).to.deep.equal(personData)
     })
 
-    it('should assign the correct models to the data array', function() {
+    it('should assign the correct models to the data array', () => {
       let collection = new CollectionProxy(recordArray, personData)
       collection.data.forEach((item) => {
         expect(item).to.be.instanceof(Person)
@@ -53,18 +53,18 @@ describe('CollectionProxy', function() {
     })
   })
 
-  describe('#meta', function() {
-    it('should get meta field from raw response', function() {
+  describe('#meta', () => {
+    it('should get meta field from raw response', () => {
       let collection = new CollectionProxy(recordArray, personData)
       expect(collection.meta).to.deep.eq(personData.meta)
     })
 
-    describe('meta is null', function() {
+    describe('meta is null', () => {
       let personData = {
         data: [],
       }
 
-      it('should return an empty object', function() {
+      it('should return an empty object', () => {
         let collection = new CollectionProxy(recordArray, personData)
         expect(collection.meta).to.deep.eq({})
       })

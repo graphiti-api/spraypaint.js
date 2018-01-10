@@ -24,18 +24,18 @@ import {
 
 type ModelDecorator = <M extends typeof JSORMBase>(target : M) => M 
 
-function ModelDecorator(config? : ModelConfigurationOptions) : ModelDecorator {
-  return function<M extends typeof JSORMBase>(target : M) : M {
+const ModelDecorator = (config? : ModelConfigurationOptions) : ModelDecorator => {
+  return <M extends typeof JSORMBase>(target : M) : M => {
     modelFactory(target, config)
     return target
   }
 }
 
-export function initModel(modelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void {
+export const initModel = (modelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void => {
   modelFactory(modelClass, config)
 }
 
-function modelFactory<M extends typeof JSORMBase>(ModelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void {
+const modelFactory = <M extends typeof JSORMBase>(ModelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void => {
   ensureModelInheritance(ModelClass)
 
   applyModelConfig(ModelClass, config || {})
@@ -47,17 +47,18 @@ function modelFactory<M extends typeof JSORMBase>(ModelClass : typeof JSORMBase,
   ModelClass.registerType()
 }
 
-function AttrDecoratorFactory(config? : AttributeOptions) : PropertyDecorator
-function AttrDecoratorFactory(target : JSORMBase, propertyKey : string) : void
-function AttrDecoratorFactory(target : typeof JSORMBase, propertyKey : string, config? : AttributeOptions) : void
-function AttrDecoratorFactory(
+const AttrDecoratorFactory : {
+  (config? : AttributeOptions) : PropertyDecorator
+  (target : JSORMBase, propertyKey : string) : void
+  (target : typeof JSORMBase, propertyKey : string, config? : AttributeOptions) : void
+} = (
   configOrTarget? : typeof JSORMBase | JSORMBase | AttributeOptions | undefined, 
   propertyKey? : string,
   attrConfig? : AttributeOptions
-) : any {
+) : any => {
   let attrDefinition = new Attribute({name: propertyKey})
 
-  const attrFunction = function(ModelClass : typeof JSORMBase, propertyKey : string | symbol) : PropertyDescriptor {
+  const attrFunction = (ModelClass : typeof JSORMBase, propertyKey : string | symbol) : PropertyDescriptor => {
     ensureModelInheritance(ModelClass)
 
     if (!attrDefinition.name) {
@@ -91,13 +92,13 @@ function AttrDecoratorFactory(
       attrDefinition = new Attribute(configOrTarget)
     }
 
-    return function(target : JSORMBase, propertyKey : string | symbol) {
+    return (target : JSORMBase, propertyKey : string | symbol) => {
       return attrFunction(<any>target.constructor, propertyKey)
     }
   }
 }
 
-function ensureModelInheritance(ModelClass : typeof JSORMBase) {
+const ensureModelInheritance = (ModelClass : typeof JSORMBase) => {
   if (ModelClass.currentClass !== ModelClass) {
     ModelClass.currentClass.inherited(ModelClass)
   }
@@ -133,15 +134,16 @@ type DecoratorArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string | t
  * ```
  * 
  */ 
-function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType : any) {
-  function DecoratorFactory(target : typeof JSORMBase, propertyKey : string, optsOrType? : AssociationFactoryOpts<T> | string) : void 
-  function DecoratorFactory(optsOrType? : DecoratorArgs<T>) : DecoratorFn 
-  function DecoratorFactory(
+const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any) => {
+  const DecoratorFactory : {
+    (optsOrType? : DecoratorArgs<T>) : DecoratorFn 
+    (target : typeof JSORMBase, propertyKey : string, optsOrType? : AssociationFactoryOpts<T> | string) : void 
+  } = (
     targetOrConfig? : typeof JSORMBase | DecoratorArgs<T>, 
     propertyKey? : string,
     optsOrType? : DecoratorArgs<T>
-  ) {
-    function extend(ModelClass : typeof JSORMBase) : typeof JSORMBase {
+  ) : any => {
+    const extend = (ModelClass : typeof JSORMBase) : typeof JSORMBase => {
       ensureModelInheritance(ModelClass)
 
       return ModelClass
@@ -149,7 +151,7 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType : any)
 
     let opts : AssociationRecord<T> | undefined
 
-    const factoryFn = function(target : JSORMBase, propertyKey : string) {
+    const factoryFn = (target : JSORMBase, propertyKey : string) => {
       if (optsOrType === undefined) {
         let inferredType = pluralize(underscore(propertyKey))
 
@@ -191,12 +193,7 @@ function AssociationDecoratorFactoryBuilder<T extends JSORMBase>(AttrType : any)
       attrDefinition.descriptor()
     }
 
-    if (isModelClass(targetOrConfig)) {
-      if (!propertyKey) {
-        optsOrType = targetOrConfig
-        return factoryFn
-      }
-
+    if (isModelClass(targetOrConfig) && propertyKey) {
       let target = targetOrConfig
 
       factoryFn(target.prototype, propertyKey)

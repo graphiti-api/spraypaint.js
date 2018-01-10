@@ -11,20 +11,20 @@ let serverResponse : JsonapiResponseDoc
 
 type method = 'update' | 'destroy' | 'disassociate'
 
-const resetMocks = function() {
+const resetMocks = () => {
   fetchMock.restore()
 
-  fetchMock.post('http://example.com/api/v1/authors', function(url, payload : any) {
+  fetchMock.post('http://example.com/api/v1/authors', (url, payload : any) => {
     payloads.push(JSON.parse(payload.body))
     return serverResponse
   })
 
-  fetchMock.put('http://example.com/api/v1/authors/1', function(url, payload : any) {
+  fetchMock.put('http://example.com/api/v1/authors/1', (url, payload : any) => {
     putPayloads.push(JSON.parse(payload.body))
     return serverResponse
   })
 
-  fetchMock.delete('http://example.com/api/v1/authors/1', function(url, payload : any) {
+  fetchMock.delete('http://example.com/api/v1/authors/1', (url, payload : any) => {
     deletePayloads.push({})
     return serverResponse
   })
@@ -89,7 +89,7 @@ let expectedCreatePayload : JsonapiResponseDoc = {
   ]
 }
 
-let expectedUpdatePayload = function(method : method) : JsonapiResponseDoc {
+let expectedUpdatePayload = (method : method) : JsonapiResponseDoc => {
   return {
     data: {
       id: '1',
@@ -134,7 +134,7 @@ let expectedUpdatePayload = function(method : method) : JsonapiResponseDoc {
   }
 }
 
-const seedPersistedData = function() {
+const seedPersistedData = () => {
   let genre = new Genre({ id: '20', name: 'Horror' })
   genre.isPersisted = true
   let book = new Book({ id: '10', title: 'The Shining', genre: genre })
@@ -149,8 +149,8 @@ const seedPersistedData = function() {
   book.title = 'Updated Book Title'
 }
 
-describe('nested persistence', function() {
-  beforeEach(function() {
+describe('nested persistence', () => {
+  beforeEach(() => {
     payloads = []
     putPayloads = []
     deletePayloads = []
@@ -200,29 +200,29 @@ describe('nested persistence', function() {
     }
   })
 
-  afterEach(function () {
+  afterEach(() => {
     fetchMock.restore()
   })
 
-  beforeEach(function () {
+  beforeEach(() => {
     resetMocks()
   })
 
   let tempIdIndex = 0
-  beforeEach(function() {
-    sinon.stub(tempId, 'generate').callsFake(function() {
+  beforeEach(() => {
+    sinon.stub(tempId, 'generate').callsFake(() => {
       tempIdIndex++
       return `abc${tempIdIndex}`
     })
   })
 
-  afterEach(function() {
+  afterEach(() => {
     tempIdIndex = 0
     ;(<any>tempId.generate)['restore']()
   })
 
-  describe('basic nested create', function() {
-    beforeEach(function() {
+  describe('basic nested create', () => {
+    beforeEach(() => {
       let genre = new Genre({ name: 'Horror' })
       let book = new Book({ title: 'The Shining', genre: genre })
       let specialBook = new Book({ title: 'The Stand' })
@@ -233,13 +233,13 @@ describe('nested persistence', function() {
     // todo test on the way back - id set, attrs updated, isPersisted
     // todo remove #destroy? and just save when markwithpersisted? combo? for ombined payload
     // todo test unique includes/circular relationshio
-    it('sends the correct payload', async function() {
+    it('sends the correct payload', async () => {
       await instance.save({ with: { books: 'genre', specialBooks: {} } })
 
       expect(payloads[0]).to.deep.equal(expectedCreatePayload)
     })
 
-    it('assigns ids from the response', async function() {
+    it('assigns ids from the response', async () => {
       await instance.save({ with: { books: 'genre' } })
 
       expect(instance.id).to.eq('1')
@@ -249,7 +249,7 @@ describe('nested persistence', function() {
 
     // Commenting out to avoid thinking something is wrong
     // every time I see a pending test. We may be able to delete this?
-    // it('removes old temp ids', async function() {
+    // it('removes old temp ids', async () => {
     //   await instance.save({ with: { books: 'genre' } })
 
     //   expect(instance.id).to.eq('1');
@@ -257,7 +257,7 @@ describe('nested persistence', function() {
     //   expect(instance.books[0].genre.temp_id).to.eq(null);
     // });
 
-    it('updates attributes with data from server', async function() {
+    it('updates attributes with data from server', async () => {
       await instance.save({ with: { books: 'genre' } })
 
       expect(instance.firstName).to.eq('first name from server')
@@ -265,36 +265,36 @@ describe('nested persistence', function() {
       expect(instance.books[0].genre.name).to.eq('name from server')
     })
 
-    describe('when a hasMany relationship has no dirty members', function() {
-      beforeEach(function() {
+    describe('when a hasMany relationship has no dirty members', () => {
+      beforeEach(() => {
         instance.books[0] = new Book()
       })
 
-      it('should not be sent in the payload', async function() {
+      it('should not be sent in the payload', async () => {
         await instance.save({ with: { books: 'genre' } })
         expect((<any>payloads)[0].data.relationships).to.eq(undefined)
       })
     })
   })
 
-  describe('basic nested update', function() {
-    beforeEach(function() {
+  describe('basic nested update', () => {
+    beforeEach(() => {
       seedPersistedData()
     })
 
-    it('sends the correct payload', async function() {
+    it('sends the correct payload', async () => {
       await instance.save({ with: { books: 'genre' } })
 
       expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('update'))
     })
   })
 
-  describe('basic nested destroy', function() {
-    beforeEach(function() {
+  describe('basic nested destroy', () => {
+    beforeEach(() => {
       seedPersistedData()
     })
 
-    it('sends the correct payload', async function() {
+    it('sends the correct payload', async () => {
       instance.books[0].isMarkedForDestruction = true
       instance.books[0].genre.isMarkedForDestruction = true
       await instance.save({ with: { books: 'genre' } })
@@ -302,14 +302,14 @@ describe('nested persistence', function() {
       expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('destroy'))
     })
 
-    it('removes the associated has_many data', async function() {
+    it('removes the associated has_many data', async () => {
       instance.books[0].isMarkedForDestruction = true
       await instance.save({ with: 'books' })
 
       expect(instance.books.length).to.eq(0)
     })
 
-    it('removes the associated belongs_to data', async function() {
+    it('removes the associated belongs_to data', async () => {
       instance.books[0].genre.isMarkedForDestruction = true
       await instance.save({ with: { books: 'genre' } })
 
@@ -317,12 +317,12 @@ describe('nested persistence', function() {
     })
   })
 
-  describe('basic nested disassociate', function() {
-    beforeEach(function() {
+  describe('basic nested disassociate', () => {
+    beforeEach(() => {
       seedPersistedData()
     })
 
-    it('sends the correct payload', async function() {
+    it('sends the correct payload', async () => {
       instance.books[0].isMarkedForDisassociation = true
       instance.books[0].genre.isMarkedForDisassociation = true
       await instance.save({ with: { books: 'genre' } })
@@ -330,14 +330,14 @@ describe('nested persistence', function() {
       expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload('disassociate'))
     })
 
-    it('removes the associated has_many data', async function() {
+    it('removes the associated has_many data', async () => {
       instance.books[0].isMarkedForDisassociation = true
       await instance.save({ with: 'books' })
 
       expect(instance.books.length).to.eq(0)
     })
 
-    it('removes the associated belongs_to data', async function() {
+    it('removes the associated belongs_to data', async () => {
       instance.books[0].genre.isMarkedForDisassociation = true
       await instance.save({ with: { books: 'genre' } })
 

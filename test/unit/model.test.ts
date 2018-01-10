@@ -92,7 +92,7 @@ describe('Model', () => {
             })
           })
 
-          describe('when localStorage is configured', function() {
+          describe('when localStorage is configured', () => {
             let backend : StorageBackend
             let BaseClass : typeof JSORMBase
 
@@ -116,13 +116,13 @@ describe('Model', () => {
                 buildModel()
               })
 
-              it('adds to localStorage', function() {
+              it('adds to localStorage', () => {
                 BaseClass.setJWT('n3wt0k3n')
                 expect(backend.setItem).to.have.been.calledWith('MyJWT', 'n3wt0k3n')
               })
 
               context('when new token is undefined', () => {
-                it('correctly clears the token', function() {
+                it('correctly clears the token', () => {
                   BaseClass.setJWT(undefined)
                   expect(backend.removeItem).to.have.been.calledWith('MyJWT')
                 })
@@ -139,11 +139,11 @@ describe('Model', () => {
                 buildModel()
               })
 
-              it('sets the token correctly', function() {
+              it('sets the token correctly', () => {
                 expect(BaseClass.getJWT()).to.equal('or!g!nalt0k3n')
               })
 
-              it('does not set it on the base class or other sibling classes', function() {
+              it('does not set it on the base class or other sibling classes', () => {
                 expect(JSORMBase.getJWT()).to.equal(undefined)
                 expect(ApplicationRecord.getJWT()).to.equal(undefined)
               })
@@ -1035,12 +1035,12 @@ describe('Model', () => {
       })
     })
 
-    describe('when a belongs-to is marked for destruction', function() {
+    describe('when a belongs-to is marked for destruction', () => {
       let newDoc : JsonapiResponseDoc
       let instance : Author
       let book : Book
 
-      beforeEach(function() {
+      beforeEach(() => {
         let genre = new Genre({ id: '1' })
         genre.isPersisted = true
         genre.isMarkedForDestruction = true
@@ -1072,31 +1072,31 @@ describe('Model', () => {
         }
       })
 
-      it('is set to null', function() {
+      it('is set to null', () => {
         expect(instance.books[0].genre).to.be.instanceof(Genre)
         instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
         expect(instance.books[0].genre).to.eq(null)
       })
 
-      describe('within a nested destruction', function() {
-        beforeEach(function() {
+      describe('within a nested destruction', () => {
+        beforeEach(() => {
           book.isMarkedForDestruction = true
         })
 
-        it('is removed via the parent', function() {
+        it('is removed via the parent', () => {
           instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
           expect(instance.books.length).to.eq(0)
         })
       })
     })
 
-    describe('when a belongs-to is marked for disassociation', function() {
+    describe('when a belongs-to is marked for disassociation', () => {
       let newDoc : JsonapiResponseDoc
       let instance : Author
       let book : Book
 
 
-      beforeEach(function() {
+      beforeEach(() => {
         let genre = new Genre({ id: '1' })
         genre.isPersisted = true
         genre.isMarkedForDisassociation = true
@@ -1128,18 +1128,18 @@ describe('Model', () => {
         }
       })
 
-      it('is set to null', function() {
+      it('is set to null', () => {
         expect(instance.books[0].genre).to.be.instanceof(Genre)
         instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
         expect(instance.books[0].genre).to.eq(null)
       })
 
-      describe('within a nested destruction', function() {
-        beforeEach(function() {
+      describe('within a nested destruction', () => {
+        beforeEach(() => {
           book.isMarkedForDisassociation = true
         })
 
-        it('is removed via the parent', function() {
+        it('is removed via the parent', () => {
           instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, { books: { genre: {} }})
           expect(instance.books.length).to.eq(0)
         })

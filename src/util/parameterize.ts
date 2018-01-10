@@ -1,4 +1,4 @@
-export default function parameterize(obj : any, prefix? : string) : string {
+const parameterize = (obj : any, prefix? : string) : string => {
   let str = []
 
   for (let key in obj) {
@@ -28,3 +28,5 @@ export default function parameterize(obj : any, prefix? : string) : string {
 
   return str.join("&")
 }
+
+export { parameterize as default }

@@ -43,7 +43,7 @@ describe('Model Class static attributes typings',() => {
         })
       })
 
-      function strEnum<T extends string>(o : T[]) : {[K in T]: K} {
+      const strEnum = <T extends string>(o : T[]) : {[K in T]: K} => {
         return o.reduce((res, key) => {
           res[key] = key
           return res

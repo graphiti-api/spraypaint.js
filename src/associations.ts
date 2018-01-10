@@ -115,25 +115,25 @@ export interface AssociationFactoryOpts<T extends JSORMBase> {
 
 export type AssociationFactoryArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string
 
-export function hasOne<T extends JSORMBase>(options? : AssociationFactoryOpts<T>) : HasOne<T> {
+export const hasOne = <T extends JSORMBase>(options? : AssociationFactoryOpts<T>) : HasOne<T> => {
   let opts = extractAssocOpts(options)
 
   return new HasOne(opts)
 }
 
-export function belongsTo<T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : BelongsTo<T> {
+export const belongsTo = <T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : BelongsTo<T> => {
   let opts = extractAssocOpts(options)
 
   return new BelongsTo(opts)
 }
 
-export function hasMany<T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : HasMany<T> {
+export const hasMany = <T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : HasMany<T> => {
   let opts = extractAssocOpts(options)
 
   return new HasMany(opts)
 }
 
-function extractAssocOpts<T extends JSORMBase>(options? : AssociationFactoryArgs<T> | string) {
+const extractAssocOpts = <T extends JSORMBase>(options? : AssociationFactoryArgs<T> | string) => {
   let associationOpts : AssociationRecord<T> = {}
 
   if (options !== undefined) {
@@ -159,7 +159,7 @@ function extractAssocOpts<T extends JSORMBase>(options? : AssociationFactoryArgs
 }
 
 type ModelAssoc = { owner : typeof JSORMBase }
-function modelForType(association : ModelAssoc, jsonapiType : string) : typeof JSORMBase {
+const modelForType = (association : ModelAssoc, jsonapiType : string) : typeof JSORMBase => {
   let klass = association.owner.typeRegistry.get(jsonapiType)
 
   if (klass) {

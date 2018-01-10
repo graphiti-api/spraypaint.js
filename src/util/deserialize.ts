@@ -7,12 +7,17 @@ import {
   JsonapiResponseDoc 
 } from '../jsonapi-spec'
 
-function deserialize(registry : JsonapiTypeRegistry, datum : JsonapiResource, payload : JsonapiResponseDoc) : JSORMBase {
+const deserialize = (registry : JsonapiTypeRegistry, datum : JsonapiResource, payload : JsonapiResponseDoc) : JSORMBase => {
   let deserializer = new Deserializer(registry, payload)
   return deserializer.deserialize(datum)
 }
 
-function deserializeInstance(instance : JSORMBase, resource : JsonapiResource, payload : JsonapiResponseDoc, includeDirective : IncludeScopeHash = {}) : JSORMBase {
+const deserializeInstance = (
+  instance : JSORMBase, 
+  resource : JsonapiResource, 
+  payload : JsonapiResponseDoc, 
+  includeDirective : IncludeScopeHash = {}
+) : JSORMBase => {
   let deserializer = new Deserializer(instance.klass.typeRegistry, payload)
   return deserializer.deserializeInstance(instance, resource, includeDirective)
 }

@@ -5,40 +5,40 @@ import { Author } from '../fixtures'
 let scope : Scope<typeof Author>
 let scopeImpl : any
 
-beforeEach(function() {
+beforeEach(() => {
   let model = sinon.stub()
   scope = new Scope(model as any)
 })
 
-describe('Scope', function() {
-  describe('#page()', function() {
-    it('sets correct pagination information', function() {
+describe('Scope', () => {
+  describe('#page()', () => {
+    it('sets correct pagination information', () => {
       scope = scope.page(2)
       expect((scope as any)._pagination).to.eql({ number: 2 })
     })
 
-    it('returns a new scope', function() {
+    it('returns a new scope', () => {
       let newScope = scope.page(2)
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
   })
 
-  describe('#per()', function() {
-    it('sets correct pagination information', function() {
+  describe('#per()', () => {
+    it('sets correct pagination information', () => {
       scope = scope.per(10)
       expect((scope as any)._pagination).to.eql({ size: 10 })
     })
 
-    it('returns a new scope', function() {
+    it('returns a new scope', () => {
       let newScope = scope.per(10)
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
   })
 
-  describe('#where()', function() {
-    it('updates filter criteria', function() {
+  describe('#where()', () => {
+    it('updates filter criteria', () => {
       scope = scope.where({ foo: 'bar' })
          .where({ bar: 'baz' })
          .where({ foo: 'bar2' })
@@ -48,15 +48,15 @@ describe('Scope', function() {
       })
     })
 
-    it('returns a new scope', function() {
+    it('returns a new scope', () => {
       let newScope = scope.where({ foo: 'bar' })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
   })
 
-  describe('#stats()', function() {
-    it('updates stats request', function() {
+  describe('#stats()', () => {
+    it('updates stats request', () => {
       scope = scope.stats({ total: 'count' })
         .stats({ average: 'cost' })
 
@@ -66,15 +66,15 @@ describe('Scope', function() {
       })
     })
 
-    it('returns a new scope', function() {
+    it('returns a new scope', () => {
       let newScope = scope.stats({ total: 'count' })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
   })
 
-  describe('#order()', function() {
-    it('updates sort criteria', function() {
+  describe('#order()', () => {
+    it('updates sort criteria', () => {
       scope = scope.order('foo')
         .order({ bar: 'desc' })
       expect((scope as any)._sort).to.eql({
@@ -83,15 +83,15 @@ describe('Scope', function() {
       })
     })
 
-    it('returns a new scope', function() {
+    it('returns a new scope', () => {
       let newScope = scope.order('foo')
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
   })
 
-  describe('#select()', function() {
-    it('updates fields criteria', function() {
+  describe('#select()', () => {
+    it('updates fields criteria', () => {
       scope = scope.select({ people: ['foo', 'bar'] })
         .select({ things: ['baz'] })
       expect((scope as any)._fields).to.eql({
@@ -100,16 +100,16 @@ describe('Scope', function() {
       })
     })
 
-    it('returns a new scope', function() {
+    it('returns a new scope', () => {
       let newScope = scope.select({ people: ['foo'] })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
   })
 
-  describe('#includes()', function() {
-    describe('when passed a string', function() {
-      it('updates include criteria', function() {
+  describe('#includes()', () => {
+    describe('when passed a string', () => {
+      it('updates include criteria', () => {
         scope = scope.includes('foo')
         expect((scope as any)._include).to.eql({
           foo: {}
@@ -117,8 +117,8 @@ describe('Scope', function() {
       })
     })
 
-    describe('when passed an array', function() {
-      it('updates include criteria', function() {
+    describe('when passed an array', () => {
+      it('updates include criteria', () => {
         scope = scope.includes(['foo', 'bar'])
         expect((scope as any)._include).to.eql({
           foo: {},
@@ -127,8 +127,8 @@ describe('Scope', function() {
       })
     })
 
-    describe('when passed a nested object', function() {
-      it('updates include criteria', function() {
+    describe('when passed a nested object', () => {
+      it('updates include criteria', () => {
         scope = scope.includes({ a: ['b', { c: 'd' }] })
         expect((scope as any)._include).to.eql({
           a: {
@@ -141,21 +141,21 @@ describe('Scope', function() {
       })
     })
 
-    it('returns a new scope', function() {
+    it('returns a new scope', () => {
       let newScope = scope.includes('foo')
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
   })
 
-  describe('#scope()', function() {
-    it('returns itself', function() {
+  describe('#scope()', () => {
+    it('returns itself', () => {
       expect(scope.scope()).to.equal(scope)
     })
   })
 
-  describe('#asQueryParams()', function() {
-    it('transforms all scoping criteria into a jsonapi-compatible query param object', function() {
+  describe('#asQueryParams()', () => {
+    it('transforms all scoping criteria into a jsonapi-compatible query param object', () => {
       scope = scope
         .page(2)
         .per(10)
@@ -195,8 +195,8 @@ describe('Scope', function() {
     })
   })
 
-  describe('#toQueryParams', function() {
-    it('transforms nested query parameter object to query string', function() {
+  describe('#toQueryParams', () => {
+    it('transforms nested query parameter object to query string', () => {
       scope = scope
         .page(2)
         .per(10)
@@ -209,24 +209,24 @@ describe('Scope', function() {
       expect(scope.toQueryParams()).to.eq('page[number]=2&page[size]=10&filter[foo]=bar&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b,a.c.d')
     })
 
-    it('does not include empty objects', function() {
+    it('does not include empty objects', () => {
       scope = scope.page(2)
       expect((<string>scope.toQueryParams()).match(/field/) === null).to.eq(true)
     })
 
-    describe('when no scoping criteria present', function() {
-      it('returns undefined', function() {
+    describe('when no scoping criteria present', () => {
+      it('returns undefined', () => {
         expect(scope.toQueryParams()).to.eq(undefined)
       })
     })
   })
 
-  describe('#copy', function() {
-    it('should make a copy of the scope', function() {
+  describe('#copy', () => {
+    it('should make a copy of the scope', () => {
       expect(scope.copy()).not.to.eq(scope)
     })
 
-    it('should make a copy of scope attributes', function() {
+    it('should make a copy of scope attributes', () => {
       let original : any = scope.order({foo: 'asc'}).page(1).per(20)
 
       let copy = original.copy()
