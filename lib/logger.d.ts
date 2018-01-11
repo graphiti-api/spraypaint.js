@@ -6,11 +6,11 @@ export declare enum LogLevel {
 }
 export declare type LogLevelKey = keyof (typeof LogLevel);
 export interface ILogger {
+    level: string;
     debug(stmt: any): void;
     info(stmt: any): void;
     warn(stmt: any): void;
     error(stmt: any): void;
-    level: string;
 }
 export declare class Logger implements ILogger {
     private _level;

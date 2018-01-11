@@ -1,9 +1,9 @@
-export function attr(options) {
+export var attr = function (options) {
     if (!options) {
         options = {};
     }
     return new Attribute(options);
-}
+};
 var Attribute = /** @class */ (function () {
     function Attribute(options) {
         this.isRelationship = false;
@@ -37,15 +37,15 @@ var Attribute = /** @class */ (function () {
     };
     // This returns the getters/setters for use on the *model*
     Attribute.prototype.descriptor = function () {
-        var attr = this;
+        var attrDef = this;
         return {
             configurable: true,
             enumerable: true,
             get: function () {
-                return attr.getter(this);
+                return attrDef.getter(this);
             },
             set: function (value) {
-                attr.setter(this, value);
+                attrDef.setter(this, value);
             }
         };
     };
@@ -61,21 +61,21 @@ var simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/;
  *  to it so I'm keeping it around.
  *
  */
-function assertType(value, type) {
+var assertType = function (value, type) {
     var valid;
     var expectedType = getType(type);
     if (simpleCheckRE.test(expectedType)) {
         var t = typeof value;
         valid = t === expectedType.toLowerCase();
         // for primitive wrapper objects
-        if (!valid && t === 'object') {
+        if (!valid && t === "object") {
             valid = value instanceof type;
         }
     }
-    else if (expectedType === 'Object') {
+    else if (expectedType === "Object") {
         valid = isPlainObject(value);
     }
-    else if (expectedType === 'Array') {
+    else if (expectedType === "Array") {
         valid = Array.isArray(value);
     }
     else {
@@ -85,17 +85,18 @@ function assertType(value, type) {
         valid: valid,
         expectedType: expectedType
     };
-}
+};
 /**
  * Use function string name to check built-in types,
  * because a simple equality check will fail when running
  * across different vms / iframes.
  */
-function getType(fn) {
+/* tslint:disable-next-line:ban-types */
+var getType = function (fn) {
     var match = fn && fn.toString().match(/^\s*function (\w+)/);
-    return match ? match[1] : '';
-}
-function isType(type, fn) {
+    return match ? match[1] : "";
+};
+var isType = function (type, fn) {
     if (!Array.isArray(fn)) {
         return getType(fn) === getType(type);
     }
@@ -105,7 +106,7 @@ function isType(type, fn) {
         }
     }
     return false;
-}
+};
 /**
  * Get the raw type string of a value e.g. [object Object]
  */
@@ -114,7 +115,7 @@ var _toString = Object.prototype.toString;
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
  */
-function isPlainObject(obj) {
-    return _toString.call(obj) === '[object Object]';
-}
+var isPlainObject = function (obj) {
+    return _toString.call(obj) === "[object Object]";
+};
 //# sourceMappingURL=attribute.js.map

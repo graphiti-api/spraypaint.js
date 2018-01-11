@@ -1,4 +1,4 @@
-import { camelize } from 'inflected';
+import { camelize } from "inflected";
 var ValidationErrors = /** @class */ (function () {
     function ValidationErrors(model, payload) {
         this.model = model;
@@ -31,17 +31,17 @@ var ValidationErrors = /** @class */ (function () {
         if (this.model.klass.camelizeKeys) {
             attribute = camelize(attribute, false);
         }
-        errorsAccumulator[attribute] = meta['message'];
+        errorsAccumulator[attribute] = meta.message;
     };
     ValidationErrors.prototype._processRelationship = function (model, meta) {
         var relatedObject = model[meta.name];
         if (Array.isArray(relatedObject)) {
             relatedObject = relatedObject.find(function (r) {
-                return (r.id === meta['id'] || r.temp_id === meta['temp-id']);
+                return r.id === meta.id || r.temp_id === meta["temp-id"];
             });
         }
-        if (meta['relationship']) {
-            this._processRelationship(relatedObject, meta['relationship']);
+        if (meta.relationship) {
+            this._processRelationship(relatedObject, meta.relationship);
         }
         else {
             var relatedAccumulator_1 = {};

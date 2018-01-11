@@ -1,4 +1,4 @@
-import { IncludeDirective } from './include-directive';
+import { IncludeDirective } from "./include-directive";
 var DirtyChecker = /** @class */ (function () {
     function DirtyChecker(model) {
         this.model = model;
@@ -11,10 +11,11 @@ var DirtyChecker = /** @class */ (function () {
         if (relatedModel.isPersisted) {
             var identifiers = this.model._originalRelationships[relationName] || [];
             var found = identifiers.find(function (ri) {
-                return JSON.stringify(ri) == JSON.stringify(relatedModel.resourceIdentifier);
+                return (JSON.stringify(ri) === JSON.stringify(relatedModel.resourceIdentifier));
             });
-            if (!found)
+            if (!found) {
                 dirty = true;
+            }
         }
         return dirty;
     };
@@ -27,11 +28,11 @@ var DirtyChecker = /** @class */ (function () {
         if (relationships === void 0) { relationships = {}; }
         var includeDirective = new IncludeDirective(relationships);
         var includeHash = includeDirective.toScopeObject();
-        return this._hasDirtyAttributes() ||
+        return (this._hasDirtyAttributes() ||
             this._hasDirtyRelationships(includeHash) ||
             this.model.isMarkedForDestruction ||
             this.model.isMarkedForDisassociation ||
-            this._isUnpersisted();
+            this._isUnpersisted());
     };
     DirtyChecker.prototype.dirtyAttributes = function () {
         var dirty = {};
@@ -42,7 +43,7 @@ var DirtyChecker = /** @class */ (function () {
             if (!this.model.isPersisted) {
                 dirty[key] = [null, current];
             }
-            else if (prior != current) {
+            else if (prior !== current) {
                 dirty[key] = [prior, current];
             }
         }
@@ -50,7 +51,8 @@ var DirtyChecker = /** @class */ (function () {
     };
     // TODO: allow attributes == {} configurable
     DirtyChecker.prototype._isUnpersisted = function () {
-        return !this.model.isPersisted && JSON.stringify(this.model.attributes) !== JSON.stringify({});
+        return (!this.model.isPersisted &&
+            JSON.stringify(this.model.attributes) !== JSON.stringify({}));
     };
     DirtyChecker.prototype._hasDirtyAttributes = function () {
         var originalAttrs = this.model._originalAttributes;

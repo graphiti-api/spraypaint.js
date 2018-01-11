@@ -1,6 +1,6 @@
-import { IncludeDirective } from './include-directive';
-import { tempId } from './temp-id';
-import { underscore } from 'inflected';
+import { IncludeDirective } from "./include-directive";
+import { tempId } from "./temp-id";
+import { underscore } from "inflected";
 var WritePayload = /** @class */ (function () {
     function WritePayload(model, relationships) {
         this.included = [];
@@ -8,7 +8,7 @@ var WritePayload = /** @class */ (function () {
         this.includeDirective = includeDirective.toScopeObject();
         this.model = model;
         if (!model.klass.jsonapiType) {
-            throw new Error('Cannot serialize model: Undefined jsonapiType');
+            throw new Error("Cannot serialize model: Undefined jsonapiType");
         }
         this.jsonapiType = model.klass.jsonapiType;
     }
@@ -32,7 +32,8 @@ var WritePayload = /** @class */ (function () {
             if (relatedObjects) {
                 if (Array.isArray(relatedObjects)) {
                     relatedObjects.forEach(function (relatedObject, index) {
-                        if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
+                        if (relatedObject.isMarkedForDestruction ||
+                            relatedObject.isMarkedForDisassociation) {
                             modelIdx[key].splice(index, 1);
                         }
                         else {
@@ -42,7 +43,8 @@ var WritePayload = /** @class */ (function () {
                 }
                 else {
                     var relatedObject = relatedObjects;
-                    if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
+                    if (relatedObject.isMarkedForDestruction ||
+                        relatedObject.isMarkedForDisassociation) {
                         modelIdx[key] = null;
                     }
                     else {
@@ -67,17 +69,20 @@ var WritePayload = /** @class */ (function () {
                 if (Array.isArray(relatedModels)) {
                     data = [];
                     relatedModels.forEach(function (relatedModel) {
-                        if (_this.model.hasDirtyRelation(key, relatedModel) || relatedModel.isDirty(nested)) {
+                        if (_this.model.hasDirtyRelation(key, relatedModel) ||
+                            relatedModel.isDirty(nested)) {
                             data.push(_this._processRelatedModel(relatedModel, nested));
                         }
                     });
-                    if (data.length === 0)
+                    if (data.length === 0) {
                         data = null;
+                    }
                 }
                 else {
                     // Either the related model is dirty, or it's a dirty relation
                     // (maybe the "department" is not dirty, but the employee changed departments
-                    if (_this.model.hasDirtyRelation(key, relatedModels) || relatedModels.isDirty(nested)) {
+                    if (_this.model.hasDirtyRelation(key, relatedModels) ||
+                        relatedModels.isDirty(nested)) {
                         data = _this._processRelatedModel(relatedModels, nested);
                     }
                 }
@@ -94,18 +99,18 @@ var WritePayload = /** @class */ (function () {
         };
         this.model.clearErrors();
         if (this.model.id) {
-            data['id'] = this.model.id;
+            data.id = this.model.id;
         }
         if (this.model.temp_id) {
-            data['temp-id'] = this.model.temp_id;
+            data["temp-id"] = this.model.temp_id;
         }
         var _attributes = this.attributes();
         if (Object.keys(_attributes).length > 0) {
-            data['attributes'] = _attributes;
+            data.attributes = _attributes;
         }
         var relationshipData = this.relationships();
         if (Object.keys(relationshipData).length > 0) {
-            data['relationships'] = relationshipData;
+            data.relationships = relationshipData;
         }
         var json = { data: data };
         if (this.included.length > 0) {
@@ -121,7 +126,7 @@ var WritePayload = /** @class */ (function () {
             model.temp_id = tempId.generate();
         }
         var wp = new WritePayload(model, nested);
-        var relatedJSON = wp.asJSON()['data'];
+        var relatedJSON = wp.asJSON().data;
         var resourceIdentifier = this._resourceIdentifierFor(model);
         this._pushInclude(relatedJSON);
         wp.included.forEach(function (incl) {
@@ -137,25 +142,25 @@ var WritePayload = /** @class */ (function () {
             type: model.klass.jsonapiType
         };
         if (model.id) {
-            identifier['id'] = model.id;
+            identifier.id = model.id;
         }
         if (model.temp_id) {
-            identifier['temp-id'] = model.temp_id;
+            identifier["temp-id"] = model.temp_id;
         }
         var method;
         if (model.isPersisted) {
             if (model.isMarkedForDestruction) {
-                method = 'destroy';
+                method = "destroy";
             }
             else if (model.isMarkedForDisassociation) {
-                method = 'disassociate';
+                method = "disassociate";
             }
             else {
-                method = 'update';
+                method = "update";
             }
         }
         else {
-            method = 'create';
+            method = "create";
         }
         identifier.method = method;
         return identifier;
@@ -164,12 +169,11 @@ var WritePayload = /** @class */ (function () {
         if (!this._isIncluded(include)) {
             this.included.push(include);
         }
-        ;
     };
     WritePayload.prototype._isIncluded = function (include) {
         this.included.forEach(function (incl) {
-            if (incl['type'] === include['type']) {
-                if (incl['id'] === include['id'] || incl['temp-id'] === include['temp-id']) {
+            if (incl.type === include.type) {
+                if (incl.id === include.id || incl["temp-id"] === include["temp-id"]) {
                     return true;
                 }
             }

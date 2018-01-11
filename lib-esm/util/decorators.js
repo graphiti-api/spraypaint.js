@@ -1,4 +1,4 @@
-export function nonenumerable(target, key) {
+export var nonenumerable = function (target, key) {
     // first property defined in prototype, that's why we use getters/setters
     // (otherwise assignment in object will override property in prototype)
     Object.defineProperty(target, key, {
@@ -10,11 +10,11 @@ export function nonenumerable(target, key) {
             Object.defineProperty(this, key, {
                 value: val,
                 writable: true,
-                enumerable: false,
+                enumerable: false
             });
         },
         configurable: true,
-        enumerable: false,
+        enumerable: false
     });
-}
+};
 //# sourceMappingURL=decorators.js.map

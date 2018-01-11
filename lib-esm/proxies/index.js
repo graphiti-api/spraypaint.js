@@ -1,3 +1,3 @@
-export { CollectionProxy } from './collection-proxy';
-export { RecordProxy } from './record-proxy';
+export { CollectionProxy } from "./collection-proxy";
+export { RecordProxy } from "./record-proxy";
 //# sourceMappingURL=index.js.map

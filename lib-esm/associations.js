@@ -1,6 +1,6 @@
 import * as tslib_1 from "tslib";
-import { Attribute } from './attribute';
-import { JSORMBase } from './model';
+import { Attribute } from "./attribute";
+import { JSORMBase } from "./model";
 var SingleAssociationBase = /** @class */ (function (_super) {
     tslib_1.__extends(SingleAssociationBase, _super);
     function SingleAssociationBase(options) {
@@ -28,8 +28,8 @@ var SingleAssociationBase = /** @class */ (function (_super) {
         return context.relationships[this.name];
     };
     SingleAssociationBase.prototype.setter = function (context, val) {
-        if (val && !val.hasOwnProperty('isRelationship')) {
-            if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
+        if (val && !val.hasOwnProperty("isRelationship")) {
+            if (!(val instanceof JSORMBase) && !Array.isArray(val)) {
                 val = new this.klass(val);
             }
             context.relationships[this.name] = val;
@@ -75,8 +75,8 @@ var HasMany = /** @class */ (function (_super) {
         }
     };
     HasMany.prototype.setter = function (context, val) {
-        if (val && !val.hasOwnProperty('isRelationship')) {
-            if (!(val instanceof JSORMBase) && !(Array.isArray(val))) {
+        if (val && !val.hasOwnProperty("isRelationship")) {
+            if (!(val instanceof JSORMBase) && !Array.isArray(val)) {
                 val = new this.klass(val);
             }
             context.relationships[this.name] = val;
@@ -104,22 +104,22 @@ var BelongsTo = /** @class */ (function (_super) {
     return BelongsTo;
 }(SingleAssociationBase));
 export { BelongsTo };
-export function hasOne(options) {
+export var hasOne = function (options) {
     var opts = extractAssocOpts(options);
     return new HasOne(opts);
-}
-export function belongsTo(options) {
+};
+export var belongsTo = function (options) {
     var opts = extractAssocOpts(options);
     return new BelongsTo(opts);
-}
-export function hasMany(options) {
+};
+export var hasMany = function (options) {
     var opts = extractAssocOpts(options);
     return new HasMany(opts);
-}
-function extractAssocOpts(options) {
+};
+var extractAssocOpts = function (options) {
     var associationOpts = {};
     if (options !== undefined) {
-        if (typeof options === 'string') {
+        if (typeof options === "string") {
             associationOpts = {
                 jsonapiType: options
             };
@@ -127,9 +127,9 @@ function extractAssocOpts(options) {
         else {
             associationOpts = {
                 persist: options.persist,
-                name: options.name,
+                name: options.name
             };
-            if (typeof options.type === 'string') {
+            if (typeof options.type === "string") {
                 associationOpts.jsonapiType = options.type;
             }
             else {
@@ -138,8 +138,8 @@ function extractAssocOpts(options) {
         }
     }
     return associationOpts;
-}
-function modelForType(association, jsonapiType) {
+};
+var modelForType = function (association, jsonapiType) {
     var klass = association.owner.typeRegistry.get(jsonapiType);
     if (klass) {
         return klass;
@@ -147,5 +147,5 @@ function modelForType(association, jsonapiType) {
     else {
         throw new Error("Unknown type \"" + jsonapiType + "\"");
     }
-}
+};
 //# sourceMappingURL=associations.js.map

@@ -1,23 +1,25 @@
 import * as tslib_1 from "tslib";
-import { ValidationErrors } from './util/validation-errors';
-import { refreshJWT } from './util/refresh-jwt';
-import relationshipIdentifiersFor from './util/relationship-identifiers';
-import { Request } from './request';
-import { WritePayload } from './util/write-payload';
-import { LocalStorage, NullStorageBackend } from './local-storage';
-import { deserialize, deserializeInstance } from './util/deserialize';
-import DirtyChecker from './util/dirty-check';
-import { Scope } from './scope';
-import { JsonapiTypeRegistry } from './jsonapi-type-registry';
-import { camelize } from 'inflected';
-import { logger as defaultLogger } from './logger';
-import { MiddlewareStack } from './middleware-stack';
-import { cloneDeep } from './util/clonedeep';
-import { nonenumerable } from './util/decorators';
-export function applyModelConfig(ModelClass, config) {
+import { ValidationErrors } from "./util/validation-errors";
+import { refreshJWT } from "./util/refresh-jwt";
+import relationshipIdentifiersFor from "./util/relationship-identifiers";
+import { Request } from "./request";
+import { WritePayload } from "./util/write-payload";
+import { LocalStorage, NullStorageBackend } from "./local-storage";
+import { deserialize, deserializeInstance } from "./util/deserialize";
+import DirtyChecker from "./util/dirty-check";
+import { Scope } from "./scope";
+import { JsonapiTypeRegistry } from "./jsonapi-type-registry";
+import { camelize } from "inflected";
+import { logger as defaultLogger } from "./logger";
+import { MiddlewareStack } from "./middleware-stack";
+import { cloneDeep } from "./util/clonedeep";
+import { nonenumerable } from "./util/decorators";
+export var applyModelConfig = function (ModelClass, config) {
     var k;
     for (k in config) {
-        ModelClass[k] = config[k];
+        if (config.hasOwnProperty(k)) {
+            ModelClass[k] = config[k];
+        }
     }
     if (ModelClass.isBaseClass === undefined) {
         ModelClass.setAsBase();
@@ -25,7 +27,7 @@ export function applyModelConfig(ModelClass, config) {
     else if (ModelClass.isBaseClass === true) {
         ModelClass.isBaseClass = false;
     }
-}
+};
 var JSORMBase = /** @class */ (function () {
     function JSORMBase(attrs) {
         this.relationships = {};
@@ -43,7 +45,7 @@ var JSORMBase = /** @class */ (function () {
         get: function () {
             if (!this._localStorage) {
                 if (!this._localStorageBackend) {
-                    if (this.jwtLocalStorage && typeof localStorage !== 'undefined') {
+                    if (this.jwtLocalStorage && typeof localStorage !== "undefined") {
                         this._localStorageBackend = localStorage;
                     }
                     else {
@@ -118,7 +120,7 @@ var JSORMBase = /** @class */ (function () {
         },
         set: function (registry) {
             if (!this.isBaseClass) {
-                throw new Error('Cannot set a registry on a non-base class');
+                throw new Error("Cannot set a registry on a non-base class");
             }
             this._typeRegistry = registry;
         },
@@ -150,16 +152,17 @@ var JSORMBase = /** @class */ (function () {
             return Subclass;
         }(this));
         this.inherited(Subclass);
-        this.inherited(Subclass);
         var attrs = {};
         if (options.attrs) {
             for (var key in options.attrs) {
-                var attr = options.attrs[key];
-                if (!attr.name) {
-                    attr.name = key;
+                if (options.attrs.hasOwnProperty(key)) {
+                    var attr = options.attrs[key];
+                    if (!attr.name) {
+                        attr.name = key;
+                    }
+                    attr.owner = Subclass;
+                    attrs[key] = attr;
                 }
-                attr.owner = Subclass;
-                attrs[key] = attr;
             }
         }
         Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs);
@@ -167,7 +170,10 @@ var JSORMBase = /** @class */ (function () {
         Subclass.registerType();
         if (options.methods) {
             for (var methodName in options.methods) {
-                Subclass.prototype[methodName] = options.methods[methodName];
+                if (options.methods.hasOwnProperty(methodName)) {
+                    ;
+                    Subclass.prototype[methodName] = options.methods[methodName];
+                }
             }
         }
         return Subclass;
@@ -189,13 +195,16 @@ var JSORMBase = /** @class */ (function () {
         var _this = this;
         var attrs = this.klass.attributeList;
         for (var key in attrs) {
-            var attr = attrs[key];
-            Object.defineProperty(this, key, attr.descriptor());
+            if (attrs.hasOwnProperty(key)) {
+                var attr = attrs[key];
+                Object.defineProperty(this, key, attr.descriptor());
+            }
         }
+        ;
         [
-            'isPersisted',
-            'isMarkedForDestruction',
-            'isMarkedForDisassociation'
+            "isPersisted",
+            "isMarkedForDestruction",
+            "isMarkedForDisassociation"
         ].forEach(function (property) {
             var descriptor = Object.getOwnPropertyDescriptor(JSORMBase.prototype, property);
             if (descriptor) {
@@ -275,15 +284,18 @@ var JSORMBase = /** @class */ (function () {
             return;
         }
         for (var key in attrs) {
-            var attributeName = key;
-            if (this.klass.camelizeKeys) {
-                attributeName = camelize(key, false);
-            }
-            if (key == 'id' || this.klass.attributeList[attributeName]) {
-                this[attributeName] = attrs[key];
-            }
-            else if (this.klass.strictAttributes) {
-                throw new Error("Unknown attribute: " + key);
+            if (attrs.hasOwnProperty(key)) {
+                var attributeName = key;
+                if (this.klass.camelizeKeys) {
+                    attributeName = camelize(key, false);
+                }
+                if (key === "id" || this.klass.attributeList[attributeName]) {
+                    ;
+                    this[attributeName] = attrs[key];
+                }
+                else if (this.klass.strictAttributes) {
+                    throw new Error("Unknown attribute: " + key);
+                }
             }
         }
     };
@@ -300,7 +312,7 @@ var JSORMBase = /** @class */ (function () {
     Object.defineProperty(JSORMBase.prototype, "resourceIdentifier", {
         get: function () {
             if (this.klass.jsonapiType === undefined) {
-                throw new Error('Cannot build resource identifier for class. No JSONAPI Type specified.');
+                throw new Error("Cannot build resource identifier for class. No JSONAPI Type specified.");
             }
             return {
                 id: this.id,
@@ -353,9 +365,9 @@ var JSORMBase = /** @class */ (function () {
     JSORMBase.fetchOptions = function () {
         var options = {
             headers: (_a = {
-                    Accept: 'application/json'
+                    Accept: "application/json"
                 },
-                _a['Content-Type'] = 'application/json',
+                _a["Content-Type"] = "application/json",
                 _a)
         };
         var jwt = this.getJWT();
@@ -384,7 +396,9 @@ var JSORMBase = /** @class */ (function () {
                 // that our subclass has overridden one or the other, we create a middleware stack that
                 // replaces the normal filters with the class override.
                 if (this.beforeFetch || this.afterFetch) {
-                    var before_1 = this.beforeFetch ? [this.beforeFetch] : stack.beforeFilters;
+                    var before_1 = this.beforeFetch
+                        ? [this.beforeFetch]
+                        : stack.beforeFilters;
                     var after_1 = this.afterFetch ? [this.afterFetch] : stack.afterFilters;
                     return new MiddlewareStack(before_1, after_1);
                 }
@@ -418,8 +432,8 @@ var JSORMBase = /** @class */ (function () {
     JSORMBase.where = function (clause) {
         return this.scope().where(clause);
     };
-    JSORMBase.page = function (number) {
-        return this.scope().page(number);
+    JSORMBase.page = function (pageNum) {
+        return this.scope().page(pageNum);
     };
     JSORMBase.per = function (size) {
         return this.scope().per(size);
@@ -459,7 +473,7 @@ var JSORMBase = /** @class */ (function () {
         return "Token token=\"" + jwt + "\"";
     };
     JSORMBase.getJWTOwner = function () {
-        this.logger.warn('JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead');
+        this.logger.warn("JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead");
         return this.baseClass;
     };
     JSORMBase.prototype.destroy = function () {
@@ -470,7 +484,7 @@ var JSORMBase = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         url = this.klass.url(this.id);
-                        verb = 'delete';
+                        verb = "delete";
                         request = new Request(this._middleware(), this.klass.logger);
                         _a.label = 1;
                     case 1:
@@ -481,7 +495,7 @@ var JSORMBase = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 3:
                         err_1 = _a.sent();
-                        throw (err_1);
+                        throw err_1;
                     case 4: return [4 /*yield*/, this._handleResponse(response, function () {
                             _this.isPersisted = false;
                         })];
@@ -499,12 +513,12 @@ var JSORMBase = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         url = this.klass.url();
-                        verb = 'post';
+                        verb = "post";
                         request = new Request(this._middleware(), this.klass.logger);
-                        payload = new WritePayload(this, options['with']);
+                        payload = new WritePayload(this, options.with);
                         if (this.isPersisted) {
                             url = this.klass.url(this.id);
-                            verb = 'put';
+                            verb = "put";
                         }
                         json = payload.asJSON();
                         _a.label = 1;
@@ -516,9 +530,9 @@ var JSORMBase = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 3:
                         err_2 = _a.sent();
-                        throw (err_2);
+                        throw err_2;
                     case 4: return [4 /*yield*/, this._handleResponse(response, function () {
-                            _this.fromJsonapi(response['jsonPayload'].data, response['jsonPayload'], payload.includeDirective);
+                            _this.fromJsonapi(response.jsonPayload.data, response.jsonPayload, payload.includeDirective);
                             payload.postProcess();
                         })];
                     case 5: return [2 /*return*/, _a.sent()];
@@ -530,7 +544,7 @@ var JSORMBase = /** @class */ (function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 refreshJWT(this.klass, response);
-                if (response.status == 422) {
+                if (response.status === 422) {
                     ValidationErrors.apply(this, response.jsonPayload);
                     return [2 /*return*/, false];
                 }
@@ -556,14 +570,14 @@ var JSORMBase = /** @class */ (function () {
     JSORMBase.prototype.resetRelationTracking = function (includeDirective) {
         this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective));
     };
-    JSORMBase.baseUrl = 'http://please-set-a-base-url.com';
-    JSORMBase.apiNamespace = '/';
+    JSORMBase.baseUrl = "http://please-set-a-base-url.com";
+    JSORMBase.apiNamespace = "/";
     JSORMBase.camelizeKeys = true;
     JSORMBase.strictAttributes = false;
     JSORMBase.logger = defaultLogger;
     JSORMBase.attributeList = {};
     JSORMBase.currentClass = JSORMBase;
-    JSORMBase.jwtLocalStorage = 'jwt';
+    JSORMBase.jwtLocalStorage = false;
     /*
      *
      * This is to allow for sane type checking in collaboration with the
@@ -617,16 +631,16 @@ var JSORMBase = /** @class */ (function () {
 export { JSORMBase };
 ;
 JSORMBase.prototype.klass = JSORMBase;
-export function isModelClass(arg) {
+export var isModelClass = function (arg) {
     if (!arg) {
         return false;
     }
     return arg.currentClass && arg.currentClass.isJSORMModel;
-}
-export function isModelInstance(arg) {
+};
+export var isModelInstance = function (arg) {
     if (!arg) {
         return false;
     }
     return isModelClass(arg.constructor.currentClass);
-}
+};
 //# sourceMappingURL=model.js.map

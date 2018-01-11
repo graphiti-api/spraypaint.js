@@ -1,12 +1,12 @@
-import { CollectionProxy, RecordProxy } from './proxies';
-import { LocalStorage, StorageBackend } from './local-storage';
-import { Attribute } from './attribute';
-import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from './scope';
-import { JsonapiTypeRegistry } from './jsonapi-type-registry';
-import { ILogger } from './logger';
-import { MiddlewareStack, BeforeFilter, AfterFilter } from './middleware-stack';
-import { JsonapiResource, JsonapiResponseDoc, JsonapiResourceIdentifier } from './jsonapi-spec';
-import { IncludeScopeHash } from './util/include-directive';
+import { CollectionProxy, RecordProxy } from "./proxies";
+import { LocalStorage, StorageBackend } from "./local-storage";
+import { Attribute } from "./attribute";
+import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from "./scope";
+import { JsonapiTypeRegistry } from "./jsonapi-type-registry";
+import { ILogger } from "./logger";
+import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack";
+import { JsonapiResource, JsonapiResponseDoc, JsonapiResourceIdentifier } from "./jsonapi-spec";
+import { IncludeScopeHash } from "./util/include-directive";
 export interface ModelConfiguration {
     baseUrl: string;
     apiNamespace: string;
@@ -19,7 +19,7 @@ export interface ModelConfiguration {
     logger: ILogger;
 }
 export declare type ModelConfigurationOptions = Partial<ModelConfiguration>;
-export declare type ModelIdFields = 'id' | 'temp_id';
+export declare type ModelIdFields = "id" | "temp_id";
 export declare type ModelAttrs<K extends keyof T, T extends JSORMBase> = {
     [P in K]?: T[P];
 } & Partial<Record<ModelIdFields, string>>;
@@ -27,11 +27,11 @@ export declare type ModelAttrChanges<T> = {
     [P in keyof T]?: T[P][];
 } & Partial<Record<ModelIdFields, string[]>>;
 export declare type ModelRecord<T extends JSORMBase> = ModelAttrs<keyof (Omit<T, keyof JSORMBase>), T>;
-export declare type ModelAttributeChangeSet<T extends JSORMBase> = ModelAttrChanges<(Omit<T, keyof JSORMBase>)>;
+export declare type ModelAttributeChangeSet<T extends JSORMBase> = ModelAttrChanges<Omit<T, keyof JSORMBase>>;
 export interface SaveOptions {
     with?: IncludeScope;
 }
-export declare type ExtendedModel<Superclass extends typeof JSORMBase, Attributes, Methods, Prototype = Superclass['prototype'] & Attributes & Methods> = {
+export declare type ExtendedModel<Superclass extends typeof JSORMBase, Attributes, Methods, Prototype = Superclass["prototype"] & Attributes & Methods> = {
     new (attrs?: Record<string, any>): Prototype;
     prototype: Prototype;
 } & Superclass;
@@ -39,15 +39,15 @@ export declare type AttrMap<T> = {
     [P in keyof T]: Attribute<T[P]>;
 };
 export declare type DefaultAttrs = Record<string, any>;
-export declare type DefaultMethods<V> = {
+export interface DefaultMethods<V> {
     [key: string]: (this: V, ...args: any[]) => any;
-};
+}
 export interface ExtendOptions<M, Attributes = DefaultAttrs, Methods = DefaultMethods<M>> {
     static?: ModelConfigurationOptions;
     attrs?: AttrMap<Attributes>;
     methods?: ThisType<M & Attributes & Methods> & Methods;
 }
-export declare function applyModelConfig<T extends typeof JSORMBase>(ModelClass: T, config: ModelConfigurationOptions): void;
+export declare const applyModelConfig: <T extends typeof JSORMBase>(ModelClass: T, config: Partial<ModelConfiguration>) => void;
 export declare class JSORMBase {
     static baseUrl: string;
     static apiNamespace: string;
@@ -101,10 +101,10 @@ export declare class JSORMBase {
     isMarkedForDisassociation: boolean;
     attributes: Record<string, any>;
     readonly typedAttributes: ModelRecord<this>;
-    relationship(name: string): Array<JSORMBase> | JSORMBase | undefined;
+    relationship(name: string): JSORMBase[] | JSORMBase | undefined;
     assignAttributes(attrs?: Record<string, any>): void;
     setMeta(metaObj: object | undefined): void;
-    relationshipResourceIdentifiers(relationNames: Array<string>): Record<string, JsonapiResourceIdentifier[]>;
+    relationshipResourceIdentifiers(relationNames: string[]): Record<string, JsonapiResourceIdentifier[]>;
     fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc, includeDirective?: IncludeScopeHash): any;
     readonly resourceIdentifier: JsonapiResourceIdentifier;
     errors: object;
@@ -123,7 +123,7 @@ export declare class JSORMBase {
     static all<I extends typeof JSORMBase>(this: I): Promise<CollectionProxy<I["prototype"]>>;
     static find<I extends typeof JSORMBase>(this: I, id: string | number): Promise<RecordProxy<I["prototype"]>>;
     static where<I extends typeof JSORMBase>(this: I, clause: WhereClause): Scope<I>;
-    static page<I extends typeof JSORMBase>(this: I, number: number): Scope<I>;
+    static page<I extends typeof JSORMBase>(this: I, pageNum: number): Scope<I>;
     static per<I extends typeof JSORMBase>(this: I, size: number): Scope<I>;
     static order<I extends typeof JSORMBase>(this: I, clause: SortScope | string): Scope<I>;
     static select<I extends typeof JSORMBase>(this: I, clause: FieldScope): Scope<I>;
@@ -140,7 +140,7 @@ export declare class JSORMBase {
     private _handleResponse(response, callback);
     private _fetchOptions();
     private _middleware();
-    resetRelationTracking(includeDirective: Object): void;
+    resetRelationTracking(includeDirective: object): void;
 }
-export declare function isModelClass(arg: any): arg is typeof JSORMBase;
-export declare function isModelInstance(arg: any): arg is JSORMBase;
+export declare const isModelClass: (arg: any) => arg is typeof JSORMBase;
+export declare const isModelInstance: (arg: any) => arg is JSORMBase;

@@ -1,3 +1,4 @@
+/* tslint:disable:no-console */
 export var LogLevel;
 (function (LogLevel) {
     LogLevel[LogLevel["debug"] = 1] = "debug";
@@ -9,13 +10,13 @@ var LOG_LEVELS = {
     debug: 1,
     info: 2,
     warn: 3,
-    error: 4,
+    error: 4
 };
 var Logger = /** @class */ (function () {
     function Logger(level) {
-        if (level === void 0) { level = 'warn'; }
+        if (level === void 0) { level = "warn"; }
         this._level = LogLevel.info;
-        if (typeof level === 'number') {
+        if (typeof level === "number") {
             this._level = level;
         }
         else {
@@ -46,9 +47,11 @@ var Logger = /** @class */ (function () {
         get: function () {
             var key;
             for (key in LogLevel) {
-                var val = LogLevel[key];
-                if (val === this._level) {
-                    return key;
+                if (LogLevel.hasOwnProperty(key)) {
+                    var val = LogLevel[key];
+                    if (val === this._level) {
+                        return key;
+                    }
                 }
             }
             throw new Error("Invalid log level: " + this._level);
@@ -59,7 +62,7 @@ var Logger = /** @class */ (function () {
                 this._level = lvlValue;
             }
             else {
-                throw ("Log level must be one of " + Object.keys(LOG_LEVELS).join(', '));
+                throw new Error("Log level must be one of " + Object.keys(LOG_LEVELS).join(", "));
             }
         },
         enumerable: true,

@@ -1,9 +1,15 @@
 var NullStorageBackend = /** @class */ (function () {
     function NullStorageBackend() {
     }
-    NullStorageBackend.prototype.getItem = function (key) { return null; };
-    NullStorageBackend.prototype.setItem = function (key, value) { };
-    NullStorageBackend.prototype.removeItem = function (key) { };
+    NullStorageBackend.prototype.getItem = function (key) {
+        return null;
+    };
+    NullStorageBackend.prototype.setItem = function (key, value) {
+        /*noop*/
+    };
+    NullStorageBackend.prototype.removeItem = function (key) {
+        /*noop*/
+    };
     return NullStorageBackend;
 }());
 export { NullStorageBackend };

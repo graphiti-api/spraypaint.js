@@ -1,13 +1,13 @@
-import { camelize } from 'inflected';
-function deserialize(registry, datum, payload) {
+import { camelize } from "inflected";
+var deserialize = function (registry, datum, payload) {
     var deserializer = new Deserializer(registry, payload);
     return deserializer.deserialize(datum);
-}
-function deserializeInstance(instance, resource, payload, includeDirective) {
+};
+var deserializeInstance = function (instance, resource, payload, includeDirective) {
     if (includeDirective === void 0) { includeDirective = {}; }
     var deserializer = new Deserializer(instance.klass.typeRegistry, payload);
     return deserializer.deserializeInstance(instance, resource, includeDirective);
-}
+};
 var Deserializer = /** @class */ (function () {
     function Deserializer(registry, payload) {
         this._deserialized = [];
@@ -18,8 +18,9 @@ var Deserializer = /** @class */ (function () {
         this.addResources(payload.included);
     }
     Deserializer.prototype.addResources = function (data) {
-        if (!data)
+        if (!data) {
             return;
+        }
         if (Array.isArray(data)) {
             for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
                 var datum = data_1[_i];
@@ -40,7 +41,8 @@ var Deserializer = /** @class */ (function () {
     Deserializer.prototype.relationshipInstanceFor = function (datum, records) {
         var record = records.find(function (r) {
             return !!(r.klass.jsonapiType === datum.type &&
-                (r.id && datum.id && r.id === datum.id || r.temp_id && datum['temp-id'] && r.temp_id === datum['temp-id']));
+                ((r.id && datum.id && r.id === datum.id) ||
+                    (r.temp_id && datum["temp-id"] && r.temp_id === datum["temp-id"])));
         });
         if (!record) {
             record = this.instanceFor(datum.type);
@@ -51,7 +53,8 @@ var Deserializer = /** @class */ (function () {
     Deserializer.prototype.lookupAssociated = function (recordSet, record) {
         return recordSet.find(function (r) {
             return !!(r.klass.jsonapiType === record.klass.jsonapiType &&
-                (r.temp_id && record.temp_id && r.temp_id === record.temp_id || r.id && record.id && r.id === record.id));
+                ((r.temp_id && record.temp_id && r.temp_id === record.temp_id) ||
+                    (r.id && record.id && r.id === record.id)));
         });
     };
     Deserializer.prototype.pushRelation = function (model, associationName, record) {
@@ -69,11 +72,12 @@ var Deserializer = /** @class */ (function () {
     Deserializer.prototype.deserializeInstance = function (instance, datum, includeDirective) {
         if (includeDirective === void 0) { includeDirective = {}; }
         var existing = this.alreadyDeserialized(datum);
-        if (existing)
+        if (existing) {
             return existing;
+        }
         // assign ids
         instance.id = datum.id;
-        instance.temp_id = datum['temp-id'];
+        instance.temp_id = datum["temp-id"];
         // assign attrs
         instance.assignAttributes(datum.attributes);
         // assign meta
@@ -96,7 +100,8 @@ var Deserializer = /** @class */ (function () {
             if (relatedObjects) {
                 if (Array.isArray(relatedObjects)) {
                     relatedObjects.forEach(function (relatedObject, index) {
-                        if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
+                        if (relatedObject.isMarkedForDestruction ||
+                            relatedObject.isMarkedForDisassociation) {
                             modelIdx[key].splice(index, 1);
                         }
                         else {
@@ -106,7 +111,8 @@ var Deserializer = /** @class */ (function () {
                 }
                 else {
                     var relatedObject = relatedObjects;
-                    if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
+                    if (relatedObject.isMarkedForDestruction ||
+                        relatedObject.isMarkedForDisassociation) {
                         modelIdx[key] = null;
                     }
                     else {
@@ -144,28 +150,37 @@ var Deserializer = /** @class */ (function () {
     };
     Deserializer.prototype._iterateValidRelationships = function (instance, relationships, callback) {
         for (var key in relationships) {
-            var relationName = key;
-            if (instance.klass.camelizeKeys) {
-                relationName = camelize(key, false);
-            }
-            if (instance.klass.attributeList[relationName]) {
-                var relationData = relationships[key].data;
-                if (!relationData)
-                    continue; // only links, empty, etc
-                callback(relationName, relationData);
+            if (relationships.hasOwnProperty(key)) {
+                var relationName = key;
+                if (instance.klass.camelizeKeys) {
+                    relationName = camelize(key, false);
+                }
+                if (instance.klass.attributeList[relationName]) {
+                    var relationData = relationships[key].data;
+                    if (!relationData) {
+                        continue;
+                    } // only links, empty, etc
+                    callback(relationName, relationData);
+                }
             }
         }
     };
     Deserializer.prototype.alreadyDeserialized = function (resourceIdentifier) {
         return this._deserialized.find(function (m) {
             return !!(m.klass.jsonapiType === resourceIdentifier.type &&
-                (m.id && resourceIdentifier.id && m.id === resourceIdentifier.id || m.temp_id && resourceIdentifier.temp_id && m.temp_id === resourceIdentifier['temp-id']));
+                ((m.id && resourceIdentifier.id && m.id === resourceIdentifier.id) ||
+                    (m.temp_id &&
+                        resourceIdentifier.temp_id &&
+                        m.temp_id === resourceIdentifier["temp-id"])));
         });
     };
     Deserializer.prototype.findResource = function (resourceIdentifier) {
         var found = this._resources.find(function (r) {
             return !!(r.type === resourceIdentifier.type &&
-                (r.id && resourceIdentifier.id && r.id === resourceIdentifier.id || r['temp-id'] && resourceIdentifier['temp-id'] && r['temp-id'] === resourceIdentifier['temp-id']));
+                ((r.id && resourceIdentifier.id && r.id === resourceIdentifier.id) ||
+                    (r["temp-id"] &&
+                        resourceIdentifier["temp-id"] &&
+                        r["temp-id"] === resourceIdentifier["temp-id"])));
         });
         return found || resourceIdentifier;
     };
