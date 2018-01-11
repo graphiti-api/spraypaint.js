@@ -12,8 +12,8 @@
     "no-unused-expression": false,
     "interface-name": false,
     "comment-format": false,
-
     "semicolon": false,
+
     "array-type": [true, "array"],
     "variable-name": [true, "ban-keywords"],
     "member-access": [true, "no-public"]
