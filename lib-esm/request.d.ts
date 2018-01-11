@@ -1,6 +1,6 @@
-import { MiddlewareStack } from './middleware-stack';
-import { ILogger } from './logger';
-import { JsonapiResponseDoc, JsonapiRequestDoc } from './jsonapi-spec';
+import { MiddlewareStack } from "./middleware-stack";
+import { ILogger } from "./logger";
+import { JsonapiResponseDoc, JsonapiRequestDoc } from "./jsonapi-spec";
 export declare type RequestVerbs = keyof Request;
 export interface JsonapiResponse extends Response {
     jsonPayload: JsonapiResponseDoc;

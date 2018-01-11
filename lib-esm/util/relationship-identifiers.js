@@ -11,8 +11,9 @@ export default function (model, relationNames) {
     relationNames.forEach(function (relationName) {
         var relatedObjects = model.relationship(relationName);
         if (relatedObjects) {
-            if (!Array.isArray(relatedObjects))
+            if (!Array.isArray(relatedObjects)) {
                 relatedObjects = [relatedObjects];
+            }
             relatedObjects.forEach(function (r) {
                 if (r.isPersisted) {
                     if (!identifiers[relationName]) {
@@ -24,5 +25,5 @@ export default function (model, relationNames) {
         }
     });
     return identifiers;
-}
+};
 //# sourceMappingURL=relationship-identifiers.js.map

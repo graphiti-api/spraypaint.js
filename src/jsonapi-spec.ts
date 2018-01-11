@@ -1,14 +1,17 @@
-export type JsonapiResponseDoc = JsonapiCollectionDoc | JsonapiResourceDoc | JsonapiErrorDoc
+export type JsonapiResponseDoc =
+  | JsonapiCollectionDoc
+  | JsonapiResourceDoc
+  | JsonapiErrorDoc
 export type JsonapiSuccessDoc = JsonapiCollectionDoc | JsonapiResourceDoc
-export type JsonapiRequestDoc  = JsonapiResourceRequest
+export type JsonapiRequestDoc = JsonapiResourceRequest
 
 export interface JsonapiDocMeta {
-  included?: Array<JsonapiResource>;
-  meta?: Record<string, any>;
+  included?: JsonapiResource[]
+  meta?: Record<string, any>
 }
 
 export interface JsonapiCollectionDoc extends JsonapiDocMeta {
-  data: Array<JsonapiResource>
+  data: JsonapiResource[]
   errors?: undefined
 }
 
@@ -23,24 +26,28 @@ export interface JsonapiResourceRequest extends JsonapiDocMeta {
 
 export interface JsonapiErrorDoc extends JsonapiDocMeta {
   data: undefined
-  errors: Array<JsonapiError>
+  errors: JsonapiError[]
 }
 
 export interface JsonapiResourceIdentifier {
-  type : string
-  id? : string;
-  temp_id? : string
-  'temp-id'? : string
-  method? : JsonapiResourceMethod
+  type: string
+  id?: string
+  temp_id?: string
+  "temp-id"?: string
+  method?: JsonapiResourceMethod
 }
 
-export type JsonapiResourceMethod = 'create' | 'update' | 'destroy' | 'disassociate'
+export type JsonapiResourceMethod =
+  | "create"
+  | "update"
+  | "destroy"
+  | "disassociate"
 
 export interface JsonapiResource extends JsonapiResourceIdentifier {
-  attributes?: object;
-  relationships?: object;
-  meta?: Record<string, any>;
-  links?: object;
+  attributes?: object
+  relationships?: object
+  meta?: Record<string, any>
+  links?: object
 }
 
 export interface JsonapiError {
@@ -49,13 +56,13 @@ export interface JsonapiError {
   code?: string
   title?: string
   detail?: string
-  source?: JsonapiErrorSource 
+  source?: JsonapiErrorSource
   meta: JsonapiErrorMeta
 }
 
 export interface JsonapiErrorSource {
-  pointer?: string,
-  parameter?: string,
+  pointer?: string
+  parameter?: string
 }
 
 export type JsonapiErrorMeta = Record<string, any>

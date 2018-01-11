@@ -1,16 +1,16 @@
-import { JSORMBase } from './model'
+import { JSORMBase } from "./model"
 
-export type Attr<T> = { (): T } | { new (...args: any[]): T & object }
+export type Attr<T> = (() => T) | { new (...args: any[]): T & object }
 
 export type AttrType<T> = Attr<T>
 
 export interface AttrRecord<T> {
   name?: string | symbol
   type?: AttrType<T>
-  persist? : boolean
+  persist?: boolean
 }
 
-export function attr<T=any>(options? : AttrRecord<T>) : Attribute<T> {
+export const attr = <T = any>(options?: AttrRecord<T>): Attribute<T> => {
   if (!options) {
     options = {}
   }
@@ -19,31 +19,33 @@ export function attr<T=any>(options? : AttrRecord<T>) : Attribute<T> {
 }
 
 export type AttributeValue<Attributes> = {
-  [K in keyof Attributes] : Attributes[K]
+  [K in keyof Attributes]: Attributes[K]
 }
 
 export type AttributeOptions = Partial<{
   name: string | symbol
-  type : { () : any }
-  persist : boolean
+  type: () => any
+  persist: boolean
 }>
 
-export class Attribute<T=any> {
-  public isRelationship = false;
-  public name : string | symbol
-  public type? : T = undefined
-  public persist : boolean = true
-  public owner : typeof JSORMBase
+export class Attribute<T = any> {
+  isRelationship = false
+  name: string | symbol
+  type?: T = undefined
+  persist: boolean = true
+  owner: typeof JSORMBase
 
   constructor(options: AttrRecord<T>) {
     if (!options) {
       return
     }
 
-    if (options.name) { this.name = options.name }
+    if (options.name) {
+      this.name = options.name
+    }
 
     if (options.type) {
-      this.type = options.type as any as T
+      this.type = (options.type as any) as T
     }
 
     if (options.persist !== undefined) {
@@ -51,35 +53,35 @@ export class Attribute<T=any> {
     }
   }
 
-  apply(ModelClass : typeof JSORMBase) : void {
+  apply(ModelClass: typeof JSORMBase): void {
     Object.defineProperty(ModelClass.prototype, this.name, this.descriptor())
   }
 
   // The model calls this setter
-  setter(context: JSORMBase, val: any) : void {
-    let privateContext : any = context
-    privateContext._attributes[this.name] = val;
+  setter(context: JSORMBase, val: any): void {
+    const privateContext: any = context
+    privateContext._attributes[this.name] = val
   }
 
   // The model calls this getter
-  getter(context: JSORMBase) : any {
-    let privateContext : any = context
-    return privateContext._attributes[this.name];
+  getter(context: JSORMBase): any {
+    const privateContext: any = context
+    return privateContext._attributes[this.name]
   }
 
   // This returns the getters/setters for use on the *model*
-  descriptor() : PropertyDescriptor {
-    let attr = this;
+  descriptor(): PropertyDescriptor {
+    const attrDef = this
 
     return {
       configurable: true,
       enumerable: true,
-      get(this: JSORMBase) : any {
-        return attr.getter(this);
+      get(this: JSORMBase): any {
+        return attrDef.getter(this)
       },
 
-      set(this: JSORMBase, value) : void {
-        attr.setter(this, value);
+      set(this: JSORMBase, value): void {
+        attrDef.setter(this, value)
       }
     }
   }
@@ -95,22 +97,25 @@ const simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/
  *  to it so I'm keeping it around.
  *
  */
-function assertType<T>(value: any, type: Attr<T>): {
-  valid: boolean;
-  expectedType: string;
-} {
+const assertType = <T>(
+  value: any,
+  type: Attr<T>
+): {
+  valid: boolean
+  expectedType: string
+} => {
   let valid
   const expectedType = getType(type)
   if (simpleCheckRE.test(expectedType)) {
     const t = typeof value
     valid = t === expectedType.toLowerCase()
     // for primitive wrapper objects
-    if (!valid && t === 'object') {
+    if (!valid && t === "object") {
       valid = value instanceof type
     }
-  } else if (expectedType === 'Object') {
+  } else if (expectedType === "Object") {
     valid = isPlainObject(value)
-  } else if (expectedType === 'Array') {
+  } else if (expectedType === "Array") {
     valid = Array.isArray(value)
   } else {
     valid = value instanceof type
@@ -126,12 +131,13 @@ function assertType<T>(value: any, type: Attr<T>): {
  * because a simple equality check will fail when running
  * across different vms / iframes.
  */
-function getType(fn : Function) {
+/* tslint:disable-next-line:ban-types */
+const getType = (fn: Function) => {
   const match = fn && fn.toString().match(/^\s*function (\w+)/)
-  return match ? match[1] : ''
+  return match ? match[1] : ""
 }
 
-function isType<T>(type : Attr<T>, fn : Function) {
+const isType = <T>(type: Attr<T>, fn: any): fn is T => {
   if (!Array.isArray(fn)) {
     return getType(fn) === getType(type)
   }
@@ -153,6 +159,6 @@ const _toString = Object.prototype.toString
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
  */
-function isPlainObject (obj: any): obj is object {
-  return _toString.call(obj) === '[object Object]'
+const isPlainObject = (obj: any): obj is object => {
+  return _toString.call(obj) === "[object Object]"
 }

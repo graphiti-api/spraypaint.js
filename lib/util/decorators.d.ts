@@ -1,1 +1,1 @@
-export declare function nonenumerable(target: any, key: string): void;
+export declare const nonenumerable: (target: any, key: string) => void;

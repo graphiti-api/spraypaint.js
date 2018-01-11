@@ -1,40 +1,39 @@
-import { pluralize, underscore } from 'inflected';
-import { applyModelConfig, isModelClass, isModelInstance, } from './model';
-import { Attribute } from './attribute';
-import { HasMany, HasOne, BelongsTo, } from './associations';
-function ModelDecorator(config) {
+import { pluralize, underscore } from "inflected";
+import { applyModelConfig, isModelClass, isModelInstance } from "./model";
+import { Attribute } from "./attribute";
+import { HasMany, HasOne, BelongsTo } from "./associations";
+var ModelDecorator = function (config) {
     return function (target) {
         modelFactory(target, config);
         return target;
     };
-}
-export function initModel(modelClass, config) {
+};
+export var initModel = function (modelClass, config) {
     modelFactory(modelClass, config);
-}
-function modelFactory(ModelClass, config) {
+};
+var modelFactory = function (ModelClass, config) {
     ensureModelInheritance(ModelClass);
     applyModelConfig(ModelClass, config || {});
     if (!ModelClass.jsonapiType && !ModelClass.isBaseClass) {
         ModelClass.jsonapiType = pluralize(underscore(ModelClass.name));
     }
     ModelClass.registerType();
-}
-function AttrDecoratorFactory(configOrTarget, propertyKey, attrConfig) {
+};
+var AttrDecoratorFactory = function (configOrTarget, propertyKey, attrConfig) {
     var attrDefinition = new Attribute({ name: propertyKey });
-    var attrFunction = function (ModelClass, propertyKey) {
+    var attrFunction = function (ModelClass, propKey) {
         ensureModelInheritance(ModelClass);
         if (!attrDefinition.name) {
-            attrDefinition.name = propertyKey;
+            attrDefinition.name = propKey;
         }
-        ModelClass.attributeList[propertyKey] = attrDefinition;
+        ModelClass.attributeList[propKey] = attrDefinition;
         attrDefinition.apply(ModelClass);
         return attrDefinition.descriptor();
     };
-    if ((isModelClass(configOrTarget) ||
-        isModelInstance(configOrTarget))) {
+    if (isModelClass(configOrTarget) || isModelInstance(configOrTarget)) {
         // For type checking. Can't have a model AND no property key
         if (!propertyKey) {
-            throw new Error('Must provide a propertyKey');
+            throw new Error("Must provide a propertyKey");
         }
         var target = configOrTarget;
         if (isModelClass(target)) {
@@ -51,16 +50,16 @@ function AttrDecoratorFactory(configOrTarget, propertyKey, attrConfig) {
         if (configOrTarget) {
             attrDefinition = new Attribute(configOrTarget);
         }
-        return function (target, propertyKey) {
-            return attrFunction(target.constructor, propertyKey);
+        return function (target, propKey) {
+            return attrFunction(target.constructor, propKey);
         };
     }
-}
-function ensureModelInheritance(ModelClass) {
+};
+var ensureModelInheritance = function (ModelClass) {
     if (ModelClass.currentClass !== ModelClass) {
         ModelClass.currentClass.inherited(ModelClass);
     }
-}
+};
 /*
  * Yup that's a super-Java-y method name.  Decorators in
  * ES7/TS are either of the form:
@@ -89,21 +88,21 @@ function ensureModelInheritance(ModelClass) {
  * ```
  *
  */
-function AssociationDecoratorFactoryBuilder(AttrType) {
-    function DecoratorFactory(targetOrConfig, propertyKey, optsOrType) {
-        function extend(ModelClass) {
+var AssociationDecoratorFactoryBuilder = function (AttrType) {
+    var DecoratorFactory = function (targetOrConfig, propertyKey, optsOrType) {
+        var extend = function (ModelClass) {
             ensureModelInheritance(ModelClass);
             return ModelClass;
-        }
+        };
         var opts;
-        var factoryFn = function (target, propertyKey) {
+        var factoryFn = function (target, propKey) {
             if (optsOrType === undefined) {
-                var inferredType = pluralize(underscore(propertyKey));
+                var inferredType = pluralize(underscore(propKey));
                 opts = {
                     jsonapiType: inferredType
                 };
             }
-            else if (typeof optsOrType === 'string') {
+            else if (typeof optsOrType === "string") {
                 opts = {
                     jsonapiType: optsOrType
                 };
@@ -116,9 +115,9 @@ function AssociationDecoratorFactoryBuilder(AttrType) {
             else {
                 opts = {
                     persist: optsOrType.persist,
-                    name: optsOrType.name,
+                    name: optsOrType.name
                 };
-                if (typeof optsOrType.type === 'string') {
+                if (typeof optsOrType.type === "string") {
                     opts.jsonapiType = optsOrType.type;
                 }
                 else {
@@ -127,19 +126,15 @@ function AssociationDecoratorFactoryBuilder(AttrType) {
             }
             var attrDefinition = new AttrType(opts);
             if (!attrDefinition.name) {
-                attrDefinition.name = propertyKey;
+                attrDefinition.name = propKey;
             }
             var ModelClass = extend(target.constructor);
-            ModelClass.attributeList[propertyKey] = attrDefinition;
+            ModelClass.attributeList[propKey] = attrDefinition;
             attrDefinition.owner = target.constructor;
             attrDefinition.apply(ModelClass);
             attrDefinition.descriptor();
         };
-        if (isModelClass(targetOrConfig)) {
-            if (!propertyKey) {
-                optsOrType = targetOrConfig;
-                return factoryFn;
-            }
+        if (isModelClass(targetOrConfig) && propertyKey) {
             var target = targetOrConfig;
             factoryFn(target.prototype, propertyKey);
         }
@@ -147,11 +142,11 @@ function AssociationDecoratorFactoryBuilder(AttrType) {
             optsOrType = targetOrConfig;
             return factoryFn;
         }
-    }
+    };
     return DecoratorFactory;
-}
+};
 var HasManyDecoratorFactory = AssociationDecoratorFactoryBuilder(HasMany);
 var HasOneDecoratorFactory = AssociationDecoratorFactoryBuilder(HasOne);
 var BelongsToDecoratorFactory = AssociationDecoratorFactoryBuilder(BelongsTo);
-export { ModelDecorator as Model, AttrDecoratorFactory as Attr, HasManyDecoratorFactory as HasMany, HasOneDecoratorFactory as HasOne, BelongsToDecoratorFactory as BelongsTo, };
+export { ModelDecorator as Model, AttrDecoratorFactory as Attr, HasManyDecoratorFactory as HasMany, HasOneDecoratorFactory as HasOne, BelongsToDecoratorFactory as BelongsTo };
 //# sourceMappingURL=decorators.js.map

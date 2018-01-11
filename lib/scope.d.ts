@@ -1,6 +1,6 @@
-import { JSORMBase } from './model';
-import { IncludeArgHash } from './util/include-directive';
-import { CollectionProxy, RecordProxy } from './proxies';
+import { JSORMBase } from "./model";
+import { IncludeArgHash } from "./util/include-directive";
+import { CollectionProxy, RecordProxy } from "./proxies";
 export interface JsonapiQueryParams {
     page: AnyRecord;
     filter: AnyRecord;
@@ -10,12 +10,12 @@ export interface JsonapiQueryParams {
     stats: AnyRecord;
     include?: string;
 }
-export declare type SortDir = 'asc' | 'desc';
+export declare type SortDir = "asc" | "desc";
 export declare type SortScope = Record<string, SortDir>;
-export declare type FieldScope = Record<string, Array<string>>;
+export declare type FieldScope = Record<string, string[]>;
 export declare type WhereClause = Record<string, string | number | boolean>;
 export declare type StatsScope = Record<string, string | string[]>;
-export declare type IncludeScope = string | IncludeArgHash | Array<string | IncludeArgHash>;
+export declare type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[];
 export declare type AnyRecord = Record<string, any>;
 export declare class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     model: T;
@@ -28,9 +28,9 @@ export declare class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     private _include;
     private _stats;
     constructor(model: T);
-    all(): Promise<CollectionProxy<T['prototype']>>;
-    find(id: string | number): Promise<RecordProxy<T['prototype']>>;
-    first(): Promise<RecordProxy<T['prototype']>>;
+    all(): Promise<CollectionProxy<T["prototype"]>>;
+    find(id: string | number): Promise<RecordProxy<T["prototype"]>>;
+    first(): Promise<RecordProxy<T["prototype"]>>;
     merge(obj: Record<string, Scope>): Scope<T>;
     page(pageNumber: number): Scope<T>;
     per(size: number): Scope<T>;

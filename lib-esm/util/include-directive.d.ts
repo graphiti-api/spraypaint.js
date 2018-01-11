@@ -1,4 +1,4 @@
-import { IncludeScope } from '../scope';
+import { IncludeScope } from "../scope";
 export interface IncludeArgHash {
     [key: string]: IncludeScope;
 }

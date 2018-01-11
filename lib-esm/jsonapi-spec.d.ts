@@ -2,11 +2,11 @@ export declare type JsonapiResponseDoc = JsonapiCollectionDoc | JsonapiResourceD
 export declare type JsonapiSuccessDoc = JsonapiCollectionDoc | JsonapiResourceDoc;
 export declare type JsonapiRequestDoc = JsonapiResourceRequest;
 export interface JsonapiDocMeta {
-    included?: Array<JsonapiResource>;
+    included?: JsonapiResource[];
     meta?: Record<string, any>;
 }
 export interface JsonapiCollectionDoc extends JsonapiDocMeta {
-    data: Array<JsonapiResource>;
+    data: JsonapiResource[];
     errors?: undefined;
 }
 export interface JsonapiResourceDoc extends JsonapiDocMeta {
@@ -18,16 +18,16 @@ export interface JsonapiResourceRequest extends JsonapiDocMeta {
 }
 export interface JsonapiErrorDoc extends JsonapiDocMeta {
     data: undefined;
-    errors: Array<JsonapiError>;
+    errors: JsonapiError[];
 }
 export interface JsonapiResourceIdentifier {
     type: string;
     id?: string;
     temp_id?: string;
-    'temp-id'?: string;
+    "temp-id"?: string;
     method?: JsonapiResourceMethod;
 }
-export declare type JsonapiResourceMethod = 'create' | 'update' | 'destroy' | 'disassociate';
+export declare type JsonapiResourceMethod = "create" | "update" | "destroy" | "disassociate";
 export interface JsonapiResource extends JsonapiResourceIdentifier {
     attributes?: object;
     relationships?: object;

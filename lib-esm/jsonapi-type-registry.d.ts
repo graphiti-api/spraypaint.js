@@ -1,4 +1,4 @@
-import { JSORMBase } from './model';
+import { JSORMBase } from "./model";
 export declare class JsonapiTypeRegistry {
     private _typeMap;
     private _baseClass;

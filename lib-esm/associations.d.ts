@@ -1,6 +1,6 @@
-import { Attribute, AttrRecord, Attr } from './attribute';
-import { JSORMBase } from './model';
-import { JsonapiTypeRegistry } from './jsonapi-type-registry';
+import { Attribute, AttrRecord, Attr } from "./attribute";
+import { JSORMBase } from "./model";
+import { JsonapiTypeRegistry } from "./jsonapi-type-registry";
 export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
     type?: Attr<T>;
     jsonapiType?: string;
@@ -20,7 +20,7 @@ export declare class SingleAssociationBase<T extends JSORMBase> extends Attribut
     getter(context: JSORMBase): JSORMBase | JSORMBase[];
     setter(context: JSORMBase, val: any): void;
 }
-export declare class HasMany<T extends JSORMBase> extends Attribute<Array<T>> implements Association {
+export declare class HasMany<T extends JSORMBase> extends Attribute<T[]> implements Association {
     isRelationship: true;
     jsonapiType: string;
     typeRegistry: JsonapiTypeRegistry;
@@ -40,6 +40,6 @@ export interface AssociationFactoryOpts<T extends JSORMBase> {
     name?: string;
 }
 export declare type AssociationFactoryArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string;
-export declare function hasOne<T extends JSORMBase>(options?: AssociationFactoryOpts<T>): HasOne<T>;
-export declare function belongsTo<T extends JSORMBase>(options?: AssociationFactoryArgs<T>): BelongsTo<T>;
-export declare function hasMany<T extends JSORMBase>(options?: AssociationFactoryArgs<T>): HasMany<T>;
+export declare const hasOne: <T extends JSORMBase>(options?: AssociationFactoryOpts<T> | undefined) => HasOne<T>;
+export declare const belongsTo: <T extends JSORMBase>(options?: string | AssociationFactoryOpts<T> | undefined) => BelongsTo<T>;
+export declare const hasMany: <T extends JSORMBase>(options?: string | AssociationFactoryOpts<T> | undefined) => HasMany<T>;

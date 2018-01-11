@@ -1,6 +1,5 @@
-import { JSORMBase } from '../model';
-import { IncludeScopeHash } from './include-directive';
-import { IncludeScope } from '../scope';
+import { JSORMBase } from "../model";
+import { IncludeScope } from "../scope";
 declare class DirtyChecker<T extends JSORMBase> {
     model: T;
     constructor(model: T);
@@ -11,9 +10,8 @@ declare class DirtyChecker<T extends JSORMBase> {
             [P in keyof T]: P;
         } & {
             destroy: never;
-            id: never;
-            relationship: never;
             fromJsonapi: never;
+            id: never;
             temp_id: never;
             relationships: never;
             klass: never;
@@ -23,6 +21,7 @@ declare class DirtyChecker<T extends JSORMBase> {
             isMarkedForDisassociation: never;
             attributes: never;
             typedAttributes: never;
+            relationship: never;
             assignAttributes: never;
             setMeta: never;
             relationshipResourceIdentifiers: never;
@@ -38,11 +37,11 @@ declare class DirtyChecker<T extends JSORMBase> {
             resetRelationTracking: never;
         } & {
             [x: string]: never;
-        })[keyof T]]?: Omit<T, "destroy" | "id" | "relationship" | "fromJsonapi" | "temp_id" | "relationships" | "klass" | "isType" | "isPersisted" | "isMarkedForDestruction" | "isMarkedForDisassociation" | "attributes" | "typedAttributes" | "assignAttributes" | "setMeta" | "relationshipResourceIdentifiers" | "resourceIdentifier" | "errors" | "hasError" | "clearErrors" | "isDirty" | "changes" | "hasDirtyRelation" | "dup" | "save" | "resetRelationTracking">[P][] | undefined;
+        })[keyof T]]?: Omit<T, "destroy" | "fromJsonapi" | "id" | "temp_id" | "relationships" | "klass" | "isType" | "isPersisted" | "isMarkedForDestruction" | "isMarkedForDisassociation" | "attributes" | "typedAttributes" | "relationship" | "assignAttributes" | "setMeta" | "relationshipResourceIdentifiers" | "resourceIdentifier" | "errors" | "hasError" | "clearErrors" | "isDirty" | "changes" | "hasDirtyRelation" | "dup" | "save" | "resetRelationTracking">[P][] | undefined;
     } & Partial<Record<"id" | "temp_id", string[]>>;
     private _isUnpersisted();
     private _hasDirtyAttributes();
     private _hasDirtyRelationships(includeHash);
-    _eachRelatedObject(includeHash: IncludeScopeHash, callback: (key: string, object: JSORMBase, nested: IncludeScopeHash) => void): void;
+    private _eachRelatedObject(includeHash, callback);
 }
 export default DirtyChecker;

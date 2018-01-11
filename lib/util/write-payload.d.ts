@@ -1,21 +1,20 @@
-import { JSORMBase } from '../model';
-import { IncludeScopeHash } from './include-directive';
-import { IncludeScope } from '../scope';
-import { JsonapiRequestDoc, JsonapiResource } from '../jsonapi-spec';
+import { JSORMBase } from "../model";
+import { IncludeScopeHash } from "./include-directive";
+import { IncludeScope } from "../scope";
+import { JsonapiRequestDoc, JsonapiResource } from "../jsonapi-spec";
 export declare class WritePayload<T extends JSORMBase> {
     model: T;
     jsonapiType: string;
     includeDirective: IncludeScopeHash;
-    included: Array<JsonapiResource>;
+    included: JsonapiResource[];
     constructor(model: T, relationships?: IncludeScope);
     attributes(): {
         [P in ({
             [P in keyof T]: P;
         } & {
             destroy: never;
-            id: never;
-            relationship: never;
             fromJsonapi: never;
+            id: never;
             temp_id: never;
             relationships: never;
             klass: never;
@@ -25,6 +24,7 @@ export declare class WritePayload<T extends JSORMBase> {
             isMarkedForDisassociation: never;
             attributes: never;
             typedAttributes: never;
+            relationship: never;
             assignAttributes: never;
             setMeta: never;
             relationshipResourceIdentifiers: never;
@@ -44,7 +44,7 @@ export declare class WritePayload<T extends JSORMBase> {
     } & Partial<Record<"id" | "temp_id", string>>;
     removeDeletions(model: T, includeDirective: IncludeScope): void;
     postProcess(): void;
-    relationships(): Object;
+    relationships(): object;
     asJSON(): JsonapiRequestDoc;
     private _processRelatedModel(model, nested);
     private _resourceIdentifierFor(model);

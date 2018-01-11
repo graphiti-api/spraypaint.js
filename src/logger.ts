@@ -1,81 +1,87 @@
+/* tslint:disable:no-console */
 export enum LogLevel {
   debug = 1,
   info = 2,
   warn = 3,
-  error = 4,
+  error = 4
 }
-export type LogLevelKey = keyof(typeof LogLevel)
+export type LogLevelKey = keyof (typeof LogLevel)
 
 const LOG_LEVELS = {
   debug: 1,
   info: 2,
   warn: 3,
-  error: 4,
+  error: 4
 }
 
 export interface ILogger {
-  debug(stmt : any) : void
-  info(stmt : any) : void
-  warn(stmt : any) : void
-  error(stmt : any) : void
-  level : string
+  level: string
+
+  debug(stmt: any): void
+  info(stmt: any): void
+  warn(stmt: any): void
+  error(stmt: any): void
 }
 
 export class Logger implements ILogger {
-  private _level : LogLevel = LogLevel.info
+  private _level: LogLevel = LogLevel.info
 
-  constructor(level : LogLevelKey | LogLevel = 'warn') {
-    if (typeof level === 'number') {
+  constructor(level: LogLevelKey | LogLevel = "warn") {
+    if (typeof level === "number") {
       this._level = level
     } else {
-      this.level =level
+      this.level = level
     }
   }
 
-  debug(stmt : any) : void {
+  debug(stmt: any): void {
     if (this._level <= LogLevel.debug) {
-      console.info(stmt);
+      console.info(stmt)
     }
   }
 
-  info(stmt : any) : void {
+  info(stmt: any): void {
     if (this._level <= LogLevel.info) {
-      console.info(stmt);
+      console.info(stmt)
     }
   }
 
-  warn(stmt : any) : void {
+  warn(stmt: any): void {
     if (this._level <= LogLevel.warn) {
-      console.warn(stmt);
+      console.warn(stmt)
     }
   }
 
-  error(stmt : any) : void {
+  error(stmt: any): void {
     if (this._level <= LogLevel.warn) {
-      console.error(stmt);
+      console.error(stmt)
     }
   }
 
-  set level(value : string) {
-    let lvlValue = LogLevel[value as LogLevelKey];
+  set level(value: string) {
+    const lvlValue = LogLevel[value as LogLevelKey]
 
     if (lvlValue) {
-      this._level = lvlValue;
+      this._level = lvlValue
     } else {
-      throw(`Log level must be one of ${Object.keys(LOG_LEVELS).join(', ')}`)
+      throw new Error(
+        `Log level must be one of ${Object.keys(LOG_LEVELS).join(", ")}`
+      )
     }
   }
 
-  get level() : string{
-    let key : LogLevelKey
+  get level(): string {
+    let key: LogLevelKey
 
     for (key in LogLevel) {
-      let val = LogLevel[key as LogLevelKey];
-      if (val === this._level) {
-        return key
+      if (LogLevel.hasOwnProperty(key)) {
+        const val = LogLevel[key as LogLevelKey]
+        if (val === this._level) {
+          return key
+        }
       }
     }
-    
+
     throw new Error(`Invalid log level: ${this._level}`)
   }
 }

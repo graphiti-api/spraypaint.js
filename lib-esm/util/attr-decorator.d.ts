@@ -1,1 +1,2 @@
-export default function (decorator: Function): Function;
+declare const _default: (decorator: Function) => Function;
+export default _default;

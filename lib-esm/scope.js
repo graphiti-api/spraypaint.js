@@ -1,10 +1,10 @@
 import * as tslib_1 from "tslib";
-import parameterize from './util/parameterize';
-import { IncludeDirective } from './util/include-directive';
-import { CollectionProxy, RecordProxy } from './proxies';
-import { Request } from './request';
-import { refreshJWT } from './util/refresh-jwt';
-import { cloneDeep } from './util/clonedeep';
+import parameterize from "./util/parameterize";
+import { IncludeDirective } from "./util/include-directive";
+import { CollectionProxy, RecordProxy } from "./proxies";
+import { Request } from "./request";
+import { refreshJWT } from "./util/refresh-jwt";
+import { cloneDeep } from "./util/clonedeep";
 var Scope = /** @class */ (function () {
     function Scope(model) {
         this._associations = {};
@@ -24,7 +24,7 @@ var Scope = /** @class */ (function () {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this._fetch(this.model.url())];
                     case 1:
-                        response = _a.sent();
+                        response = (_a.sent());
                         return [2 /*return*/, this._buildCollectionResult(response)];
                 }
             });
@@ -37,7 +37,7 @@ var Scope = /** @class */ (function () {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this._fetch(this.model.url(id))];
                     case 1:
-                        json = _a.sent();
+                        json = (_a.sent());
                         return [2 /*return*/, this._buildRecordResult(json)];
                 }
             });
@@ -78,14 +78,18 @@ var Scope = /** @class */ (function () {
     Scope.prototype.where = function (clause) {
         var copy = this.copy();
         for (var key in clause) {
-            copy._filter[key] = clause[key];
+            if (clause.hasOwnProperty(key)) {
+                copy._filter[key] = clause[key];
+            }
         }
         return copy;
     };
     Scope.prototype.stats = function (clause) {
         var copy = this.copy();
         for (var key in clause) {
-            copy._stats[key] = clause[key];
+            if (clause.hasOwnProperty(key)) {
+                copy._stats[key] = clause[key];
+            }
         }
         return copy;
     };
@@ -93,25 +97,31 @@ var Scope = /** @class */ (function () {
         var copy = this.copy();
         if (typeof clause === "object") {
             for (var key in clause) {
-                copy._sort[key] = clause[key];
+                if (clause.hasOwnProperty(key)) {
+                    copy._sort[key] = clause[key];
+                }
             }
         }
         else {
-            copy._sort[clause] = 'asc';
+            copy._sort[clause] = "asc";
         }
         return copy;
     };
     Scope.prototype.select = function (clause) {
         var copy = this.copy();
         for (var key in clause) {
-            copy._fields[key] = clause[key];
+            if (clause.hasOwnProperty(key)) {
+                copy._fields[key] = clause[key];
+            }
         }
         return copy;
     };
     Scope.prototype.selectExtra = function (clause) {
         var copy = this.copy();
         for (var key in clause) {
-            copy._extra_fields[key] = clause[key];
+            if (clause.hasOwnProperty(key)) {
+                copy._extra_fields[key] = clause[key];
+            }
         }
         return copy;
     };
@@ -120,7 +130,9 @@ var Scope = /** @class */ (function () {
         var directive = new IncludeDirective(clause);
         var directiveObject = directive.toScopeObject();
         for (var key in directiveObject) {
-            copy._include[key] = directiveObject[key];
+            if (directiveObject.hasOwnProperty(key)) {
+                copy._include[key] = directiveObject[key];
+            }
         }
         return copy;
     };
@@ -138,14 +150,14 @@ var Scope = /** @class */ (function () {
             fields: this._fields,
             extra_fields: this._extra_fields,
             stats: this._stats,
-            include: new IncludeDirective(this._include).toString(),
+            include: new IncludeDirective(this._include).toString()
         };
         this._mergeAssociationQueryParams(qp, this._associations);
         return qp;
     };
     Scope.prototype.toQueryParams = function () {
         var paramString = parameterize(this.asQueryParams());
-        if (paramString !== '') {
+        if (paramString !== "") {
             return paramString;
         }
     };
@@ -157,23 +169,25 @@ var Scope = /** @class */ (function () {
     Scope.prototype._mergeAssociationQueryParams = function (queryParams, associations) {
         var _this = this;
         var _loop_1 = function (key) {
-            var associationScope = associations[key];
-            var associationQueryParams = associationScope.asQueryParams();
-            queryParams['page'][key] = associationQueryParams['page'];
-            queryParams['filter'][key] = associationQueryParams['filter'];
-            queryParams['stats'][key] = associationQueryParams['stats'];
-            associationQueryParams['sort'].forEach(function (s) {
-                var transformed = _this._transformAssociationSortParam(key, s);
-                queryParams['sort'].push(transformed);
-            });
+            if (associations.hasOwnProperty(key)) {
+                var associationScope = associations[key];
+                var associationQueryParams = associationScope.asQueryParams();
+                queryParams.page[key] = associationQueryParams.page;
+                queryParams.filter[key] = associationQueryParams.filter;
+                queryParams.stats[key] = associationQueryParams.stats;
+                associationQueryParams.sort.forEach(function (s) {
+                    var transformed = _this._transformAssociationSortParam(key, s);
+                    queryParams.sort.push(transformed);
+                });
+            }
         };
         for (var key in associations) {
             _loop_1(key);
         }
     };
     Scope.prototype._transformAssociationSortParam = function (associationName, param) {
-        if (param.indexOf('-') !== -1) {
-            param = param.replace('-', '');
+        if (param.indexOf("-") !== -1) {
+            param = param.replace("-", "");
             associationName = "-" + associationName;
         }
         return associationName + "." + param;
@@ -182,10 +196,12 @@ var Scope = /** @class */ (function () {
         if (clause && Object.keys(clause).length > 0) {
             var params = [];
             for (var key in clause) {
-                if (clause[key] !== 'asc') {
-                    key = "-" + key;
+                if (clause.hasOwnProperty(key)) {
+                    if (clause[key] !== "asc") {
+                        key = "-" + key;
+                    }
+                    params.push(key);
                 }
-                params.push(key);
             }
             return params;
         }
@@ -206,7 +222,7 @@ var Scope = /** @class */ (function () {
                     case 1:
                         response = _a.sent();
                         refreshJWT(this.model, response);
-                        return [2 /*return*/, response['jsonPayload']];
+                        return [2 /*return*/, response.jsonPayload];
                 }
             });
         });
