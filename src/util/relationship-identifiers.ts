@@ -10,7 +10,7 @@ import { JsonapiResourceIdentifier } from '../jsonapi-spec'
 // This will only contain persisted objects
 // Used for dirty tracking associations
 export default (model : JSORMBase, relationNames : string[]) => {
-  let identifiers : Record<string, JsonapiResourceIdentifier[]>= {}
+  const identifiers : Record<string, JsonapiResourceIdentifier[]>= {}
   relationNames.forEach((relationName) => {
     let relatedObjects = model.relationship(relationName)
     if (relatedObjects) {

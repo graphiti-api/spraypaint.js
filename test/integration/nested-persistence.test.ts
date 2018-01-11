@@ -30,7 +30,7 @@ const resetMocks = () => {
   })
 }
 
-let expectedCreatePayload : JsonapiResponseDoc = {
+const expectedCreatePayload : JsonapiResponseDoc = {
   data: {
     type: 'authors',
     attributes: { first_name: 'Stephen' },
@@ -89,7 +89,7 @@ let expectedCreatePayload : JsonapiResponseDoc = {
   ]
 }
 
-let expectedUpdatePayload = (payloadMethod : method) : JsonapiResponseDoc => {
+const expectedUpdatePayload = (payloadMethod : method) : JsonapiResponseDoc => {
   return {
     data: {
       id: '1',
@@ -135,11 +135,11 @@ let expectedUpdatePayload = (payloadMethod : method) : JsonapiResponseDoc => {
 }
 
 const seedPersistedData = () => {
-  let genre = new Genre({ id: '20', name: 'Horror' })
+  const genre = new Genre({ id: '20', name: 'Horror' })
   genre.isPersisted = true
-  let book = new Book({ id: '10', title: 'The Shining', genre })
+  const book = new Book({ id: '10', title: 'The Shining', genre })
   book.isPersisted = true
-  let specialBook = new Book({ id: '30', title: 'The Stand' })
+  const specialBook = new Book({ id: '30', title: 'The Stand' })
   specialBook.isPersisted = true
   instance.id = '1'
   instance.books = [book]
@@ -223,9 +223,9 @@ describe('nested persistence', () => {
 
   describe('basic nested create', () => {
     beforeEach(() => {
-      let genre = new Genre({ name: 'Horror' })
-      let book = new Book({ title: 'The Shining', genre })
-      let specialBook = new Book({ title: 'The Stand' })
+      const genre = new Genre({ name: 'Horror' })
+      const book = new Book({ title: 'The Shining', genre })
+      const specialBook = new Book({ title: 'The Stand' })
       instance.books = [book]
       instance.specialBooks = [specialBook]
     })

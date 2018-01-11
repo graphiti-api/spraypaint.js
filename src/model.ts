@@ -196,7 +196,7 @@ export class JSORMBase {
       this._middlewareStack = new MiddlewareStack()
     }
 
-    let jwt = this.localStorage.getJWT()
+    const jwt = this.localStorage.getJWT()
     this.setJWT(jwt)
   }
 
@@ -245,7 +245,7 @@ export class JSORMBase {
   static registerType() : void {
     if (!this.jsonapiType) { return }
 
-    let existingType = this.typeRegistry.get(this.jsonapiType)
+    const existingType = this.typeRegistry.get(this.jsonapiType)
 
     if (existingType) {
       // Don't try to register a type of we're looking
@@ -270,14 +270,12 @@ export class JSORMBase {
     class Subclass extends (<ExtendedModel<typeof JSORMBase, {}, {}>>this) { }
 
     this.inherited(<any>Subclass)
-
-    this.inherited(<any>Subclass)
-
-    let attrs : any = {}
+    
+    const attrs : any = {}
     if (options.attrs) {
-      for(let key in options.attrs) {
+      for(const key in options.attrs) {
         if (options.attrs.hasOwnProperty(key)) {
-          let attr = options.attrs[key]
+          const attr = options.attrs[key]
 
           if(!attr.name) {
             attr.name = key
@@ -297,7 +295,7 @@ export class JSORMBase {
     Subclass.registerType()
 
     if (options.methods) {
-      for(let methodName in options.methods) {
+      for(const methodName in options.methods) {
         if (options.methods.hasOwnProperty(methodName)) {
           (<any>Subclass.prototype)[methodName] = options.methods[methodName]
         }
@@ -346,9 +344,9 @@ export class JSORMBase {
   private _copyPrototypeDescriptors() {
     const attrs = this.klass.attributeList
 
-    for (let key in attrs) {
+    for (const key in attrs) {
       if(attrs.hasOwnProperty(key)) {
-        let attr = attrs[key]
+        const attr = attrs[key]
         Object.defineProperty(this, key, attr.descriptor())
       }
     }
@@ -358,7 +356,7 @@ export class JSORMBase {
       'isMarkedForDestruction',
       'isMarkedForDisassociation'
     ].forEach((property) => {
-      let descriptor = Object.getOwnPropertyDescriptor(JSORMBase.prototype, property)
+      const descriptor = Object.getOwnPropertyDescriptor(JSORMBase.prototype, property)
 
       if (descriptor) {
         Object.defineProperty(this, property, descriptor)
@@ -423,7 +421,7 @@ export class JSORMBase {
 
   assignAttributes(attrs? : Record<string, any>) : void {
     if (!attrs) { return }
-    for(let key in attrs) {
+    for(const key in attrs) {
       if (attrs.hasOwnProperty(key)) {
         let attributeName = key
 
@@ -480,17 +478,17 @@ export class JSORMBase {
   }
 
   isDirty(relationships? : IncludeScope) : boolean {
-    let dc = new DirtyChecker(this)
+    const dc = new DirtyChecker(this)
     return dc.check(relationships)
   }
 
   changes() : ModelAttributeChangeSet<this> {
-    let dc = new DirtyChecker(this)
+    const dc = new DirtyChecker(this)
     return dc.dirtyAttributes()
   }
 
   hasDirtyRelation(relationName : string, relatedModel : JSORMBase) : boolean {
-    let dc = new DirtyChecker(this)
+    const dc = new DirtyChecker(this)
     return dc.checkRelation(relationName, relatedModel)
   }
 
@@ -504,14 +502,14 @@ export class JSORMBase {
    *
    */
   static fetchOptions() : RequestInit {
-    let options = {
+    const options = {
       headers: {
         Accept: 'application/json',
         ['Content-Type']: 'application/json'
       } as any
     }
 
-    let jwt = this.getJWT()
+    const jwt = this.getJWT()
     if (jwt) {
       options.headers.Authorization = this.generateAuthHeader(jwt)
     }
@@ -520,7 +518,7 @@ export class JSORMBase {
   }
 
   static url(id? : string | number) : string {
-    let endpoint = this.endpoint || `/${this.jsonapiType}`
+    const endpoint = this.endpoint || `/${this.jsonapiType}`
     let base = `${this.fullBasePath()}${endpoint}`
 
     if (id) {
@@ -536,14 +534,14 @@ export class JSORMBase {
 
   static get middlewareStack() : MiddlewareStack {
     if (this.baseClass) {
-      let stack = this.baseClass._middlewareStack
+      const stack = this.baseClass._middlewareStack
 
       // Normally we want to use the middleware stack defined on the baseClass, but in the event
       // that our subclass has overridden one or the other, we create a middleware stack that
       // replaces the normal filters with the class override.
       if (this.beforeFetch || this.afterFetch) {
-        let before = this.beforeFetch ? [this.beforeFetch] : stack.beforeFilters
-        let after = this.afterFetch ? [this.afterFetch] : stack.afterFilters
+        const before = this.beforeFetch ? [this.beforeFetch] : stack.beforeFilters
+        const after = this.afterFetch ? [this.afterFetch] : stack.afterFilters
 
         return new MiddlewareStack(before, after)
       } else {
@@ -620,7 +618,7 @@ export class JSORMBase {
   }
 
   static getJWT() : string | undefined {
-    let owner = this.baseClass
+    const owner = this.baseClass
 
     if (owner) {
       return owner.jwt
@@ -638,9 +636,9 @@ export class JSORMBase {
   }
 
   async destroy() : Promise<boolean> {
-    let url     = this.klass.url(this.id)
-    let verb    = 'delete'
-    let request = new Request(this._middleware(), this.klass.logger)
+    const url     = this.klass.url(this.id)
+    const verb    = 'delete'
+    const request = new Request(this._middleware(), this.klass.logger)
     let response : any
 
     try {
@@ -657,8 +655,8 @@ export class JSORMBase {
   async save(options : SaveOptions = {}) : Promise<boolean> {
     let url = this.klass.url()
     let verb : RequestVerbs = 'post'
-    let request = new Request(this._middleware(), this.klass.logger)
-    let payload = new WritePayload(this, options.with)
+    const request = new Request(this._middleware(), this.klass.logger)
+    const payload = new WritePayload(this, options.with)
     let response : any
 
     if (this.isPersisted) {
@@ -666,7 +664,7 @@ export class JSORMBase {
       verb = 'put'
     }
 
-    let json = payload.asJSON()
+    const json = payload.asJSON()
 
     try {
       response = await request[verb](url, json, this._fetchOptions())

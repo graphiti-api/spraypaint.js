@@ -41,12 +41,12 @@ describe('CollectionProxy', () => {
 
   describe('initialization', () => {
     it('should assign the response correctly', () => {
-      let collection = new CollectionProxy(recordArray, personData)
+      const collection = new CollectionProxy(recordArray, personData)
       expect(collection.raw).to.deep.equal(personData)
     })
 
     it('should assign the correct models to the data array', () => {
-      let collection = new CollectionProxy(recordArray, personData)
+      const collection = new CollectionProxy(recordArray, personData)
       collection.data.forEach((item) => {
         expect(item).to.be.instanceof(Person)
       })
@@ -55,7 +55,7 @@ describe('CollectionProxy', () => {
 
   describe('#meta', () => {
     it('should get meta field from raw response', () => {
-      let collection = new CollectionProxy(recordArray, personData)
+      const collection = new CollectionProxy(recordArray, personData)
       expect(collection.meta).to.deep.eq(personData.meta)
     })
 
@@ -67,7 +67,7 @@ describe('CollectionProxy', () => {
       })
 
       it('should return an empty object', () => {
-        let collection = new CollectionProxy(recordArray, personData)
+        const collection = new CollectionProxy(recordArray, personData)
         expect(collection.meta).to.deep.eq({})
       })
     })

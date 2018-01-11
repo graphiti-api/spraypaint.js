@@ -17,8 +17,8 @@ class DirtyChecker<T extends JSORMBase> {
     let dirty = false
 
     if (relatedModel.isPersisted) {
-      let identifiers : JsonapiResourceIdentifier[] = (<any>this.model)._originalRelationships[relationName] || []
-      let found = identifiers.find((ri) => {
+      const identifiers : JsonapiResourceIdentifier[] = (<any>this.model)._originalRelationships[relationName] || []
+      const found = identifiers.find((ri) => {
         return JSON.stringify(ri) === JSON.stringify(relatedModel.resourceIdentifier)
       })
       if (!found) { dirty = true }
@@ -33,8 +33,8 @@ class DirtyChecker<T extends JSORMBase> {
   // * not persisted (and thus must be send to server)
   // * not itself dirty, but has nested relations that are dirty
   check(relationships : IncludeScope = {}) : boolean {
-    let includeDirective = new IncludeDirective(relationships)
-    let includeHash = includeDirective.toScopeObject()
+    const includeDirective = new IncludeDirective(relationships)
+    const includeHash = includeDirective.toScopeObject()
 
     return this._hasDirtyAttributes() ||
       this._hasDirtyRelationships(includeHash) ||
@@ -44,11 +44,11 @@ class DirtyChecker<T extends JSORMBase> {
   }
 
   dirtyAttributes()  {
-    let dirty : ModelAttributeChangeSet<T> = {}
+    const dirty : ModelAttributeChangeSet<T> = {}
 
-    for (let key of Object.keys(this.model.attributes)) {
-      let prior = (<any>this.model)._originalAttributes[key]
-      let current = this.model.attributes[key]
+    for (const key of Object.keys(this.model.attributes)) {
+      const prior = (<any>this.model)._originalAttributes[key]
+      const current = this.model.attributes[key]
 
       if (!this.model.isPersisted) {
         dirty[key] = [null, current]
@@ -66,8 +66,8 @@ class DirtyChecker<T extends JSORMBase> {
   }
 
   private _hasDirtyAttributes() {
-    let originalAttrs = (<any>this.model)._originalAttributes
-    let currentAttrs = this.model.attributes
+    const originalAttrs = (<any>this.model)._originalAttributes
+    const currentAttrs = this.model.attributes
 
     return JSON.stringify(originalAttrs) !== JSON.stringify(currentAttrs)
   }
@@ -93,7 +93,7 @@ class DirtyChecker<T extends JSORMBase> {
     callback : (key : string, object : JSORMBase, nested : IncludeScopeHash) => void
   ) : void {
     Object.keys(includeHash).forEach((key) => {
-      let nested = includeHash[key]
+      const nested = includeHash[key]
       let relatedObjects : JSORMBase[] | JSORMBase = (<any>this.model)[key]
 
       if (!Array.isArray(relatedObjects)) {

@@ -76,7 +76,7 @@ const AttrDecoratorFactory : {
     if (!propertyKey) {
       throw new Error('Must provide a propertyKey')
     }
-    let target = configOrTarget
+    const target = configOrTarget
 
     if (isModelClass(target)) {
       if (attrConfig) {
@@ -153,7 +153,7 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any)
 
     const factoryFn = (target : JSORMBase, propKey : string) => {
       if (optsOrType === undefined) {
-        let inferredType = pluralize(underscore(propKey))
+        const inferredType = pluralize(underscore(propKey))
 
         opts = {
           jsonapiType: inferredType
@@ -179,12 +179,12 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any)
         }
       }
 
-      let attrDefinition = new AttrType(opts)
+      const attrDefinition = new AttrType(opts)
       if (!attrDefinition.name) {
         attrDefinition.name = propKey
       }
     
-      let ModelClass = extend(<any>target.constructor)
+      const ModelClass = extend(<any>target.constructor)
       
       ModelClass.attributeList[propKey] = attrDefinition
       attrDefinition.owner = target.constructor
@@ -194,7 +194,7 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any)
     }
 
     if (isModelClass(targetOrConfig) && propertyKey) {
-      let target = targetOrConfig
+      const target = targetOrConfig
 
       factoryFn(target.prototype, propertyKey)
     } else {

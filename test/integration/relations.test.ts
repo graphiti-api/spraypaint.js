@@ -2,13 +2,13 @@ import { expect, fetchMock } from '../test-helper'
 import { Author, NonFictionAuthor } from '../fixtures'
 import { IResultProxy } from '../../src/proxies/index'
 
-let resultData = <T>(promise : Promise<IResultProxy<T>>) : Promise<any> => {
+const resultData = <T>(promise : Promise<IResultProxy<T>>) : Promise<any> => {
   return promise.then((proxyObject) => {
     return proxyObject.data
   })
 }
 
-let generateMockResponse = (type : string) => {
+const generateMockResponse = (type : string) => {
   return {
     data: {
       id: '1',
@@ -61,14 +61,14 @@ describe('Relations', () => {
     afterEach(fetchMock.restore)
 
     it('correctly includes relationships', async () => {
-      let data = await resultData(Author.includes(['books', 'multi_words']).find(1))
+      const data = await resultData(Author.includes(['books', 'multi_words']).find(1))
 
       expect(data.multiWords).to.be.an('array')
       expect(data.books).to.be.an('array')
     })
 
     it('contains the right records for each relationship', async () => {
-      let data = await resultData(Author.includes(['books', 'multi_words']).find(1))
+      const data = await resultData(Author.includes(['books', 'multi_words']).find(1))
 
       expect(data.books[0].title).to.eql('The Shining')
       expect(data.multiWords[0].id).to.eql('multi_word1')
@@ -101,7 +101,7 @@ describe('Relations', () => {
     afterEach(fetchMock.restore)
 
     it("Doesn't convert relationships to snake_case if camelization is off", async () => {
-      let data = await resultData(NonFictionAuthor.includes(['books', 'multi_words']).find(1))
+      const data = await resultData(NonFictionAuthor.includes(['books', 'multi_words']).find(1))
 
       expect(data.multi_words[0].id).to.eql('multi_word1')
     })

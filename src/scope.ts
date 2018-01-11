@@ -48,19 +48,19 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   async all() : Promise<CollectionProxy<T['prototype']>> {
-    let response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
+    const response = await this._fetch(this.model.url()) as JsonapiCollectionDoc
 
     return this._buildCollectionResult(response)
   }
 
   async find(id : string | number) : Promise<RecordProxy<T['prototype']>> {
-    let json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
+    const json = await this._fetch(this.model.url(id)) as JsonapiResourceDoc
 
     return this._buildRecordResult(json)
   }
 
   async first() : Promise<RecordProxy<T['prototype']>> {
-    let newScope = this.per(1)
+    const newScope = this.per(1)
     let rawResult 
 
     rawResult = await newScope._fetch(newScope.model.url()) as JsonapiCollectionDoc
@@ -69,7 +69,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   merge(obj : Record<string, Scope>) : Scope<T> {
-    let copy = this.copy()
+    const copy = this.copy()
 
     Object.keys(obj).forEach((k) => {
       copy._associations[k] = (obj as any)[k]
@@ -79,23 +79,23 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   page(pageNumber : number) : Scope<T> {
-    let copy = this.copy()
+    const copy = this.copy()
 
     copy._pagination.number = pageNumber
     return copy
   }
 
   per(size : number) : Scope<T> {
-    let copy = this.copy()
+    const copy = this.copy()
 
     copy._pagination.size = size
     return copy
   }
 
   where(clause : WhereClause) : Scope<T> {
-    let copy = this.copy()
+    const copy = this.copy()
 
-    for (let key in clause) {
+    for (const key in clause) {
       if(clause.hasOwnProperty(key)) {
         copy._filter[key] = clause[key]
       }
@@ -104,9 +104,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   stats(clause : StatsScope) : Scope<T> {
-    let copy = this.copy()
+    const copy = this.copy()
 
-    for (let key in clause) {
+    for (const key in clause) {
       if(clause.hasOwnProperty(key)) {
         copy._stats[key] = clause[key]
       }
@@ -115,10 +115,10 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   order(clause : SortScope | string) : Scope<T> {
-    let copy = this.copy()
+    const copy = this.copy()
 
     if (typeof clause === "object") {
-      for (let key in clause) {
+      for (const key in clause) {
         if(clause.hasOwnProperty(key)) {
           copy._sort[key] = clause[key]
         }
@@ -131,9 +131,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   select(clause : FieldScope) {
-    let copy = this.copy()
+    const copy = this.copy()
 
-    for (let key in clause) {
+    for (const key in clause) {
       if(clause.hasOwnProperty(key)) {
         copy._fields[key] = clause[key]
       }
@@ -143,9 +143,9 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   selectExtra(clause : FieldScope) {
-    let copy = this.copy()
+    const copy = this.copy()
 
-    for (let key in clause) {
+    for (const key in clause) {
       if(clause.hasOwnProperty(key)) {
         copy._extra_fields[key] = clause[key]
       }
@@ -155,12 +155,12 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   includes(clause : IncludeScope) : Scope<T> {
-    let copy = this.copy()
+    const copy = this.copy()
 
-    let directive = new IncludeDirective(clause)
-    let directiveObject = directive.toScopeObject()
+    const directive = new IncludeDirective(clause)
+    const directiveObject = directive.toScopeObject()
 
-    for (let key in directiveObject) {
+    for (const key in directiveObject) {
       if(directiveObject.hasOwnProperty(key)) {
         copy._include[key] = directiveObject[key]
       }
@@ -177,7 +177,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   asQueryParams() : JsonapiQueryParams {
-    let qp : JsonapiQueryParams = {
+    const qp : JsonapiQueryParams = {
       page:         this._pagination,
       filter:       this._filter,
       sort:         this._sortParam(this._sort) || [],
@@ -193,7 +193,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   toQueryParams() : string | undefined {
-    let paramString = parameterize(this.asQueryParams())
+    const paramString = parameterize(this.asQueryParams())
 
     if (paramString !== '') {
       return paramString
@@ -201,7 +201,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   copy() : Scope<T> {
-    let newScope = cloneDeep(this)
+    const newScope = cloneDeep(this)
 
     return newScope
   }
@@ -209,17 +209,17 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   // private
 
   private _mergeAssociationQueryParams(queryParams : JsonapiQueryParams, associations : Record<string, Scope<any>>) {
-    for (let key in associations) {
+    for (const key in associations) {
       if(associations.hasOwnProperty(key)) {
-        let associationScope = associations[key]
-        let associationQueryParams = associationScope.asQueryParams()
+        const associationScope = associations[key]
+        const associationQueryParams = associationScope.asQueryParams()
 
         queryParams.page[key]   = associationQueryParams.page
         queryParams.filter[key] = associationQueryParams.filter
         queryParams.stats[key]  = associationQueryParams.stats
 
         associationQueryParams.sort.forEach((s) => {
-          let transformed = this._transformAssociationSortParam(key, s)
+          const transformed = this._transformAssociationSortParam(key, s)
           queryParams.sort.push(transformed)
         })
       }
@@ -236,7 +236,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
 
   private _sortParam(clause : Record<string, SortDir> | undefined) {
     if (clause && Object.keys(clause).length > 0) {
-      let params = []
+      const params = []
 
       for (let key in clause) {
         if(clause.hasOwnProperty(key)) {
@@ -253,14 +253,14 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   private async _fetch(url : string) : Promise<JsonapiResponseDoc> {
-    let qp = this.toQueryParams()
+    const qp = this.toQueryParams()
     if (qp) {
       url = `${url}?${qp}`
     }
-    let request = new Request(this.model.middlewareStack, this.model.logger)
-    let fetchOpts = this.model.fetchOptions()
+    const request = new Request(this.model.middlewareStack, this.model.logger)
+    const fetchOpts = this.model.fetchOptions()
 
-    let response = await request.get(url, fetchOpts)
+    const response = await request.get(url, fetchOpts)
     refreshJWT(this.model, response)
     return response.jsonPayload
   }
@@ -281,7 +281,7 @@ export class Scope<T extends typeof JSORMBase=typeof JSORMBase> {
   }
 
   private _buildCollectionResult(jsonResult : JsonapiCollectionDoc) {
-    let recordArray : T['prototype'][] = []
+    const recordArray : T['prototype'][] = []
 
     jsonResult.data.forEach((record) => {
       recordArray.push(this.model.fromJsonapi(record, jsonResult))

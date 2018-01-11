@@ -3,10 +3,9 @@ import { Scope } from '../../src/scope'
 import { Author } from '../fixtures'
 
 let scope : Scope<typeof Author>
-let scopeImpl : any
 
 beforeEach(() => {
-  let model = sinon.stub()
+  const model = sinon.stub()
   scope = new Scope(model as any)
 })
 
@@ -18,7 +17,7 @@ describe('Scope', () => {
     })
 
     it('returns a new scope', () => {
-      let newScope = scope.page(2)
+      const newScope = scope.page(2)
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
@@ -31,7 +30,7 @@ describe('Scope', () => {
     })
 
     it('returns a new scope', () => {
-      let newScope = scope.per(10)
+      const newScope = scope.per(10)
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
@@ -49,7 +48,7 @@ describe('Scope', () => {
     })
 
     it('returns a new scope', () => {
-      let newScope = scope.where({ foo: 'bar' })
+      const newScope = scope.where({ foo: 'bar' })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
@@ -67,7 +66,7 @@ describe('Scope', () => {
     })
 
     it('returns a new scope', () => {
-      let newScope = scope.stats({ total: 'count' })
+      const newScope = scope.stats({ total: 'count' })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
@@ -84,7 +83,7 @@ describe('Scope', () => {
     })
 
     it('returns a new scope', () => {
-      let newScope = scope.order('foo')
+      const newScope = scope.order('foo')
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
@@ -101,7 +100,7 @@ describe('Scope', () => {
     })
 
     it('returns a new scope', () => {
-      let newScope = scope.select({ people: ['foo'] })
+      const newScope = scope.select({ people: ['foo'] })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
@@ -142,7 +141,7 @@ describe('Scope', () => {
     })
 
     it('returns a new scope', () => {
-      let newScope = scope.includes('foo')
+      const newScope = scope.includes('foo')
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
@@ -168,7 +167,7 @@ describe('Scope', () => {
         .selectExtra({ people: ['net_worth'] })
         .stats({ total: 'count' })
         .includes({ a: ['b', { c: 'd' }] })
-      let qp = scope.asQueryParams()
+      const qp = scope.asQueryParams()
 
       expect(qp).to.eql({
         page: {
@@ -227,9 +226,9 @@ describe('Scope', () => {
     })
 
     it('should make a copy of scope attributes', () => {
-      let original : any = scope.order({foo: 'asc'}).page(1).per(20)
+      const original : any = scope.order({foo: 'asc'}).page(1).per(20)
 
-      let copy = original.copy()
+      const copy = original.copy()
 
       expect(original._pagination).not.to.eq(copy._pagination)
       expect(original._pagination).to.deep.eq(copy._pagination)

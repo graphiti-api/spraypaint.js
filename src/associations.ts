@@ -80,7 +80,7 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]> implements Asso
   }
 
   getter(context : JSORMBase) {
-    let gotten = context.relationships[this.name]
+    const gotten = context.relationships[this.name]
     if (!gotten) {
       this.setter(context, [])
       return context.relationships[this.name]
@@ -116,19 +116,19 @@ export interface AssociationFactoryOpts<T extends JSORMBase> {
 export type AssociationFactoryArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string
 
 export const hasOne = <T extends JSORMBase>(options? : AssociationFactoryOpts<T>) : HasOne<T> => {
-  let opts = extractAssocOpts(options)
+  const opts = extractAssocOpts(options)
 
   return new HasOne(opts)
 }
 
 export const belongsTo = <T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : BelongsTo<T> => {
-  let opts = extractAssocOpts(options)
+  const opts = extractAssocOpts(options)
 
   return new BelongsTo(opts)
 }
 
 export const hasMany = <T extends JSORMBase>(options? : AssociationFactoryArgs<T>) : HasMany<T> => {
-  let opts = extractAssocOpts(options)
+  const opts = extractAssocOpts(options)
 
   return new HasMany(opts)
 }
@@ -163,7 +163,7 @@ interface ModelAssoc {
 }
 
 const modelForType = (association : ModelAssoc, jsonapiType : string) : typeof JSORMBase => {
-  let klass = association.owner.typeRegistry.get(jsonapiType)
+  const klass = association.owner.typeRegistry.get(jsonapiType)
 
   if (klass) {
     return klass

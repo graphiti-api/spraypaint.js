@@ -27,13 +27,13 @@ describe('Model finders', () => {
     })
 
     it('returns a promise that resolves the correct instance', async () => {
-      let data = await resultData(Person.find(1))
+      const data = await resultData(Person.find(1))
       expect(data).to.be.instanceof(Person).and
         .have.property('id', '1')
     })
 
     it('assigns attributes correctly', async () => {
-      let data = await resultData(Person.find(1))
+      const data = await resultData(Person.find(1))
       expect(data).to.have.property('firstName', 'John')
     })
 
@@ -49,7 +49,7 @@ describe('Model finders', () => {
       })
 
       it('resolves to the correct class', async () => {
-        let result = await resultData(Person.find(1))
+        const result = await resultData(Person.find(1))
 
         expect(result).to.be.instanceof(Author)
       })
@@ -70,7 +70,7 @@ describe('Model finders', () => {
     })
 
     it('returns a promise that resolves the correct instances', async () => {
-        let result = await resultData(Person.first())
+        const result = await resultData(Person.first())
 
         expect(result).to
           .be.instanceof(Person)
@@ -89,7 +89,7 @@ describe('Model finders', () => {
     })
 
     it('returns a promise that resolves the correct instances', async () => {
-      let data = await resultData(Person.all())
+      const data = await resultData(Person.all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -114,7 +114,7 @@ describe('Model finders', () => {
       })
 
       it('includes meta payload in the resulting collection', async () => {
-        let result = await Person.all()
+        const result = await Person.all()
 
         expect(result).to.have.nested.property('meta.stats.total.count', 45)
       })
@@ -131,7 +131,7 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let data = await resultData(Person.page(2).all())
+      const data = await resultData(Person.page(2).all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -149,9 +149,9 @@ describe('Model finders', () => {
       })
 
       it('queries correctly', async () => {
-        let bookScope = Book.page(10)
-        let personScope = Person.page(5).merge({ books: bookScope })
-        let data = await resultData(personScope.all())
+        const bookScope = Book.page(10)
+        const personScope = Person.page(5).merge({ books: bookScope })
+        const data = await resultData(personScope.all())
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -169,7 +169,7 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let data = await resultData(Author.per(5).all())
+      const data = await resultData(Author.per(5).all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -186,9 +186,9 @@ describe('Model finders', () => {
       })
 
       it('queries correctly', async () => {
-        let bookScope = Book.per(2)
-        let personScope = Person.per(5).merge({ books: bookScope })
-        let data = (await resultData(personScope.all()))
+        const bookScope = Book.per(2)
+        const personScope = Person.per(5).merge({ books: bookScope })
+        const data = (await resultData(personScope.all()))
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -206,7 +206,7 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let data = await resultData(Person.order('foo').order({ bar: 'desc' }).all())
+      const data = await resultData(Person.order('foo').order({ bar: 'desc' }).all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -224,10 +224,10 @@ describe('Model finders', () => {
       })
 
       it('queries correctly', async () => {
-        let bookScope = Book.order('title').order({ pages: 'desc' })
+        const bookScope = Book.order('title').order({ pages: 'desc' })
         let scope = Person.order('foo')
         scope = scope.merge({ books: bookScope })
-        let data = await resultData(scope.all())
+        const data = await resultData(scope.all())
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -246,7 +246,7 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let data = await resultData(Person.where({ id: 2 }).where({ a: 'b' }).all())
+      const data = await resultData(Person.where({ id: 2 }).where({ a: 'b' }).all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -264,7 +264,7 @@ describe('Model finders', () => {
       })
 
       it('still queries correctly', async () => {
-        let data = await resultData(Person.where({ id: 2 }).where({ a: false }).all())
+        const data = await resultData(Person.where({ id: 2 }).where({ a: false }).all())
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -283,10 +283,10 @@ describe('Model finders', () => {
       })
 
       it('queries correctly', async () => {
-        let bookScope = Book.where({ title: 'It' })
-        let personScope = Person.where({id : 1 }).merge({ books: bookScope })
+        const bookScope = Book.where({ title: 'It' })
+        const personScope = Person.where({id : 1 }).merge({ books: bookScope })
 
-        let data = await resultData(personScope.all())
+        const data = await resultData(personScope.all())
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -304,9 +304,9 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let scope = Person.stats({ total: ['count', 'sum'] })
+      const scope = Person.stats({ total: ['count', 'sum'] })
 
-      let data = await resultData(scope.all())
+      const data = await resultData(scope.all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -323,11 +323,11 @@ describe('Model finders', () => {
       })
 
       it('queries correctly', async () => {
-        let bookScope = Book.stats({ pages: ['average'] })
+        const bookScope = Book.stats({ pages: ['average'] })
         let scope     = Person.stats({ total: ['count', 'sum'] })
         scope         = scope.merge({ books: bookScope })
 
-        let data = await resultData(scope.all())
+        const data = await resultData(scope.all())
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -345,7 +345,7 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let data = await resultData(Person.select({ people: ['name', 'age'] }).all())
+      const data = await resultData(Person.select({ people: ['name', 'age'] }).all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -363,7 +363,7 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let data = await resultData(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all())
+      const data = await resultData(Person.selectExtra({ people: ['net_worth', 'best_friend'] }).all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -384,7 +384,7 @@ describe('Model finders', () => {
     })
 
     it('queries correctly', async () => {
-      let data = await resultData(Person.includes({ a: ['b', { c: 'd' }] }).all())
+      const data = await resultData(Person.includes({ a: ['b', { c: 'd' }] }).all())
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)

@@ -17,7 +17,7 @@ export class WritePayload<T extends JSORMBase> {
   included : JsonapiResource[] = []
 
   constructor(model : T, relationships? : IncludeScope) {
-    let includeDirective = new IncludeDirective(relationships)
+    const includeDirective = new IncludeDirective(relationships)
     this.includeDirective = includeDirective.toScopeObject()
     this.model = model
 
@@ -28,10 +28,10 @@ export class WritePayload<T extends JSORMBase> {
   }
 
   attributes() {
-    let attrs : ModelRecord<T> = {}
+    const attrs : ModelRecord<T> = {}
 
     this._eachAttribute((key, value) => {
-      let snakeKey    = underscore(key)
+      const snakeKey    = underscore(key)
 
       if (!this.model.isPersisted || this.model.changes()[key]) {
         attrs[snakeKey] = value
@@ -43,10 +43,10 @@ export class WritePayload<T extends JSORMBase> {
 
   removeDeletions(model : T, includeDirective : IncludeScope) {
     Object.keys(includeDirective).forEach((key) => {
-      let nested = (<any>includeDirective)[key]
+      const nested = (<any>includeDirective)[key]
 
-      let modelIdx = (<any>model)
-      let relatedObjects = modelIdx[key]
+      const modelIdx = (<any>model)
+      const relatedObjects = modelIdx[key]
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
@@ -57,7 +57,7 @@ export class WritePayload<T extends JSORMBase> {
             }
           })
         } else {
-          let relatedObject = relatedObjects
+          const relatedObject = relatedObjects
           if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
             modelIdx[key] = null
           } else {
@@ -74,13 +74,13 @@ export class WritePayload<T extends JSORMBase> {
   }
 
   relationships() : object {
-    let _relationships : any = {}
+    const _relationships : any = {}
 
     Object.keys(this.includeDirective).forEach((key : any) => {
-      let nested = (<any>this.includeDirective)[key]
+      const nested = (<any>this.includeDirective)[key]
 
       let data : any
-      let relatedModels = (<any>this.model)[key]
+      const relatedModels = (<any>this.model)[key]
       if (relatedModels) {
         if (Array.isArray(relatedModels)) {
           data = []
@@ -108,7 +108,7 @@ export class WritePayload<T extends JSORMBase> {
   }
 
   asJSON() : JsonapiRequestDoc {
-    let data : JsonapiResource = {
+    const data : JsonapiResource = {
       type: this.jsonapiType
     }
 
@@ -122,17 +122,17 @@ export class WritePayload<T extends JSORMBase> {
       data['temp-id'] = this.model.temp_id
     }
 
-    let _attributes = this.attributes()
+    const _attributes = this.attributes()
     if (Object.keys(_attributes).length > 0) {
       data.attributes = _attributes
     }
 
-    let relationshipData = this.relationships()
+    const relationshipData = this.relationships()
     if (Object.keys(relationshipData).length > 0) {
       data.relationships = relationshipData
     }
 
-    let json : JsonapiRequestDoc = { data }
+    const json : JsonapiRequestDoc = { data }
 
     if (this.included.length > 0) {
       json.included = this.included
@@ -150,10 +150,10 @@ export class WritePayload<T extends JSORMBase> {
       model.temp_id = tempId.generate()
     }
 
-    let wp            = new WritePayload(model, nested)
-    let relatedJSON   = wp.asJSON().data
+    const wp            = new WritePayload(model, nested)
+    const relatedJSON   = wp.asJSON().data
 
-    let resourceIdentifier = this._resourceIdentifierFor(model)
+    const resourceIdentifier = this._resourceIdentifierFor(model)
     this._pushInclude(relatedJSON)
     wp.included.forEach((incl) => {
       this._pushInclude(incl)
@@ -166,7 +166,7 @@ export class WritePayload<T extends JSORMBase> {
       throw new Error(`Cannot serialize model: Undefined jsonapiType for model ${model}`)
     }
 
-    let identifier : JsonapiResourceIdentifier = {
+    const identifier : JsonapiResourceIdentifier = {
       type: model.klass.jsonapiType
     }
 
@@ -213,11 +213,11 @@ export class WritePayload<T extends JSORMBase> {
   }
 
   private _eachAttribute(callback : (key : keyof T, val : any) => void) : void {
-    let modelAttrs = this.model.typedAttributes
+    const modelAttrs = this.model.typedAttributes
 
     Object.keys(modelAttrs).forEach((key) => {
       if (this.model.klass.attributeList[key].persist) {
-        let value = modelAttrs[key]
+        const value = modelAttrs[key]
         callback(key as keyof T, value)
       }
     })

@@ -100,9 +100,9 @@ describe('validations', () => {
     })
 
     instance = new Author({ lastName: 'King' })
-    let genre = new Genre({ id: '1' })
+    const genre = new Genre({ id: '1' })
     genre.isPersisted = true
-    let book = new Book({ title: 'blah', genre })
+    const book = new Book({ title: 'blah', genre })
     instance.books = [book]
   })
 
@@ -112,7 +112,7 @@ describe('validations', () => {
   })
 
   it('applies errors to the instance', async () => {
-    let isSuccess = await instance.save({ with: { books: 'genre' }})
+    const isSuccess = await instance.save({ with: { books: 'genre' }})
 
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
@@ -155,9 +155,9 @@ describe('validations', () => {
   })
 
   it('instantiates a new error object instance after save', async () => {
-    let originalErrors = instance.errors = {foo: 'bar'}
-    let result = instance.save({ with: { books: 'genre' }})
-    let postSavePreValidateErrors = instance.errors
+    const originalErrors = instance.errors = {foo: 'bar'}
+    const result = instance.save({ with: { books: 'genre' }})
+    const postSavePreValidateErrors = instance.errors
 
     expect(postSavePreValidateErrors).not.to.equal(originalErrors)
 
@@ -165,17 +165,17 @@ describe('validations', () => {
   })
 
   it('instantiates a new error object instance after validate', async () => {
-    let result = instance.save({ with: { books: 'genre' }})
-    let postSavePreValidateErrors = instance.errors
+    const result = instance.save({ with: { books: 'genre' }})
+    const postSavePreValidateErrors = instance.errors
 
     await result
 
-    let postValidateErrors = instance.errors
+    const postValidateErrors = instance.errors
     expect(postValidateErrors).not.to.equal(postSavePreValidateErrors)
   })
 
   it('applies errors to nested hasMany relationships', async () => {
-    let isSuccess = await instance.save({ with: { books: 'genre' }})
+    const isSuccess = await instance.save({ with: { books: 'genre' }})
 
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
@@ -185,7 +185,7 @@ describe('validations', () => {
   })
 
   it('applies errors to nested belongsTo relationships', async () => {
-    let isSuccess = await instance.save({ with: { books: 'genre' }})
+    const isSuccess = await instance.save({ with: { books: 'genre' }})
 
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)

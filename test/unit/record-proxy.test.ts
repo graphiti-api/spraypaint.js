@@ -37,12 +37,12 @@ describe('RecordProxy', () => {
 
   describe('initialization', () => {
     it('should assign the response correctly', () => {
-      let record = new RecordProxy(modelRecord, personData)
+      const record = new RecordProxy(modelRecord, personData)
       expect(record.raw).to.deep.equal(personData)
     })
 
     it('should assign the correct model to the data field', () => {
-      let record = new RecordProxy(modelRecord, personData)
+      const record = new RecordProxy(modelRecord, personData)
       expect(record.data).to.be.instanceof(Person)
     })
 <<<<<<< HEAD
@@ -58,7 +58,7 @@ describe('RecordProxy', () => {
       })
 
       it('should assign data to null', () => {
-        let record = new RecordProxy(modelRecord, personData)
+        const record = new RecordProxy(modelRecord, personData)
         expect(record.data).to.eq(null)
       })
     })
@@ -67,7 +67,7 @@ describe('RecordProxy', () => {
 
   describe('#meta', () => {
     it('should get meta field from raw response', () => {
-      let record = new RecordProxy(modelRecord, personData)
+      const record = new RecordProxy(modelRecord, personData)
       expect(record.meta).to.deep.eq(personData.meta)
     })
 
@@ -86,7 +86,7 @@ describe('RecordProxy', () => {
       })
 
       it('should return an empty object', () => {
-        let record = new RecordProxy(modelRecord, personData)
+        const record = new RecordProxy(modelRecord, personData)
         expect(record.meta).to.deep.eq({})
       })
     })

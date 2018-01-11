@@ -9,7 +9,7 @@ export type ColorKey = 'green' | 'cyan' | 'magenta' | 'bold'
 
 export default (color : ColorKey, text : string) : string => {
   if (supportsColor()) {
-    let map = COLORS[color]
+    const map = COLORS[color]
     return `\u001b[${map[0]}m${text}\u001b[${map[1]}m`
   } else {
     return text

@@ -57,19 +57,19 @@ export class Attribute<T=any> {
 
   // The model calls this setter
   setter(context : JSORMBase, val : any) : void {
-    let privateContext : any = context
+    const privateContext : any = context
     privateContext._attributes[this.name] = val
   }
 
   // The model calls this getter
   getter(context : JSORMBase) : any {
-    let privateContext : any = context
+    const privateContext : any = context
     return privateContext._attributes[this.name]
   }
 
   // This returns the getters/setters for use on the *model*
   descriptor() : PropertyDescriptor {
-    let attrDef = this
+    const attrDef = this
 
     return {
       configurable: true,

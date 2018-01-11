@@ -91,12 +91,12 @@ let before = {} as any
 let after = {} as any
 describe('fetch middleware', () => {
   const ABORT_ERR = new Error('abort')
-  let oldStack = ApplicationRecord.middlewareStack
+  const oldStack = ApplicationRecord.middlewareStack
 
   beforeEach(() => {
     mockSuccess()
 
-    let middleware = new MiddlewareStack()
+    const middleware = new MiddlewareStack()
 
     middleware.beforeFilters.push((url, options) => {
       before = { url, options }
@@ -135,7 +135,7 @@ describe('fetch middleware', () => {
   describe('reads', () => {
     describe('on successful response', () => {
       it('correctly resolves the promise', async () => {
-        let { data } = await Author.all()
+        const { data } = await Author.all()
 
         expect(data).to.deep.eq([])
       })
@@ -267,7 +267,7 @@ describe('fetch middleware', () => {
       })
 
       it('uses the override', async () => {
-        let a = Author
+        const a = Author
         await Author.all()
 
         expect(before).to.deep.eq({ overridden: true })
@@ -279,14 +279,14 @@ describe('fetch middleware', () => {
   describe('writes', () => {
     describe('on successful response', () => {
       it('correctly resolves the promise', () => {
-        let author = new Author()
+        const author = new Author()
         return author.save().then((success) => {
           expect(success).to.eq(true)
         })
       })
 
       it('runs beforeEach hooks', () => {
-        let author = new Author()
+        const author = new Author()
         return author.save().then(() => {
           expect(before.url).to.eq('http://example.com/api/v1/authors')
           expect(before.options).to.deep.eq({
@@ -301,7 +301,7 @@ describe('fetch middleware', () => {
       })
 
       it('runs afterEach hooks', () => {
-        let author = new Author()
+        const author = new Author()
         return author.save().then(() => {
           expect(after.response.status).to.eq(200)
         })
@@ -310,7 +310,7 @@ describe('fetch middleware', () => {
 
     describe('when beforeFetch middleware aborts', () => {
       it('rejects the promise w/correct RequestError class', () => {
-        let author = new Author({ firstName: 'abortme' })
+        const author = new Author({ firstName: 'abortme' })
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
         })
@@ -329,7 +329,7 @@ describe('fetch middleware', () => {
       })
 
       it('rejects the promise w/correct ResponseError class', () => {
-        let author = new Author()
+        const author = new Author()
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
         })
@@ -348,7 +348,7 @@ describe('fetch middleware', () => {
       })
 
       it('rejects the promise with the response', () => {
-        let author = new Author()
+        const author = new Author()
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
         })
@@ -364,7 +364,7 @@ describe('fetch middleware', () => {
       })
 
       it('rejects the promise with original error', () => {
-        let author = new Author()
+        const author = new Author()
         return author.save().then(() => {
           expect('dont get here!').to.eq(true)
         })
@@ -399,7 +399,7 @@ describe('fetch middleware', () => {
       })
 
       it('uses the override', async () => {
-        let author = new Author()
+        const author = new Author()
 
         await author.save()
 

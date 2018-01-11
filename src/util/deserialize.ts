@@ -8,7 +8,7 @@ import {
 } from '../jsonapi-spec'
 
 const deserialize = (registry : JsonapiTypeRegistry, datum : JsonapiResource, payload : JsonapiResponseDoc) : JSORMBase => {
-  let deserializer = new Deserializer(registry, payload)
+  const deserializer = new Deserializer(registry, payload)
   return deserializer.deserialize(datum)
 }
 
@@ -18,7 +18,7 @@ const deserializeInstance = (
   payload : JsonapiResponseDoc, 
   includeDirective : IncludeScopeHash = {}
 ) : JSORMBase => {
-  let deserializer = new Deserializer(instance.klass.typeRegistry, payload)
+  const deserializer = new Deserializer(instance.klass.typeRegistry, payload)
   return deserializer.deserializeInstance(instance, resource, includeDirective)
 }
 
@@ -40,7 +40,7 @@ class Deserializer {
     if (!data) { return }
 
     if (Array.isArray(data)) {
-      for (let datum of data) {
+      for (const datum of data) {
         this._resources.push(datum)
       }
     } else {
@@ -49,7 +49,7 @@ class Deserializer {
   }
 
   instanceFor(type : string) : JSORMBase {
-    let klass = this.registry.get(type)
+    const klass = this.registry.get(type)
 
     if (!klass) {
       throw new Error(`Unknown type "${type}"`)
@@ -80,9 +80,9 @@ class Deserializer {
   }
 
   pushRelation(model : JSORMBase, associationName : string, record : JSORMBase) : void {
-    let modelIdx = model as any
-    let associationRecords = modelIdx[associationName]
-    let existingInstance = this.lookupAssociated(associationRecords, record)
+    const modelIdx = model as any
+    const associationRecords = modelIdx[associationName]
+    const existingInstance = this.lookupAssociated(associationRecords, record)
 
     if (!existingInstance) {
       modelIdx[associationName].push(record)
@@ -90,12 +90,12 @@ class Deserializer {
   }
 
   deserialize(datum : JsonapiResource) : JSORMBase {
-    let instance = this.instanceFor(datum.type)
+    const instance = this.instanceFor(datum.type)
     return this.deserializeInstance(instance, datum, {})
   }
 
   deserializeInstance(instance : JSORMBase, datum : JsonapiResource, includeDirective : IncludeScopeHash = {}) : JSORMBase {
-    let existing = this.alreadyDeserialized(datum)
+    const existing = this.alreadyDeserialized(datum)
     if (existing) { return existing }
 
     // assign ids
@@ -124,8 +124,8 @@ class Deserializer {
 
   _removeDeletions(model : JSORMBase, includeDirective : IncludeScopeHash) {
     Object.keys(includeDirective).forEach((key) => {
-      let modelIdx = model as any
-      let relatedObjects = modelIdx[key]
+      const modelIdx = model as any
+      const relatedObjects = modelIdx[key]
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
           relatedObjects.forEach((relatedObject, index) => {
@@ -136,7 +136,7 @@ class Deserializer {
             }
           })
         } else {
-          let relatedObject = relatedObjects
+          const relatedObject = relatedObjects
           if (relatedObject.isMarkedForDestruction || relatedObject.isMarkedForDisassociation) {
             modelIdx[key] = null
           } else {
@@ -149,21 +149,21 @@ class Deserializer {
 
   _processRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, includeDirective : IncludeScopeHash) {
     this._iterateValidRelationships(instance, relationships, (relationName, relationData) => {
-      let nestedIncludeDirective = includeDirective[relationName]
-      let instanceIdx = instance as any
+      const nestedIncludeDirective = includeDirective[relationName]
+      const instanceIdx = instance as any
 
       if (Array.isArray(relationData)) {
-        for (let datum of relationData) {
-          let hydratedDatum = this.findResource(datum)
-          let associationRecords = instanceIdx[relationName]
+        for (const datum of relationData) {
+          const hydratedDatum = this.findResource(datum)
+          const associationRecords = instanceIdx[relationName]
           let relatedInstance = this.relationshipInstanceFor(hydratedDatum, associationRecords)
           relatedInstance = this.deserializeInstance(relatedInstance, hydratedDatum, nestedIncludeDirective)
 
           this.pushRelation(instance, relationName, relatedInstance)
         }
       } else {
-        let hydratedDatum = this.findResource(relationData)
-        let existing = instanceIdx[relationName]
+        const hydratedDatum = this.findResource(relationData)
+        const existing = instanceIdx[relationName]
         let associated = existing || this.instanceFor(hydratedDatum.type)
 
         associated = this.deserializeInstance(associated, hydratedDatum, nestedIncludeDirective)
@@ -176,7 +176,7 @@ class Deserializer {
   }
 
   _iterateValidRelationships(instance : JSORMBase, relationships : Record<string, JsonapiResponseDoc>, callback : (name : string, data : JsonapiResource[] | JsonapiResource) => void) {
-    for (let key in relationships) {
+    for (const key in relationships) {
       if (relationships.hasOwnProperty(key)) {
         let relationName = key
 
@@ -185,7 +185,7 @@ class Deserializer {
         }
 
         if (instance.klass.attributeList[relationName]) {
-          let relationData = relationships[key].data
+          const relationData = relationships[key].data
           if(!relationData) { continue } // only links, empty, etc
           callback(relationName, relationData)
         }
@@ -201,7 +201,7 @@ class Deserializer {
   }
 
   findResource(resourceIdentifier : JsonapiResource) {
-    let found = this._resources.find((r) : boolean => {
+    const found = this._resources.find((r) : boolean => {
       return !!(r.type === resourceIdentifier.type &&
         (r.id && resourceIdentifier.id && r.id === resourceIdentifier.id || r['temp-id'] && resourceIdentifier['temp-id'] && r['temp-id'] === resourceIdentifier['temp-id']))
     })

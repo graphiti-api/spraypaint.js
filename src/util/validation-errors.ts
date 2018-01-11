@@ -7,7 +7,7 @@ import {
 
 export class ValidationErrors {
   static apply(model : JSORMBase, payload : JsonapiResponseDoc) : void {
-    let instance = new ValidationErrors(model, payload)
+    const instance = new ValidationErrors(model, payload)
     instance.apply()
   }
 
@@ -20,13 +20,13 @@ export class ValidationErrors {
   }
 
   apply() {
-    let errorsAccumulator = {}
+    const errorsAccumulator = {}
 
     if (!this.payload.errors) { return }
 
     this.payload.errors.forEach((err) => {
-      let meta = err.meta
-      let metaRelationship = meta.relationship
+      const meta = err.meta
+      const metaRelationship = meta.relationship
 
       if (metaRelationship) {
         this._processRelationship(this.model, metaRelationship)
@@ -59,13 +59,13 @@ export class ValidationErrors {
     if (meta.relationship) {
       this._processRelationship(relatedObject, meta.relationship)
     } else {
-      let relatedAccumulator : Record<string, string> = {}
+      const relatedAccumulator : Record<string, string> = {}
       this._processResource(relatedAccumulator, meta)
 
       // make sure to assign a new error object, instead of mutating
       // the existing one, otherwise js frameworks with object tracking
       // won't be able to keep up. Validate vue.js when changing this code:
-      let newErrs : Record<string, string>= {}
+      const newErrs : Record<string, string>= {}
       Object.keys(relatedObject.errors).forEach((key) => {
         newErrs[key] = relatedObject.errors[key]
       })

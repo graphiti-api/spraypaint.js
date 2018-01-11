@@ -59,7 +59,7 @@ export class Request {
   private async _fetchWithLogging(url : string, options : RequestInit) : Promise<any> {
     this._logRequest(options.method || 'UNDEFINED METHOD', url)
 
-    let response = await this._fetch(url, options)
+    const response = await this._fetch(url, options)
 
     this._logResponse(response.jsonPayload)
 

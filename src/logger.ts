@@ -59,7 +59,7 @@ export class Logger implements ILogger {
   }
 
   set level(value : string) {
-    let lvlValue = LogLevel[value as LogLevelKey]
+    const lvlValue = LogLevel[value as LogLevelKey]
 
     if (lvlValue) {
       this._level = lvlValue
@@ -73,7 +73,7 @@ export class Logger implements ILogger {
 
     for (key in LogLevel) {
       if (LogLevel.hasOwnProperty(key)) {
-        let val = LogLevel[key as LogLevelKey]
+        const val = LogLevel[key as LogLevelKey]
         if (val === this._level) {
           return key
         }

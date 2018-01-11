@@ -3,7 +3,7 @@ const parameterize = (obj : any, prefix? : string) : string => {
 
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
-      let value = obj[key]
+      const value = obj[key]
 
       if (value !== undefined && value !== null && value !== '') {
         if (prefix) {

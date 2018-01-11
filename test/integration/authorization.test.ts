@@ -3,17 +3,17 @@ import { SinonSpy } from 'sinon'
 import { JSORMBase, Model, Attr } from '../../src/index'
 import { StorageBackend } from '../../src/local-storage'
 
-let authorResponse = {
+const authorResponse = {
   id: '1',
   type: 'people',
   attributes: {
     name: 'John'
   }
 }
-let stubFind =  {
+const stubFind =  {
   data: authorResponse
 }
-let stubAll =  {
+const stubAll =  {
   data: [authorResponse]
 }
 
@@ -248,7 +248,7 @@ describe('authorization headers', () => {
     })
 
     it('also refreshes the jwt', async () => {
-      let author = new Author({ firstName: 'foo' })
+      const author = new Author({ firstName: 'foo' })
       await author.save()
 
       expect(ApplicationRecord.jwt).to.eq('somet0k3n')

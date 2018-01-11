@@ -18,9 +18,9 @@ export class IncludeDirective {
   private dct : NestedInclude = {}
 
   constructor(arg? : IncludeScope) {
-    let includeHash = this._parseIncludeArgs(arg)
+    const includeHash = this._parseIncludeArgs(arg)
 
-    for (let key in includeHash) {
+    for (const key in includeHash) {
       if (includeHash.hasOwnProperty(key)) {
         this.dct[key] = new IncludeDirective(includeHash[key])
       }
@@ -28,8 +28,8 @@ export class IncludeDirective {
   }
 
   toScopeObject() : IncludeScopeHash {
-    let hash : IncludeScopeHash = {}
-    for (let key in this.dct) {
+    const hash : IncludeScopeHash = {}
+    for (const key in this.dct) {
       if (this.dct.hasOwnProperty(key)) {
         hash[key] = this.dct[key].toScopeObject()
       }
@@ -38,10 +38,10 @@ export class IncludeDirective {
   }
 
   toString() : string {
-    let stringArray = []
-    for (let key in this.dct) {
+    const stringArray = []
+    for (const key in this.dct) {
       if (this.dct.hasOwnProperty(key)) {
-        let stringValue = this.dct[key].toString()
+        const stringValue = this.dct[key].toString()
 
         if (stringValue === '') {
           stringArray.push(key)
@@ -61,7 +61,7 @@ export class IncludeDirective {
     if (Array.isArray(includeArgs)) {
       return this._parseArray(includeArgs)
     } else if (typeof includeArgs === "string") {
-      let obj : IncludeHash = {}
+      const obj : IncludeHash = {}
       obj[includeArgs] = {}
       return obj
     } else if (typeof includeArgs === "object") {
@@ -72,9 +72,9 @@ export class IncludeDirective {
   }
 
   private _parseObject(includeObj : IncludeArgHash) : IncludeHash {
-    let parsed : IncludeHash = {}
+    const parsed : IncludeHash = {}
 
-    for (let key in includeObj) {
+    for (const key in includeObj) {
       if (includeObj.hasOwnProperty(key)) {
         parsed[key] = this._parseIncludeArgs(includeObj[key])
       }
@@ -83,10 +83,10 @@ export class IncludeDirective {
   }
 
   private _parseArray(includeArray : any[]) : IncludeHash {
-    let parsed : IncludeHash = {}
-    for (let value of includeArray) {
-      let parsedEl = this._parseIncludeArgs(value)
-      for (let key in parsedEl) {
+    const parsed : IncludeHash = {}
+    for (const value of includeArray) {
+      const parsedEl = this._parseIncludeArgs(value)
+      for (const key in parsedEl) {
         if (parsedEl.hasOwnProperty(key)) {
           parsed[key] = parsedEl[key]
         }

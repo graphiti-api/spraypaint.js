@@ -85,7 +85,7 @@ describe('Model persistence', () => {
 
       it('preserves persistence data', async () => {
         instance.firstName = 'Joe'
-        let bool = await instance.save()
+        const bool = await instance.save()
 
         expect(bool).to.eq(true)
         expect(instance.id).to.eq('1')
@@ -144,7 +144,7 @@ describe('Model persistence', () => {
         })
 
         it('resolve the promise to true', async () => {
-          let bool = await instance.save()
+          const bool = await instance.save()
 
           expect(bool).to.eq(true)
         })
@@ -211,7 +211,7 @@ describe('Model persistence', () => {
         })
 
         it('resolves the promise to false', async () => {
-          let bool = await instance.save()
+          const bool = await instance.save()
 
           expect(bool).to.eq(false)
         })

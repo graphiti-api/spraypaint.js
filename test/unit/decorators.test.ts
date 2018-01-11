@@ -12,7 +12,7 @@ import { JSORMBase } from '../../src/model'
 
 describe('Decorators', () => {
   describe('@Model', () => {
-    let config = {
+    const config = {
       apiNamespace: 'api/v2',
       jsonapiType: 'my_types',
       jwt: 'abc123', 
@@ -150,7 +150,7 @@ describe('Decorators', () => {
     })
   })
 
-  let singleDecorators = [
+  const singleDecorators = [
     { Assoc: HasMany,   Name: '@HasMany'   },
     { Assoc: HasOne,    Name: '@HasOne'    },
     { Assoc: BelongsTo, Name: '@BelongsTo' },
@@ -230,7 +230,7 @@ describe('Decorators', () => {
             @Assoc() testAssociation : any
           }
 
-          let assoc = TestClass.attributeList.testAssociation 
+          const assoc = TestClass.attributeList.testAssociation 
 
           expect(assoc.owner).to.equal(TestClass)
         })

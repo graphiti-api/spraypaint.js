@@ -18,7 +18,7 @@ class Positions extends JSORMBase {
 }
 
 describe('Associations', () => {
-  let singleDecorators = [
+  const singleDecorators = [
     { assoc: hasMany,   Name: 'hasMany',   AssocClass: HasMany   },
     { assoc: hasOne,    Name: 'hasOne',    AssocClass: HasOne    },
     { assoc: belongsTo, Name: 'belongsTo', AssocClass: BelongsTo },
@@ -31,7 +31,7 @@ describe('Associations', () => {
     describe(Name, () => {
       describe('Initializing Attribute', () => {
         it('accepts undefined options', () => {
-          let defaultAssoc = assoc()
+          const defaultAssoc = assoc()
 
           expect(defaultAssoc.type).to.eq(undefined)
           expect(defaultAssoc).to.be.instanceOf(AssocClass)
@@ -40,7 +40,7 @@ describe('Associations', () => {
         it('accepts a jsormbase class as type', () => {
           class MyType extends JSORMBase {}
 
-          let typeAssoc = assoc({ type: MyType })
+          const typeAssoc = assoc({ type: MyType })
 
           expect(typeAssoc.type).to.eq(MyType)
         })
@@ -48,7 +48,7 @@ describe('Associations', () => {
         it('accepts a jsorm type string as type', () => {
           class MyType extends JSORMBase {}
 
-          let jsonapiTypeAssoc = assoc({ type: 'type_strings' })
+          const jsonapiTypeAssoc = assoc({ type: 'type_strings' })
 
           expect(jsonapiTypeAssoc.jsonapiType).to.eq('type_strings')
           it
@@ -57,19 +57,19 @@ describe('Associations', () => {
         it('accepts a bare jsorm type string', () => {
           class MyType extends JSORMBase {}
 
-          let jsonapiTypeAssoc = assoc('type_strings')
+          const jsonapiTypeAssoc = assoc('type_strings')
 
           expect(jsonapiTypeAssoc.jsonapiType).to.eq('type_strings')
           it
         })
 
         it('defaults to persisted', () => {
-          let defaultAttr = assoc()
+          const defaultAttr = assoc()
           expect(defaultAttr.persist).to.be.true
         })
 
         it('allows persistence to be overridden', () => {
-          let defaultAttr = assoc({ persist: false })
+          const defaultAttr = assoc({ persist: false })
           expect(defaultAttr.persist).to.be.false
         })
       })
