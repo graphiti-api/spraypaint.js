@@ -10,7 +10,7 @@
   "homepage": "https://github.com/jsonapi-suite/jsorm",
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
-    "prebuild": "yarn run clean && yarn lint && yarn test",
+    "prebuild": "yarn run clean && yarn test",
     "build": "npm-run-all build:node build:es6 build:copy_shims build:umd build:umd:min",
     "build:node": "yarn run tsc -p ./tsconfig.node.json",
     "build:es6": "yarn run tsc -p ./tsconfig.lib.json",
@@ -20,6 +20,7 @@
     "build:copy_shims": "cp esm-shims/* lib-esm/util/",
     "build:coverage": "yarn prebuild && yarn run tsc -p .",
     "coverage": "yarn build:coverage && node --harmony ./node_modules/istanbul/lib/cli.js cover --root ./build/src --report lcov --report text ./node_modules/mocha/bin/_mocha ./build/test/**/*.test.js",
+    "pretest": "yarn lint",
     "test": "NODE_ENV=test mocha --opts test/mocha.opts",
     "test:watch": "yarn run test --watch",
     "lint": "yarn lint:tslint && yarn lint:prettier",
