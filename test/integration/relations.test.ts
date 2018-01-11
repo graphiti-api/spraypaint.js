@@ -81,16 +81,19 @@ describe("Relations", () => {
       expect(data.multiWords[0].id).to.eql("multi_word1")
     })
 
-    describe('when a belongsTo relationship has null data', function() {
-      beforeEach(function() {
-        let response = generateMockResponse('authors')
+    describe("when a belongsTo relationship has null data", () => {
+      beforeEach(() => {
+        const response = generateMockResponse("authors")
         response.data.relationships = { genre: { data: null } }
         delete response.data.included
-        fetchMock.get('http://example.com/api/v1/authors/1?include=genre', response)
+        fetchMock.get(
+          "http://example.com/api/v1/authors/1?include=genre",
+          response
+        )
       })
 
-      it('does not blow up', async function() {
-        let { data } = await Author.includes(['genre']).find(1)
+      it("does not blow up", async () => {
+        const { data } = await Author.includes(["genre"]).find(1)
         expect(data.klass).to.eq(Author)
         expect(data.genre).to.eq(undefined)
       })

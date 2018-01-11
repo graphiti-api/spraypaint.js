@@ -146,7 +146,7 @@ export class JSORMBase {
   static get localStorage(): LocalStorage {
     if (!this._localStorage) {
       if (!this._localStorageBackend) {
-       if (this.jwtLocalStorage && typeof localStorage !== 'undefined') {
+        if (this.jwtLocalStorage && typeof localStorage !== "undefined") {
           this._localStorageBackend = localStorage
         } else {
           this._localStorageBackend = new NullStorageBackend()
@@ -290,8 +290,8 @@ export class JSORMBase {
     class Subclass extends (<ExtendedModel<typeof JSORMBase, {}, {}>>this) {}
 
     this.inherited(<any>Subclass)
-    
-    const attrs : any = {}
+
+    const attrs: any = {}
     if (options.attrs) {
       for (const key in options.attrs) {
         if (options.attrs.hasOwnProperty(key)) {

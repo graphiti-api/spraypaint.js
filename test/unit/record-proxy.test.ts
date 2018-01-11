@@ -4,7 +4,7 @@ import { RecordProxy } from "../../src/proxies"
 import { JsonapiResourceDoc, JsonapiResource } from "../../src/index"
 
 describe("RecordProxy", () => {
-  let modelRecord: Person | undefined
+  let modelRecord: Person
   let personData: JsonapiResourceDoc
 
   beforeEach(() => {
@@ -50,24 +50,6 @@ describe("RecordProxy", () => {
       const record = new RecordProxy(modelRecord, personData)
       expect(record.data).to.be.instanceof(Person)
     })
-<<<<<<< HEAD
-=======
-
-    context("record is null is null", () => {
-      beforeEach(() => {
-        personData = {
-          data: undefined
-        }
-
-        modelRecord = undefined
-      })
-
-      it("should assign data to null", () => {
-        const record = new RecordProxy(modelRecord, personData)
-        expect(record.data).to.eq(null)
-      })
-    })
->>>>>>> [TSLINT] Convert all functions to => functions
   })
 
   describe("#meta", () => {

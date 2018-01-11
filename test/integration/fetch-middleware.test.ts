@@ -32,17 +32,17 @@ const mock404 = () => {
   fetchMock.restore()
 
   fetchMock.mock({
-    matcher: '*',
+    matcher: "*",
     response: {
       status: 404,
       body: {
         errors: [
           {
-            code: 'not_found',
-            status: '404',
-            title: 'Resource Not Found',
+            code: "not_found",
+            status: "404",
+            title: "Resource Not Found",
             detail: "Couldn't find Resource with id = 1",
-            meta: { }
+            meta: {}
           }
         ]
       }
@@ -223,36 +223,39 @@ describe("fetch middleware", () => {
       })
     })
 
-    describe('on a 404 response', () => {
+    describe("on a 404 response", () => {
       beforeEach(() => {
         mock404()
       })
 
-      it('rejects the promise with RecordNotFound error', () => {
-        return Author.all().then(({data}) => {
-          expect('dont get here!').to.eq(true)
-        })
-        .catch((e) => {
-          expect(e.message).to.eq('record not found')
-          expect(e.response.status).to.eq(404)
-        })
+      it("rejects the promise with RecordNotFound error", () => {
+        return Author.all()
+          .then(({ data }) => {
+            expect("dont get here!").to.eq(true)
+          })
+          .catch(e => {
+            expect(e.message).to.eq("record not found")
+            expect(e.response.status).to.eq(404)
+          })
       })
     })
 
-    describe('on bad json response', () => {
+    describe("on bad json response", () => {
       beforeEach(() => {
         mockBadJSON()
       })
 
-      it('rejects the promise with original error', () => {
-        return Author.all().then(({data}) => {
-          expect('dont get here!').to.eq(true)
-        })
-        .catch((e) => {
-          expect(e.response.statusText).to.eq('OK')
-          expect(e.originalError.message)
-            .to.match(/Unexpected end of JSON input/)
-        })
+      it("rejects the promise with original error", () => {
+        return Author.all()
+          .then(({ data }) => {
+            expect("dont get here!").to.eq(true)
+          })
+          .catch(e => {
+            expect(e.response.statusText).to.eq("OK")
+            expect(e.originalError.message).to.match(
+              /Unexpected end of JSON input/
+            )
+          })
       })
     })
 
@@ -385,14 +388,17 @@ describe("fetch middleware", () => {
 
       it("rejects the promise with original error", () => {
         const author = new Author()
-        return author.save().then(() => {
-          expect('dont get here!').to.eq(true)
-        })
-        .catch((e) => {
-          expect(e.response.statusText).to.eq('OK')
-          expect(e.originalError.message)
-            .to.match(/Unexpected end of JSON input/)
-        })
+        return author
+          .save()
+          .then(() => {
+            expect("dont get here!").to.eq(true)
+          })
+          .catch(e => {
+            expect(e.response.statusText).to.eq("OK")
+            expect(e.originalError.message).to.match(
+              /Unexpected end of JSON input/
+            )
+          })
       })
     })
 

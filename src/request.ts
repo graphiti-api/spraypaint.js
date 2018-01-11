@@ -118,14 +118,14 @@ export class Request {
     }
 
     if (response.status >= 500) {
-      throw new ResponseError(response, 'Server Error')
+      throw new ResponseError(response, "Server Error")
       // Allow 422 since we specially handle validation errors
     } else if (response.status !== 422 && json.data === undefined) {
       if (response.status === 404) {
-        throw new ResponseError(response, 'record not found')
+        throw new ResponseError(response, "record not found")
       } else {
         // Bad JSON, for instance an errors payload
-        throw new ResponseError(response, 'invalid json')
+        throw new ResponseError(response, "invalid json")
       }
     }
 

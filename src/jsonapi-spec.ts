@@ -1,14 +1,9 @@
-<<<<<<< HEAD
-export type JsonapiResponseDoc = JsonapiCollectionDoc | JsonapiResourceDoc | JsonapiErrorDoc
-export type JsonapiSuccessDoc = JsonapiCollectionDoc | JsonapiResourceDoc
-export type JsonapiRequestDoc  = JsonapiResourceRequest
-=======
 export type JsonapiResponseDoc =
   | JsonapiCollectionDoc
   | JsonapiResourceDoc
   | JsonapiErrorDoc
+export type JsonapiSuccessDoc = JsonapiCollectionDoc | JsonapiResourceDoc
 export type JsonapiRequestDoc = JsonapiResourceRequest
->>>>>>> [PRETTIER] Apply prettier autoformatter
 
 export interface JsonapiDocMeta {
   included?: JsonapiResource[]
@@ -21,13 +16,8 @@ export interface JsonapiCollectionDoc extends JsonapiDocMeta {
 }
 
 export interface JsonapiResourceDoc extends JsonapiDocMeta {
-<<<<<<< HEAD
-  data : JsonapiResource
-  errors? : undefined
-=======
-  data?: JsonapiResource | undefined
+  data: JsonapiResource
   errors?: undefined
->>>>>>> [PRETTIER] Apply prettier autoformatter
 }
 
 export interface JsonapiResourceRequest extends JsonapiDocMeta {

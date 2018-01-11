@@ -15,7 +15,7 @@ import {
   JsonapiCollectionDoc,
   JsonapiResourceDoc,
   JsonapiSuccessDoc
-} from './jsonapi-spec'
+} from "./jsonapi-spec"
 
 export interface JsonapiQueryParams {
   page: AnyRecord
@@ -279,10 +279,10 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     return response.jsonPayload
   }
 
-  private _buildRecordResult(jsonResult : JsonapiSuccessDoc) {
-    let record : T['prototype']
+  private _buildRecordResult(jsonResult: JsonapiSuccessDoc) {
+    let record: T["prototype"]
 
-    let rawRecord : JsonapiResource
+    let rawRecord: JsonapiResource
     if (jsonResult.data instanceof Array) {
       rawRecord = jsonResult.data[0]
     } else {
