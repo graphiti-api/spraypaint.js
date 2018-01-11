@@ -1,6 +1,6 @@
 import { JSORMBase } from './model'
 
-export type Attr<T> = { () : T } | { new (...args : any[]) : T & object }
+export type Attr<T> = (() => T) | { new (...args : any[]) : T & object }
 
 export type AttrType<T> = Attr<T>
 
@@ -24,7 +24,7 @@ export type AttributeValue<Attributes> = {
 
 export type AttributeOptions = Partial<{
   name : string | symbol
-  type : { () : any }
+  type : ()  => any
   persist : boolean
 }>
 
@@ -126,12 +126,13 @@ const assertType = <T>(value : any, type : Attr<T>) : {
  * because a simple equality check will fail when running
  * across different vms / iframes.
  */
+/* tslint:disable-next-line:ban-types */
 const getType = (fn : Function) => {
   const match = fn && fn.toString().match(/^\s*function (\w+)/)
   return match ? match[1] : ''
 }
 
-const isType = <T>(type : Attr<T>, fn : Function) => {
+const isType = <T>(type : Attr<T>, fn : any) : fn is T => {
   if (!Array.isArray(fn)) {
     return getType(fn) === getType(type)
   }

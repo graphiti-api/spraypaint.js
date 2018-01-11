@@ -6,17 +6,17 @@ import {
 } from '../jsonapi-spec'
 
 export class ValidationErrors {
+  static apply(model : JSORMBase, payload : JsonapiResponseDoc) : void {
+    let instance = new ValidationErrors(model, payload)
+    instance.apply()
+  }
+
   model : JSORMBase
   payload : JsonapiResponseDoc
 
   constructor(model : JSORMBase, payload : JsonapiResponseDoc) {
     this.model = model
     this.payload = payload
-  }
-
-  static apply(model : JSORMBase, payload : JsonapiResponseDoc) : void {
-    let instance = new ValidationErrors(model, payload)
-    instance.apply()
   }
 
   apply() {

@@ -158,7 +158,10 @@ const extractAssocOpts = <T extends JSORMBase>(options? : AssociationFactoryArgs
   return associationOpts
 }
 
-type ModelAssoc = { owner : typeof JSORMBase }
+interface ModelAssoc { 
+  owner : typeof JSORMBase 
+}
+
 const modelForType = (association : ModelAssoc, jsonapiType : string) : typeof JSORMBase => {
   let klass = association.owner.typeRegistry.get(jsonapiType)
 

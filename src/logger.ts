@@ -15,11 +15,12 @@ const LOG_LEVELS = {
 }
 
 export interface ILogger {
+  level : string
+
   debug(stmt : any) : void
   info(stmt : any) : void
   warn(stmt : any) : void
   error(stmt : any) : void
-  level : string
 }
 
 export class Logger implements ILogger {

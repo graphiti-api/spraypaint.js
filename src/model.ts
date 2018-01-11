@@ -1,3 +1,4 @@
+/* tslint:disable:member-ordering */
 import { CollectionProxy, RecordProxy } from './proxies'
 import { ValidationErrors } from './util/validation-errors'
 import { refreshJWT } from './util/refresh-jwt'
@@ -77,7 +78,7 @@ export type AttrMap<T> = {
 }
 
 export type DefaultAttrs = Record<string, any>
-export type DefaultMethods<V> =  { [key : string] : (this : V, ...args : any[]) => any }
+export interface DefaultMethods<V> { [key : string] : (this : V, ...args : any[]) => any }
 
 export interface ExtendOptions<
   M,
@@ -422,7 +423,7 @@ export class JSORMBase {
 
   assignAttributes(attrs? : Record<string, any>) : void {
     if (!attrs) { return }
-    for(var key in attrs) {
+    for(let key in attrs) {
       if (attrs.hasOwnProperty(key)) {
         let attributeName = key
 
@@ -430,7 +431,7 @@ export class JSORMBase {
           attributeName = camelize(key, false)
         }
         
-        if (key == 'id' || this.klass.attributeList[attributeName]) {
+        if (key === 'id' || this.klass.attributeList[attributeName]) {
           (<any>this)[attributeName] = attrs[key]
         } else if (this.klass.strictAttributes) {
           throw new Error(`Unknown attribute: ${key}`)
@@ -682,7 +683,7 @@ export class JSORMBase {
   private async _handleResponse(response : JsonapiResponse, callback : () => void) : Promise<boolean>  {
     refreshJWT(this.klass, response)
 
-    if (response.status == 422) {
+    if (response.status === 422) {
       ValidationErrors.apply(this, response.jsonPayload)
       return false
     } else {
@@ -704,7 +705,7 @@ export class JSORMBase {
   // * remove the corresponding code from isPersisted and handle here (likely
   // only an issue with test setup)
   // * Make all calls go through resetRelationTracking();
-  resetRelationTracking(includeDirective : Object) {
+  resetRelationTracking(includeDirective : object) {
     this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(includeDirective))
   }
 }

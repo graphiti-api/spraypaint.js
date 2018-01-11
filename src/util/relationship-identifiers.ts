@@ -14,7 +14,10 @@ export default (model : JSORMBase, relationNames : string[]) => {
   relationNames.forEach((relationName) => {
     let relatedObjects = model.relationship(relationName)
     if (relatedObjects) {
-      if (!Array.isArray(relatedObjects)) relatedObjects = [relatedObjects]
+      if (!Array.isArray(relatedObjects)) { 
+        relatedObjects = [relatedObjects] 
+      }
+
       relatedObjects.forEach((r) => {
         if (r.isPersisted) {
           if (!identifiers[relationName]) {

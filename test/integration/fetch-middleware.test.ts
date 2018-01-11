@@ -90,6 +90,7 @@ const mockSuccess = () => {
 let before = {} as any
 let after = {} as any
 describe('fetch middleware', () => {
+  const ABORT_ERR = new Error('abort')
   let oldStack = ApplicationRecord.middlewareStack
 
   beforeEach(() => {
@@ -103,21 +104,21 @@ describe('fetch middleware', () => {
       // Author.first, or saving author with name 'abortme'
       // should abort
       let shouldAbort = false
-      if (url.indexOf('page') > -1) shouldAbort = true
+      if (url.indexOf('page') > -1) { shouldAbort = true }
       if (options.body && options.body.indexOf('abortme') > -1) {
         shouldAbort = true
       }
 
       if (shouldAbort) {
-        throw('abort')
+        throw ABORT_ERR
       }
     })
 
     middleware.afterFilters.push((response, json) => {
       after = { response, json }
 
-      if (response.status == 401) {
-        throw('abort')
+      if (response.status === 401) {
+        throw ABORT_ERR
       }
     })
 
@@ -171,7 +172,7 @@ describe('fetch middleware', () => {
         .catch((e) => {
           expect(e.message).to
             .eq('beforeFetch failed; review middleware.beforeFetch stack')
-          expect(e.originalError).to.eq('abort')
+          expect(e.originalError).to.eq(ABORT_ERR)
           expect(e.url).to.eq('http://example.com/api/v1/authors?page[size]=1')
         })
       })
@@ -190,7 +191,7 @@ describe('fetch middleware', () => {
           expect(e.message).to
             .eq('afterFetch failed; review middleware.afterFetch stack')
           expect(e.response.status).to.eq(401)
-          expect(e.originalError).to.eq('abort')
+          expect(e.originalError).to.eq(ABORT_ERR)
         })
       })
     })
@@ -316,7 +317,7 @@ describe('fetch middleware', () => {
         .catch((e) => {
           expect(e.message).to
             .eq('beforeFetch failed; review middleware.beforeFetch stack')
-          expect(e.originalError).to.eq('abort')
+          expect(e.originalError).to.eq(ABORT_ERR)
           expect(e.url).to.eq('http://example.com/api/v1/authors')
         })
       })
@@ -336,7 +337,7 @@ describe('fetch middleware', () => {
           expect(e.message).to
             .eq('afterFetch failed; review middleware.afterFetch stack')
           expect(e.response.status).to.eq(401)
-          expect(e.originalError).to.eq('abort')
+          expect(e.originalError).to.eq(ABORT_ERR)
         })
       })
     })

@@ -14,7 +14,7 @@ const parameterize = (obj : any, prefix? : string) : string => {
           if (value.length > 0) {
             str.push(`${key}=${value.join(',')}`)
           }
-        } else if (typeof value == "object") {
+        } else if (typeof value === "object") {
           str.push(parameterize(value, key))
         } else {
           str.push(`${key}=${value}`)

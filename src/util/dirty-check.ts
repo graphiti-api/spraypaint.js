@@ -19,9 +19,9 @@ class DirtyChecker<T extends JSORMBase> {
     if (relatedModel.isPersisted) {
       let identifiers : JsonapiResourceIdentifier[] = (<any>this.model)._originalRelationships[relationName] || []
       let found = identifiers.find((ri) => {
-        return JSON.stringify(ri) == JSON.stringify(relatedModel.resourceIdentifier)
+        return JSON.stringify(ri) === JSON.stringify(relatedModel.resourceIdentifier)
       })
-      if (!found) dirty = true
+      if (!found) { dirty = true }
     }
 
     return dirty
@@ -52,7 +52,7 @@ class DirtyChecker<T extends JSORMBase> {
 
       if (!this.model.isPersisted) {
         dirty[key] = [null, current]
-      } else if (prior != current) {
+      } else if (prior !== current) {
         dirty[key] = [prior, current]
       }
     }
@@ -88,7 +88,7 @@ class DirtyChecker<T extends JSORMBase> {
     return dirty
   }
 
-  _eachRelatedObject(
+  private _eachRelatedObject(
     includeHash : IncludeScopeHash, 
     callback : (key : string, object : JSORMBase, nested : IncludeScopeHash) => void
   ) : void {

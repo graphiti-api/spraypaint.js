@@ -1,3 +1,4 @@
+/* tslint:disable */
 import * as winston from 'winston'
 import * as es6Promise from 'es6-promise'
 import 'isomorphic-fetch'

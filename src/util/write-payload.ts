@@ -73,7 +73,7 @@ export class WritePayload<T extends JSORMBase> {
     this.model.resetRelationTracking(this.includeDirective)
   }
 
-  relationships() : Object {
+  relationships() : object {
     let _relationships : any = {}
 
     Object.keys(this.includeDirective).forEach((key : any) => {
@@ -89,7 +89,7 @@ export class WritePayload<T extends JSORMBase> {
               data.push(this._processRelatedModel(relatedModel, nested))
             }
           })
-          if (data.length === 0) data = null
+          if (data.length === 0) { data = null }
         } else {
           // Either the related model is dirty, or it's a dirty relation
           // (maybe the "department" is not dirty, but the employee changed departments
