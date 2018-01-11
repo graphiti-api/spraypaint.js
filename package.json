@@ -27,6 +27,9 @@
     "lint:tests": "tslint test/**/*.test.ts test/**/*.test.tsx",
     "update:dependencies": "ncu -u"
   },
+  "prettier": {
+    "semi": false
+  },
   "devDependencies": {
     "@types/chai": "^4.0.4",
     "@types/chai-as-promised": "^7.1.0",
@@ -51,6 +54,7 @@
     "chai-things": "^0.2.0",
     "es6-promise": "^4.0.5",
     "fetch-mock": "^5.10.0",
+    "husky": "0.14.3",
     "isomorphic-fetch": "^2.2.1",
     "istanbul": "0.4.5",
     "mocha": "^4.0.1",

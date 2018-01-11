@@ -13,19 +13,19 @@ Let's say we have a `/api/v1/people` endpoint:
 ```js
 // es6 import syntax
 // vanilla JS would expose 'jsorm' as a global
-import 'isomorphic-fetch';
-import { Model, attr } from 'jsorm';
+import "isomorphic-fetch"
+import { Model, attr } from "jsorm"
 
 var Person = Model.extend({
   static: {
-    baseUrl: 'http://localhost:3000', // set to '' in browser for relative URLs
-    apiNamespace: '/api/v1',
-    jsonapiType: 'people'
+    baseUrl: "http://localhost:3000", // set to '' in browser for relative URLs
+    apiNamespace: "/api/v1",
+    jsonapiType: "people"
   },
 
   firstName: attr(),
   lastName: attr()
-});
+})
 ```
 
 Alternatively, in Typescript:
@@ -33,20 +33,20 @@ Alternatively, in Typescript:
 ```ts
 // typescript
 class Person extends Model {
-  static baseUrl = 'http://localhost:3000';
-  static apiNamespace = '/api/v1';
-  static jsonapiType = 'people';
+  static baseUrl = "http://localhost:3000"
+  static apiNamespace = "/api/v1"
+  static jsonapiType = "people"
 
-  firstName = attr();
-  lastName = attr();
+  firstName = attr()
+  lastName = attr()
 }
 ```
 
-**NOTE**: *Once your models are defined, you must call `Config.setup()`:
+**NOTE**: \*Once your models are defined, you must call `Config.setup()`:
 
 ```js
-import { Config } from 'jsorm';
-Config.setup();
+import { Config } from "jsorm"
+Config.setup()
 ```
 
 ### ES6/Typescript Classes
@@ -54,15 +54,17 @@ Config.setup();
 ES6 and TypeScript classes do not have an `inherited` hook. Because this hook provides critical functionality, you have three options:
 
 * Edit your `.tsconfig`:
+
   * Set `target` to `es5`.
   * Add `noEmitHelpers: "true"`
-  
+
 * Call the inherited hook manually after each class definition:
+
   ```ts
   class Author extends Person { ... }
   Person.inherited(Author);
   ```
-  
+
 * Use the `let Person = Model.extend({ ... })` pattern shown above instead of native classes.
 
 ## Basic Usage
@@ -79,17 +81,24 @@ Call `all()`, `first()`, or `find()` to actually fire the query.
 All of the following examples can be chained together:
 
 ```js
-let scope = new Person();
+let scope = new Person()
 if (should_include_admins) {
-  scope = scope.where({ admin: true });
+  scope = scope.where({ admin: true })
 }
-scope.all().then((people) => {
-  people.data.map((p) => { return p.firstName; }); // => ['Joe', 'Jane', 'Bill']
-});
+scope.all().then(people => {
+  people.data.map(p => {
+    return p.firstName
+  }) // => ['Joe', 'Jane', 'Bill']
+})
 
-scope.page(2).all().then((people) => {
-  people.data.map((p) => { return p.firstName; }); // => ['Chris', 'Sarah', 'Ben']
-});
+scope
+  .page(2)
+  .all()
+  .then(people => {
+    people.data.map(p => {
+      return p.firstName
+    }) // => ['Chris', 'Sarah', 'Ben']
+  })
 ```
 
 ### Pagination
@@ -99,7 +108,9 @@ scope.page(2).all().then((people) => {
 Use `per` and `page`. To limit 10 per page, viewing the second page:
 
 ```js
-Person.per(10).page(2).all();
+Person.per(10)
+  .page(2)
+  .all()
 ```
 
 > GET /people?page[number]=2&page[size]=10
@@ -113,7 +124,7 @@ Use `order`. Passing an attribute will default to ascending order.
 Ascending:
 
 ```js
-Person.order('name');
+Person.order("name")
 ```
 
 > GET /people?sort=name
@@ -121,7 +132,7 @@ Person.order('name');
 Descending:
 
 ```js
-Person.order({ name: 'desc' });
+Person.order({ name: "desc" })
 ```
 
 > GET /people?sort=-name
@@ -133,7 +144,9 @@ Person.order({ name: 'desc' });
 Use `where`:
 
 ```js
-Person.where({ name: 'Joe' }).where({ age: 30 }).all();
+Person.where({ name: "Joe" })
+  .where({ age: 30 })
+  .all()
 ```
 
 > GET /people?filter[name]=Joe&filter[age]=30
@@ -141,7 +154,7 @@ Person.where({ name: 'Joe' }).where({ age: 30 }).all();
 Filters are based on swagger documentation, not object attributes. This means you can do stuff like:
 
 ```js
-Person.where({ age_greater_than: 30 }).all();
+Person.where({ age_greater_than: 30 }).all()
 ```
 
 > GET /people?filter[age_greater_than]=30
@@ -149,7 +162,7 @@ Person.where({ age_greater_than: 30 }).all();
 Arrays are supported automatically, defaulting to an OR clause:
 
 ```js
-Person.where({ name: ['Joe', 'Bill'] }).all();
+Person.where({ name: ["Joe", "Bill"] }).all()
 ```
 
 > GET /people?&filter[name][]=Joe&filter[name][]=Bill
@@ -161,7 +174,7 @@ Person.where({ name: ['Joe', 'Bill'] }).all();
 Use `select`:
 
 ```js
-Person.select({ people: ['name', 'age'] }).all();
+Person.select({ people: ["name", "age"] }).all()
 ```
 
 > GET /people?fields[people]=name,age
@@ -173,7 +186,7 @@ This functionality is enabled by [jsonapi_suite](https://jsonapi-suite.github.io
 Use `selectExtra`:
 
 ```js
-Person.selectExtra({ people: ['name', 'age'] }).all();
+Person.selectExtra({ people: ["name", "age"] }).all()
 ```
 
 > GET /people?extra_fields[people]=name,age
@@ -187,7 +200,7 @@ Use `includes`. This can be a symbol, array, hash, or combination of all. In sho
 ```js
 // a person has many tags, and has many pets
 // a pet has many toys, and many tags
-Person.includes(['tags', { pets: ['toys', 'tags'] }]);
+Person.includes(["tags", { pets: ["toys", "tags"] }])
 ```
 
 > GET /people?include=tags,pets.toys,pets.tags
@@ -195,9 +208,13 @@ Person.includes(['tags', { pets: ['toys', 'tags'] }]);
 The included resources will now be present:
 
 ```js
-Person.includes('tags').all().then((person) => {
-  person.data.tags.map((t) => { return t.name; }); // #=> ['funny', 'smart']
-});
+Person.includes("tags")
+  .all()
+  .then(person => {
+    person.data.tags.map(t => {
+      return t.name
+    }) // #=> ['funny', 'smart']
+  })
 ```
 
 > GET /people?include=tags
@@ -207,7 +224,7 @@ Person.includes('tags').all().then((person) => {
 `all`, `first`, and `find` can be used in conjunction with scopes.
 
 ```js
-Person.all();
+Person.all()
 ```
 
 > GET /people
@@ -223,9 +240,11 @@ Use `first` to grab the first result:
 
 ```js
 // Limits per_page to 1, result is first element in the array
-Person.where({ name: 'Bill' }).first().then((person) => {
- // ...
-});
+Person.where({ name: "Bill" })
+  .first()
+  .then(person => {
+    // ...
+  })
 ```
 
 > GET /people?page[size]=1&page[number]=1&filter[name]=Bill
@@ -237,11 +256,11 @@ Finally, use `find` to find a record by ID. This will hit the `show` action.
 By default we will use `console` to log to STDOUT (or the browser's console log). If you are using node and want more in-depth options, inject another logger (we suggest [winston](https://github.com/winstonjs/winston)):
 
 ```js
-import { Config } from 'jsorm';
-let winston = require('winston');
+import { Config } from "jsorm"
+let winston = require("winston")
 
-winston.level = 'warn';
-Config.logger = winston;
+winston.level = "warn"
+Config.logger = winston
 ```
 
 This will log colorized request/responses when the log_level is debug, and only the request when the log level is info.

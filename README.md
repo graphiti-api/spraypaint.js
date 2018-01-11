@@ -43,12 +43,12 @@ to install, so implementation is up to you. Here are two recommendations:
 
 ```js
 // node
-require('isomorphic-fetch')
+require("isomorphic-fetch")
 ```
 
 ```js
 // browser
-import 'whatwg-fetch'
+import "whatwg-fetch"
 ```
 
 ### JSON Web Tokens
@@ -60,22 +60,22 @@ during `Config.setup` and all subsequents will pass it using the
 ```es6
 const ApplicationRecord = Model.extend({
   // code
-});
+})
 
 const Person = ApplicationRecord.extend({
   // code
-});
+})
 
 const Author = ApplicationRecord.extend({
   // code
-});
+})
 
-Config.setup({ jwtOwners: [ApplicationRecord] });
+Config.setup({ jwtOwners: [ApplicationRecord] })
 
-ApplicationRecord.jwt = 's0m3t0k3n';
-Author.all(); // sends JWT in Authorization header
-Author.getJWT(); // grabs from ApplicationRecord
-Author.setJWT('t0k3n'); // sets on ApplicationRecord
+ApplicationRecord.jwt = "s0m3t0k3n"
+Author.all() // sends JWT in Authorization header
+Author.getJWT() // grabs from ApplicationRecord
+Author.setJWT("t0k3n") // sets on ApplicationRecord
 ```
 
 This means you could define `OtherApplicationRecord`, whose

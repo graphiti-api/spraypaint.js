@@ -1,114 +1,112 @@
-import { 
-  JSORMBase, 
-  Model, 
-  attr, 
-  hasMany, 
-  belongsTo, 
-  hasOne 
-} from '../src/index'
+import {
+  JSORMBase,
+  Model,
+  attr,
+  hasMany,
+  belongsTo,
+  hasOne
+} from "../src/index"
 
-import { 
-  Attr,
-  BelongsTo,
-  HasMany,
-  HasOne,
-} from '../src/decorators'
+import { Attr, BelongsTo, HasMany, HasOne } from "../src/decorators"
 
 @Model({
-  baseUrl: 'http://example.com',
-  apiNamespace: '/api'
+  baseUrl: "http://example.com",
+  apiNamespace: "/api"
 })
-export class ApplicationRecord extends JSORMBase {
-}
+export class ApplicationRecord extends JSORMBase {}
 
 @Model()
 export class Person extends ApplicationRecord {
-  static endpoint = '/v1/people'
-  static jsonapiType = 'people'
+  static endpoint = "/v1/people"
+  static jsonapiType = "people"
 
-  @Attr firstName : string | null
-  @Attr lastName : string | null
+  @Attr firstName: string | null
+  @Attr lastName: string | null
 }
 
 @Model()
 export class PersonWithExtraAttr extends Person {
-  @Attr({persist: false}) extraThing : string
+  @Attr({ persist: false })
+  extraThing: string
 }
 
-@Model({camelizeKeys: false})
+@Model({ camelizeKeys: false })
 export class PersonWithoutCamelizedKeys extends Person {
-  @Attr first_name : string
+  @Attr first_name: string
 }
 
 @Model({
-  endpoint: '/v1/authors',
-  jsonapiType: 'authors',
+  endpoint: "/v1/authors",
+  jsonapiType: "authors"
 })
 export class Author extends Person {
-  @Attr nilly : string
-  @HasMany({type: 'multi_words'}) multiWords : MultiWord[]
-  @HasMany('books') specialBooks : Book[]
-  @HasMany() books : Book[]
-  @HasMany() tags : Tag[]
-  @BelongsTo({type: 'genres'}) genre : Genre
-  @HasOne('bios') bio : Bio
+  @Attr nilly: string
+  @HasMany({ type: "multi_words" })
+  multiWords: MultiWord[]
+  @HasMany("books") specialBooks: Book[]
+  @HasMany() books: Book[]
+  @HasMany() tags: Tag[]
+  @BelongsTo({ type: "genres" })
+  genre: Genre
+  @HasOne("bios") bio: Bio
 }
 
 @Model()
 export class Book extends ApplicationRecord {
-  static jsonapiType = 'books'
+  static jsonapiType = "books"
 
-  @Attr title : string
+  @Attr title: string
 
-  @BelongsTo({type: 'genres'}) genre : Genre
-  @HasOne({type: Author}) author : any
+  @BelongsTo({ type: "genres" })
+  genre: Genre
+  @HasOne({ type: Author })
+  author: any
 }
-
 
 export const NonFictionAuthor = Author.extend({
   static: {
-    endpoint: '/v1/non_fiction_authors',
-    jsonapiType: 'non_fiction_authors',
+    endpoint: "/v1/non_fiction_authors",
+    jsonapiType: "non_fiction_authors",
     camelizeKeys: false
   },
 
   attrs: {
-    nilly:         attr(),
+    nilly: attr(),
 
-    multi_words:   hasMany('multi_words'),
-    special_books: hasMany({type: Book}),
-    books:         hasMany(),
-    tags:          hasMany(),
-    genre:         belongsTo({type: 'genres'}),
-    bio:           hasOne({type: 'bios'})
+    multi_words: hasMany("multi_words"),
+    special_books: hasMany({ type: Book }),
+    books: hasMany(),
+    tags: hasMany(),
+    genre: belongsTo({ type: "genres" }),
+    bio: hasOne({ type: "bios" })
   }
 })
 
 @Model()
 export class Genre extends ApplicationRecord {
-  static jsonapiType = 'genres'
+  static jsonapiType = "genres"
 
-  @Attr name : string 
-  @HasMany('authors') authors : any
+  @Attr name: string
+  @HasMany("authors") authors: any
 }
 
 @Model()
 export class Bio extends ApplicationRecord {
-  static jsonapiType = 'bios'
+  static jsonapiType = "bios"
 
-  @Attr description : string 
+  @Attr description: string
 }
 
 @Model()
 export class Tag extends ApplicationRecord {
-  static jsonapiType = 'tags'
+  static jsonapiType = "tags"
 
-  @Attr name : string 
+  @Attr name: string
 }
 
 @Model()
 export class MultiWord extends ApplicationRecord {
-  static jsonapiType = 'multi_words'
+  static jsonapiType = "multi_words"
 }
 
 export const TestJWTSubclass = ApplicationRecord.extend({})

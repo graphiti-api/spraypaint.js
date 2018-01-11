@@ -13,15 +13,8 @@
     "interface-name": false,
     "comment-format": false,
 
-    "semicolon": [true, "never"],
+    "semicolon": false,
     "array-type": [true, "array"],
-    "typedef-whitespace": [ true, {
-      "call-signature": "onespace",
-      "index-signature": "onespace",
-      "parameter": "onespace",
-      "property-declaration": "onespace",
-      "variable-declaration": "onespace"
-    }],
     "variable-name": [true, "ban-keywords"],
     "member-access": [true, "no-public"]
   }

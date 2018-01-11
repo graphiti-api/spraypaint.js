@@ -1,6 +1,6 @@
-import { JSORMBase } from '../model'
-import { IResultProxy } from './index'
-import { JsonapiResponseDoc } from '../jsonapi-spec'
+import { JSORMBase } from "../model"
+import { IResultProxy } from "./index"
+import { JsonapiResponseDoc } from "../jsonapi-spec"
 
 export class RecordProxy<T extends JSORMBase> implements IResultProxy<T> {
   private _raw_json : JsonapiResponseDoc
@@ -11,7 +11,7 @@ export class RecordProxy<T extends JSORMBase> implements IResultProxy<T> {
     this._raw_json = raw_json
   }
 
-  get raw () : JsonapiResponseDoc {
+  get raw(): JsonapiResponseDoc {
     return this._raw_json
   }
 
@@ -19,7 +19,7 @@ export class RecordProxy<T extends JSORMBase> implements IResultProxy<T> {
     return this._record
   }
 
-  get meta () : Record<string, any> {
+  get meta(): Record<string, any> {
     return this.raw.meta || {}
   }
 }

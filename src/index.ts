@@ -1,25 +1,10 @@
-export { 
-  JSORMBase 
-} from './model'
+export { JSORMBase } from "./model"
 
-export { 
-  Attribute, 
-  attr 
-} from './attribute'
+export { Attribute, attr } from "./attribute"
 
-export { 
-  hasMany, 
-  hasOne, 
-  belongsTo 
-} from './associations'
+export { hasMany, hasOne, belongsTo } from "./associations"
 
-export {
-  Model,
-  Attr,
-  HasMany,
-  HasOne,
-  BelongsTo,
-} from './decorators'
+export { Model, Attr, HasMany, HasOne, BelongsTo } from "./decorators"
 
 export {
   MiddlewareStack
@@ -31,7 +16,7 @@ export {
   FieldScope,
   WhereClause,
   StatsScope,
-  IncludeScope,
-} from './scope'
+  IncludeScope
+} from "./scope"
 
-export * from './jsonapi-spec'
+export * from "./jsonapi-spec"

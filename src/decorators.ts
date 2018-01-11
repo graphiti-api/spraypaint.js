@@ -1,41 +1,44 @@
-import { pluralize, underscore } from 'inflected'
+import { pluralize, underscore } from "inflected"
 
-import { 
+import {
   applyModelConfig,
-  JSORMBase, 
-  ModelConfiguration, 
+  JSORMBase,
+  ModelConfiguration,
   ModelConfigurationOptions,
-  isModelClass, 
-  isModelInstance,
-} from './model'
+  isModelClass,
+  isModelInstance
+} from "./model"
 
-import { 
-  Attribute, 
-  AttributeOptions 
-} from './attribute'
+import { Attribute, AttributeOptions } from "./attribute"
 
 import {
   AssociationFactoryOpts,
   AssociationRecord,
   HasMany,
   HasOne,
-  BelongsTo,
-} from './associations'
+  BelongsTo
+} from "./associations"
 
-type ModelDecorator = <M extends typeof JSORMBase>(target : M) => M 
+type ModelDecorator = <M extends typeof JSORMBase>(target: M) => M
 
-const ModelDecorator = (config? : ModelConfigurationOptions) : ModelDecorator => {
-  return <M extends typeof JSORMBase>(target : M) : M => {
+const ModelDecorator = (config?: ModelConfigurationOptions): ModelDecorator => {
+  return <M extends typeof JSORMBase>(target: M): M => {
     modelFactory(target, config)
     return target
   }
 }
 
-export const initModel = (modelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void => {
+export const initModel = (
+  modelClass: typeof JSORMBase,
+  config?: ModelConfigurationOptions
+): void => {
   modelFactory(modelClass, config)
 }
 
-const modelFactory = <M extends typeof JSORMBase>(ModelClass : typeof JSORMBase, config? : ModelConfigurationOptions) : void => {
+const modelFactory = <M extends typeof JSORMBase>(
+  ModelClass: typeof JSORMBase,
+  config?: ModelConfigurationOptions
+): void => {
   ensureModelInheritance(ModelClass)
 
   applyModelConfig(ModelClass, config || {})
@@ -47,18 +50,25 @@ const modelFactory = <M extends typeof JSORMBase>(ModelClass : typeof JSORMBase,
   ModelClass.registerType()
 }
 
-const AttrDecoratorFactory : {
-  (config? : AttributeOptions) : PropertyDecorator
-  (target : JSORMBase, propertyKey : string) : void
-  (target : typeof JSORMBase, propertyKey : string, config? : AttributeOptions) : void
+const AttrDecoratorFactory: {
+  (config?: AttributeOptions): PropertyDecorator
+  (target: JSORMBase, propertyKey: string): void
+  (
+    target: typeof JSORMBase,
+    propertyKey: string,
+    config?: AttributeOptions
+  ): void
 } = (
-  configOrTarget? : typeof JSORMBase | JSORMBase | AttributeOptions | undefined, 
-  propertyKey? : string,
-  attrConfig? : AttributeOptions
-) : any => {
-  let attrDefinition = new Attribute({name: propertyKey})
+  configOrTarget?: typeof JSORMBase | JSORMBase | AttributeOptions | undefined,
+  propertyKey?: string,
+  attrConfig?: AttributeOptions
+): any => {
+  let attrDefinition = new Attribute({ name: propertyKey })
 
-  const attrFunction = (ModelClass : typeof JSORMBase, propKey : string | symbol) : PropertyDescriptor => {
+  const attrFunction = (
+    ModelClass: typeof JSORMBase,
+    propKey: string | symbol
+  ): PropertyDescriptor => {
     ensureModelInheritance(ModelClass)
 
     if (!attrDefinition.name) {
@@ -70,11 +80,10 @@ const AttrDecoratorFactory : {
     return attrDefinition.descriptor()
   }
 
-  if((isModelClass(configOrTarget) || 
-     isModelInstance(configOrTarget))) {
+  if (isModelClass(configOrTarget) || isModelInstance(configOrTarget)) {
     // For type checking. Can't have a model AND no property key
     if (!propertyKey) {
-      throw new Error('Must provide a propertyKey')
+      throw new Error("Must provide a propertyKey")
     }
     const target = configOrTarget
 
@@ -82,7 +91,7 @@ const AttrDecoratorFactory : {
       if (attrConfig) {
         attrDefinition = new Attribute(attrConfig)
       }
-      
+
       attrFunction(target, propertyKey)
     } else {
       return attrFunction(<any>target.constructor, propertyKey)
@@ -92,20 +101,23 @@ const AttrDecoratorFactory : {
       attrDefinition = new Attribute(configOrTarget)
     }
 
-    return (target : JSORMBase, propKey : string | symbol) => {
+    return (target: JSORMBase, propKey: string | symbol) => {
       return attrFunction(<any>target.constructor, propKey)
     }
   }
 }
 
-const ensureModelInheritance = (ModelClass : typeof JSORMBase) => {
+const ensureModelInheritance = (ModelClass: typeof JSORMBase) => {
   if (ModelClass.currentClass !== ModelClass) {
     ModelClass.currentClass.inherited(ModelClass)
   }
 }
 
-type DecoratorFn = (target : JSORMBase, propertyKey : string) => void
-type DecoratorArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string | typeof JSORMBase
+type DecoratorFn = (target: JSORMBase, propertyKey: string) => void
+type DecoratorArgs<T extends JSORMBase> =
+  | AssociationFactoryOpts<T>
+  | string
+  | typeof JSORMBase
 /* 
  * Yup that's a super-Java-y method name.  Decorators in 
  * ES7/TS are either of the form:
@@ -133,46 +145,53 @@ type DecoratorArgs<T extends JSORMBase> = AssociationFactoryOpts<T> | string | t
  * BelongsTo(Person, 'mother', { type: Person })
  * ```
  * 
- */ 
-const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any) => {
-  const DecoratorFactory : {
-    (optsOrType? : DecoratorArgs<T>) : DecoratorFn 
-    (target : typeof JSORMBase, propertyKey : string, optsOrType? : AssociationFactoryOpts<T> | string) : void 
+ */
+
+const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(
+  AttrType: any
+) => {
+  const DecoratorFactory: {
+    (optsOrType?: DecoratorArgs<T>): DecoratorFn
+    (
+      target: typeof JSORMBase,
+      propertyKey: string,
+      optsOrType?: AssociationFactoryOpts<T> | string
+    ): void
   } = (
-    targetOrConfig? : typeof JSORMBase | DecoratorArgs<T>, 
-    propertyKey? : string,
-    optsOrType? : DecoratorArgs<T>
-  ) : any => {
-    const extend = (ModelClass : typeof JSORMBase) : typeof JSORMBase => {
+    targetOrConfig?: typeof JSORMBase | DecoratorArgs<T>,
+    propertyKey?: string,
+    optsOrType?: DecoratorArgs<T>
+  ): any => {
+    const extend = (ModelClass: typeof JSORMBase): typeof JSORMBase => {
       ensureModelInheritance(ModelClass)
 
       return ModelClass
     }
 
-    let opts : AssociationRecord<T> | undefined
+    let opts: AssociationRecord<T> | undefined
 
-    const factoryFn = (target : JSORMBase, propKey : string) => {
+    const factoryFn = (target: JSORMBase, propKey: string) => {
       if (optsOrType === undefined) {
         const inferredType = pluralize(underscore(propKey))
 
         opts = {
           jsonapiType: inferredType
         }
-      } else if(typeof optsOrType === 'string') {
+      } else if (typeof optsOrType === "string") {
         opts = {
           jsonapiType: optsOrType
         }
-      } else if(isModelClass(optsOrType)) {
+      } else if (isModelClass(optsOrType)) {
         opts = {
           type: optsOrType as any
         }
       } else {
         opts = {
           persist: optsOrType.persist,
-          name: optsOrType.name,
+          name: optsOrType.name
         }
 
-        if (typeof optsOrType.type === 'string') {
+        if (typeof optsOrType.type === "string") {
           opts.jsonapiType = optsOrType.type
         } else {
           opts.type = optsOrType.type as any
@@ -183,9 +202,9 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(AttrType : any)
       if (!attrDefinition.name) {
         attrDefinition.name = propKey
       }
-    
+
       const ModelClass = extend(<any>target.constructor)
-      
+
       ModelClass.attributeList[propKey] = attrDefinition
       attrDefinition.owner = target.constructor
       attrDefinition.apply(ModelClass)
@@ -210,10 +229,10 @@ const HasManyDecoratorFactory = AssociationDecoratorFactoryBuilder(HasMany)
 const HasOneDecoratorFactory = AssociationDecoratorFactoryBuilder(HasOne)
 const BelongsToDecoratorFactory = AssociationDecoratorFactoryBuilder(BelongsTo)
 
-export { 
-  ModelDecorator as Model, 
+export {
+  ModelDecorator as Model,
   AttrDecoratorFactory as Attr,
   HasManyDecoratorFactory as HasMany,
   HasOneDecoratorFactory as HasOne,
-  BelongsToDecoratorFactory as BelongsTo,
+  BelongsToDecoratorFactory as BelongsTo
 }

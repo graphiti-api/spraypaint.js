@@ -1,23 +1,23 @@
-import { expect } from '../test-helper'
-import { Person } from '../fixtures'
-import { JsonapiCollectionDoc, JsonapiResource } from '../../src/index'
+import { expect } from "../test-helper"
+import { Person } from "../fixtures"
+import { JsonapiCollectionDoc, JsonapiResource } from "../../src/index"
 
-import { CollectionProxy } from '../../src/proxies/collection-proxy'
+import { CollectionProxy } from "../../src/proxies/collection-proxy"
 
-describe('CollectionProxy', () => {
-  let personData : JsonapiCollectionDoc
-  let recordArray : Person[]
+describe("CollectionProxy", () => {
+  let personData: JsonapiCollectionDoc
+  let recordArray: Person[]
 
   beforeEach(() => {
     personData = {
       data: [
         {
-          id: '1',
-          type: 'people',
+          id: "1",
+          type: "people",
           attributes: {
-            firstName: 'Donald',
-            lastName: 'Budge'
-          },
+            firstName: "Donald",
+            lastName: "Budge"
+          }
         }
       ],
       meta: {
@@ -34,43 +34,42 @@ describe('CollectionProxy', () => {
 
     recordArray = []
 
-    personData.data.map((datum : JsonapiResource) => {
+    personData.data.map((datum: JsonapiResource) => {
       recordArray.push(Person.fromJsonapi(datum, personData))
     })
   })
 
-  describe('initialization', () => {
-    it('should assign the response correctly', () => {
+  describe("initialization", () => {
+    it("should assign the response correctly", () => {
       const collection = new CollectionProxy(recordArray, personData)
       expect(collection.raw).to.deep.equal(personData)
     })
 
-    it('should assign the correct models to the data array', () => {
+    it("should assign the correct models to the data array", () => {
       const collection = new CollectionProxy(recordArray, personData)
-      collection.data.forEach((item) => {
+      collection.data.forEach(item => {
         expect(item).to.be.instanceof(Person)
       })
     })
   })
 
-  describe('#meta', () => {
-    it('should get meta field from raw response', () => {
+  describe("#meta", () => {
+    it("should get meta field from raw response", () => {
       const collection = new CollectionProxy(recordArray, personData)
       expect(collection.meta).to.deep.eq(personData.meta)
     })
 
-    describe('meta is null', () => {
+    describe("meta is null", () => {
       beforeEach(() => {
         personData = {
-          data: [],
+          data: []
         }
       })
 
-      it('should return an empty object', () => {
+      it("should return an empty object", () => {
         const collection = new CollectionProxy(recordArray, personData)
         expect(collection.meta).to.deep.eq({})
       })
     })
   })
 })
-

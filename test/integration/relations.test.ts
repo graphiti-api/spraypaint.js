@@ -1,35 +1,35 @@
-import { expect, fetchMock } from '../test-helper'
-import { Author, NonFictionAuthor } from '../fixtures'
-import { IResultProxy } from '../../src/proxies/index'
+import { expect, fetchMock } from "../test-helper"
+import { Author, NonFictionAuthor } from "../fixtures"
+import { IResultProxy } from "../../src/proxies/index"
 
-const resultData = <T>(promise : Promise<IResultProxy<T>>) : Promise<any> => {
-  return promise.then((proxyObject) => {
+const resultData = <T>(promise: Promise<IResultProxy<T>>): Promise<any> => {
+  return promise.then(proxyObject => {
     return proxyObject.data
   })
 }
 
-const generateMockResponse = (type : string) => {
+const generateMockResponse = (type: string) => {
   return {
     data: {
-      id: '1',
+      id: "1",
       type,
       attributes: {
-        firstName: 'John'
+        firstName: "John"
       },
       relationships: {
         books: {
           data: [
             {
-              id: 'book1',
-              type: 'books'
+              id: "book1",
+              type: "books"
             }
           ]
         },
         multi_words: {
           data: [
             {
-              id: 'multi_word1',
-              type: 'multi_words'
+              id: "multi_word1",
+              type: "multi_words"
             }
           ]
         }
@@ -37,41 +37,48 @@ const generateMockResponse = (type : string) => {
     },
     included: [
       {
-        id: 'book1',
-        type: 'books',
+        id: "book1",
+        type: "books",
         attributes: {
-          title: 'The Shining'
+          title: "The Shining"
         }
       },
       {
-        id: 'multi_word1',
-        type: 'multi_words',
+        id: "multi_word1",
+        type: "multi_words",
         attributes: {}
       }
     ]
   } as any
 }
 
-describe('Relations', () => {
-  describe('#find()', () => {
+describe("Relations", () => {
+  describe("#find()", () => {
     beforeEach(() => {
-      fetchMock.get('http://example.com/api/v1/authors/1?include=books,multi_words', generateMockResponse('authors'))
+      fetchMock.get(
+        "http://example.com/api/v1/authors/1?include=books,multi_words",
+        generateMockResponse("authors")
+      )
     })
 
     afterEach(fetchMock.restore)
 
-    it('correctly includes relationships', async () => {
-      const data = await resultData(Author.includes(['books', 'multi_words']).find(1))
+    it("correctly includes relationships", async () => {
+      const data = await resultData(
+        Author.includes(["books", "multi_words"]).find(1)
+      )
 
-      expect(data.multiWords).to.be.an('array')
-      expect(data.books).to.be.an('array')
+      expect(data.multiWords).to.be.an("array")
+      expect(data.books).to.be.an("array")
     })
 
-    it('contains the right records for each relationship', async () => {
-      const data = await resultData(Author.includes(['books', 'multi_words']).find(1))
+    it("contains the right records for each relationship", async () => {
+      const data = await resultData(
+        Author.includes(["books", "multi_words"]).find(1)
+      )
 
-      expect(data.books[0].title).to.eql('The Shining')
-      expect(data.multiWords[0].id).to.eql('multi_word1')
+      expect(data.books[0].title).to.eql("The Shining")
+      expect(data.multiWords[0].id).to.eql("multi_word1")
     })
 
     describe('when a belongsTo relationship has null data', function() {
@@ -90,20 +97,22 @@ describe('Relations', () => {
     })
   })
 
-  describe('when camelizeKeys is false', () => {
+  describe("when camelizeKeys is false", () => {
     beforeEach(() => {
       fetchMock.get(
-        'http://example.com/api/v1/non_fiction_authors/1?include=books,multi_words',
-        generateMockResponse('non_fiction_authors')
+        "http://example.com/api/v1/non_fiction_authors/1?include=books,multi_words",
+        generateMockResponse("non_fiction_authors")
       )
     })
 
     afterEach(fetchMock.restore)
 
     it("Doesn't convert relationships to snake_case if camelization is off", async () => {
-      const data = await resultData(NonFictionAuthor.includes(['books', 'multi_words']).find(1))
+      const data = await resultData(
+        NonFictionAuthor.includes(["books", "multi_words"]).find(1)
+      )
 
-      expect(data.multi_words[0].id).to.eql('multi_word1')
+      expect(data.multi_words[0].id).to.eql("multi_word1")
     })
   })
 })

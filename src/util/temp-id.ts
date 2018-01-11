@@ -1,5 +1,5 @@
 let memo = 0
-const generate = () : string => {
+const generate = (): string => {
   memo++
   return `temp-id-${memo}`
 }

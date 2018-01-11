@@ -1,21 +1,21 @@
-import { expect } from '../test-helper'
-import { Person } from '../fixtures'
-import { RecordProxy } from '../../src/proxies'
-import { JsonapiResourceDoc, JsonapiResource } from '../../src/index'
+import { expect } from "../test-helper"
+import { Person } from "../fixtures"
+import { RecordProxy } from "../../src/proxies"
+import { JsonapiResourceDoc, JsonapiResource } from "../../src/index"
 
-describe('RecordProxy', () => {
-  let modelRecord : Person | undefined
-  let personData : JsonapiResourceDoc 
+describe("RecordProxy", () => {
+  let modelRecord: Person | undefined
+  let personData: JsonapiResourceDoc
 
   beforeEach(() => {
     personData = {
       data: {
-        id: '1',
-        type: 'people',
+        id: "1",
+        type: "people",
         attributes: {
-          firstName: 'Donald',
-          lastName: 'Budge'
-        },
+          firstName: "Donald",
+          lastName: "Budge"
+        }
       },
       meta: {
         stats: {
@@ -29,26 +29,31 @@ describe('RecordProxy', () => {
       }
     }
   })
-  
+
   beforeEach(() => {
-    if (personData.data === undefined) { return }
-    modelRecord = Person.fromJsonapi(personData.data as JsonapiResource, personData)
+    if (personData.data === undefined) {
+      return
+    }
+    modelRecord = Person.fromJsonapi(
+      personData.data as JsonapiResource,
+      personData
+    )
   })
 
-  describe('initialization', () => {
-    it('should assign the response correctly', () => {
+  describe("initialization", () => {
+    it("should assign the response correctly", () => {
       const record = new RecordProxy(modelRecord, personData)
       expect(record.raw).to.deep.equal(personData)
     })
 
-    it('should assign the correct model to the data field', () => {
+    it("should assign the correct model to the data field", () => {
       const record = new RecordProxy(modelRecord, personData)
       expect(record.data).to.be.instanceof(Person)
     })
 <<<<<<< HEAD
 =======
 
-    context('record is null is null', () => {
+    context("record is null is null", () => {
       beforeEach(() => {
         personData = {
           data: undefined
@@ -57,7 +62,7 @@ describe('RecordProxy', () => {
         modelRecord = undefined
       })
 
-      it('should assign data to null', () => {
+      it("should assign data to null", () => {
         const record = new RecordProxy(modelRecord, personData)
         expect(record.data).to.eq(null)
       })
@@ -65,31 +70,30 @@ describe('RecordProxy', () => {
 >>>>>>> [TSLINT] Convert all functions to => functions
   })
 
-  describe('#meta', () => {
-    it('should get meta field from raw response', () => {
+  describe("#meta", () => {
+    it("should get meta field from raw response", () => {
       const record = new RecordProxy(modelRecord, personData)
       expect(record.meta).to.deep.eq(personData.meta)
     })
 
-    describe('meta is null', () => {
+    describe("meta is null", () => {
       beforeEach(() => {
         personData = {
           data: {
-            id: '1',
-            type: 'people',
+            id: "1",
+            type: "people",
             attributes: {
-              firstName: 'Donald',
-              lastName: 'Budge'
-            },
+              firstName: "Donald",
+              lastName: "Budge"
+            }
           }
         }
       })
 
-      it('should return an empty object', () => {
+      it("should return an empty object", () => {
         const record = new RecordProxy(modelRecord, personData)
         expect(record.meta).to.deep.eq({})
       })
     })
   })
 })
-
