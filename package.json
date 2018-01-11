@@ -25,7 +25,8 @@
     "lint": "npm-run-all --parallel lint:src lint:tests",
     "lint:src": "tslint src/**/*.ts src/**/*.tsx ",
     "lint:tests": "tslint test/**/*.test.ts test/**/*.test.tsx",
-    "update:dependencies": "ncu -u"
+    "update:dependencies": "ncu -u",
+    "precommit": "pretty-quick --staged"
   },
   "prettier": {
     "semi": false
