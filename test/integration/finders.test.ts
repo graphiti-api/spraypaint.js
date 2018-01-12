@@ -2,19 +2,13 @@ import { expect, fetchMock } from "../test-helper"
 import { Person, Author, Book } from "../fixtures"
 import { IResultProxy } from "../../src/proxies/index"
 
-after(() => {
+afterEach(() => {
   fetchMock.restore()
 })
 
-const resultData = <T>(promise: Promise<IResultProxy<T>>): Promise<any> => {
-  return promise.then(proxyObject => {
-    return proxyObject.data
-  })
-}
-
 describe("Model finders", () => {
   describe("#find()", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get("http://example.com/api/v1/people/1", {
         data: {
           id: "1",
@@ -27,19 +21,19 @@ describe("Model finders", () => {
     })
 
     it("returns a promise that resolves the correct instance", async () => {
-      const data = await resultData(Person.find(1))
+      const { data } = await Person.find(1)
       expect(data)
         .to.be.instanceof(Person)
         .and.have.property("id", "1")
     })
 
     it("assigns attributes correctly", async () => {
-      const data = await resultData(Person.find(1))
+      const { data } = await Person.find(1)
       expect(data).to.have.property("firstName", "John")
     })
 
     describe("when API response returns a different type than the caller", () => {
-      before(() => {
+      beforeEach(() => {
         fetchMock.restore()
         fetchMock.get("http://example.com/api/v1/people/1", {
           data: {
@@ -50,32 +44,58 @@ describe("Model finders", () => {
       })
 
       it("resolves to the correct class", async () => {
-        const result = await resultData(Person.find(1))
+        const { data } = await Person.find(1)
 
-        expect(result).to.be.instanceof(Author)
+        expect(data).to.be.instanceof(Author)
       })
     })
   })
 
   describe("#first()", () => {
-    before(() => {
-      // NOTE: This limits to only one record
-      fetchMock.get("http://example.com/api/v1/people?page[size]=1", {
-        data: [
-          {
-            id: "1",
-            type: "people"
-          }
-        ]
+    describe("when call returns results", () => {
+      beforeEach(() => {
+        // NOTE: This limits to only one record
+        fetchMock.get("http://example.com/api/v1/people?page[size]=1", {
+          data: [
+            {
+              id: "1",
+              type: "people"
+            }
+          ]
+        })
+      })
+
+      it("returns a promise that resolves the correct instances", async () => {
+        const { data } = await Person.first()
+
+        expect(data)
+          .to.be.instanceof(Person)
+          .have.property("id", "1")
       })
     })
 
-    it("returns a promise that resolves the correct instances", async () => {
-      const result = await resultData(Person.first())
+    describe("when call returns an empty array", () => {
+      beforeEach(() => {
+        // NOTE: This limits to only one record
+        fetchMock.get("http://example.com/api/v1/people?page[size]=1", {
+          data: [],
+          meta: {
+            foo: "bar"
+          }
+        })
+      })
 
-      expect(result)
-        .to.be.instanceof(Person)
-        .have.property("id", "1")
+      it("returns a null record proxy", async () => {
+        const { data } = await Person.first()
+
+        expect(data).to.be.null
+      })
+
+      it("returns a record with all metadata", async () => {
+        const { meta } = await Person.first()
+
+        expect(meta).to.deep.equal({ foo: "bar" })
+      })
     })
   })
 
@@ -88,7 +108,7 @@ describe("Model finders", () => {
     })
 
     it("returns a promise that resolves the correct instances", async () => {
-      const data = await resultData(Person.all())
+      const { data } = await Person.all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -111,22 +131,22 @@ describe("Model finders", () => {
       })
 
       it("includes meta payload in the resulting collection", async () => {
-        const result = await Person.all()
+        const { meta } = await Person.all()
 
-        expect(result).to.have.nested.property("meta.stats.total.count", 45)
+        expect(meta).to.have.nested.property("stats.total.count", 45)
       })
     })
   })
 
   describe("#page", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get("http://example.com/api/v1/people?page[number]=2", {
         data: [{ id: "2", type: "people" }]
       })
     })
 
     it("queries correctly", async () => {
-      const data = await resultData(Person.page(2).all())
+      const { data } = await Person.page(2).all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -134,7 +154,7 @@ describe("Model finders", () => {
     })
 
     describe("when merging association #page", () => {
-      before(() => {
+      beforeEach(() => {
         fetchMock.reset()
         fetchMock.get(
           "http://example.com/api/v1/people?page[number]=5&page[books][number]=10",
@@ -147,7 +167,7 @@ describe("Model finders", () => {
       it("queries correctly", async () => {
         const bookScope = Book.page(10)
         const personScope = Person.page(5).merge({ books: bookScope })
-        const data = await resultData(personScope.all())
+        const { data } = await personScope.all()
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -156,21 +176,21 @@ describe("Model finders", () => {
   })
 
   describe("#per", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get("http://example.com/api/v1/authors?page[size]=5", {
         data: [{ id: "1", type: "authors" }]
       })
     })
 
     it("queries correctly", async () => {
-      const data = await resultData(Author.per(5).all())
+      const { data } = await Author.per(5).all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
     })
 
     describe("when merging association #per", () => {
-      before(() => {
+      beforeEach(() => {
         fetchMock.reset()
         fetchMock.get(
           "http://example.com/api/v1/people?page[size]=5&page[books][size]=2",
@@ -183,7 +203,7 @@ describe("Model finders", () => {
       it("queries correctly", async () => {
         const bookScope = Book.per(2)
         const personScope = Person.per(5).merge({ books: bookScope })
-        const data = await resultData(personScope.all())
+        const { data } = await personScope.all()
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -192,18 +212,16 @@ describe("Model finders", () => {
   })
 
   describe("#order", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get("http://example.com/api/v1/people?sort=foo,-bar", {
         data: [{ id: "2", type: "people" }]
       })
     })
 
     it("queries correctly", async () => {
-      const data = await resultData(
-        Person.order("foo")
-          .order({ bar: "desc" })
-          .all()
-      )
+      const { data } = await Person.order("foo")
+        .order({ bar: "desc" })
+        .all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -211,7 +229,7 @@ describe("Model finders", () => {
     })
 
     describe("when merging association #order", () => {
-      before(() => {
+      beforeEach(() => {
         fetchMock.reset()
         fetchMock.get(
           "http://example.com/api/v1/people?sort=foo,books.title,-books.pages",
@@ -225,7 +243,7 @@ describe("Model finders", () => {
         const bookScope = Book.order("title").order({ pages: "desc" })
         let scope = Person.order("foo")
         scope = scope.merge({ books: bookScope })
-        const data = await resultData(scope.all())
+        const { data } = await scope.all()
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -235,7 +253,7 @@ describe("Model finders", () => {
   })
 
   describe("#where", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get(
         "http://example.com/api/v1/people?filter[id]=2&filter[a]=b",
         {
@@ -245,11 +263,9 @@ describe("Model finders", () => {
     })
 
     it("queries correctly", async () => {
-      const data = await resultData(
-        Person.where({ id: 2 })
-          .where({ a: "b" })
-          .all()
-      )
+      const { data } = await Person.where({ id: 2 })
+        .where({ a: "b" })
+        .all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -257,7 +273,7 @@ describe("Model finders", () => {
     })
 
     describe("when value is false", () => {
-      before(() => {
+      beforeEach(() => {
         fetchMock.reset()
         fetchMock.get(
           "http://example.com/api/v1/people?filter[id]=2&filter[a]=false",
@@ -268,11 +284,9 @@ describe("Model finders", () => {
       })
 
       it("still queries correctly", async () => {
-        const data = await resultData(
-          Person.where({ id: 2 })
-            .where({ a: false })
-            .all()
-        )
+        const { data } = await Person.where({ id: 2 })
+          .where({ a: false })
+          .all()
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -281,7 +295,7 @@ describe("Model finders", () => {
     })
 
     describe("when merging association #where", () => {
-      before(() => {
+      beforeEach(() => {
         fetchMock.reset()
         fetchMock.get(
           "http://example.com/api/v1/people?filter[id]=1&filter[books][title]=It",
@@ -295,7 +309,7 @@ describe("Model finders", () => {
         const bookScope = Book.where({ title: "It" })
         const personScope = Person.where({ id: 1 }).merge({ books: bookScope })
 
-        const data = await resultData(personScope.all())
+        const { data } = await personScope.all()
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -304,7 +318,7 @@ describe("Model finders", () => {
   })
 
   describe("#stats", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get("http://example.com/api/v1/people?stats[total]=count,sum", {
         data: [{ id: "1", type: "people" }]
       })
@@ -313,14 +327,14 @@ describe("Model finders", () => {
     it("queries correctly", async () => {
       const scope = Person.stats({ total: ["count", "sum"] })
 
-      const data = await resultData(scope.all())
+      const { data } = await scope.all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
     })
 
     describe("when merging association #stats", () => {
-      before(() => {
+      beforeEach(() => {
         fetchMock.reset()
         fetchMock.get(
           "http://example.com/api/v1/people?stats[total]=count,sum&stats[books][pages]=average",
@@ -335,7 +349,7 @@ describe("Model finders", () => {
         let scope = Person.stats({ total: ["count", "sum"] })
         scope = scope.merge({ books: bookScope })
 
-        const data = await resultData(scope.all())
+        const { data } = await scope.all()
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)
@@ -344,7 +358,7 @@ describe("Model finders", () => {
   })
 
   describe("#select", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get(
         "http://example.com/api/v1/people?fields[people]=name,age",
         {
@@ -354,9 +368,7 @@ describe("Model finders", () => {
     })
 
     it("queries correctly", async () => {
-      const data = await resultData(
-        Person.select({ people: ["name", "age"] }).all()
-      )
+      const { data } = await Person.select({ people: ["name", "age"] }).all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -365,7 +377,7 @@ describe("Model finders", () => {
   })
 
   describe("#select_extra", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get(
         "http://example.com/api/v1/people?extra_fields[people]=net_worth,best_friend",
         {
@@ -375,9 +387,9 @@ describe("Model finders", () => {
     })
 
     it("queries correctly", async () => {
-      const data = await resultData(
-        Person.selectExtra({ people: ["net_worth", "best_friend"] }).all()
-      )
+      const { data } = await Person.selectExtra({
+        people: ["net_worth", "best_friend"]
+      }).all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -386,7 +398,7 @@ describe("Model finders", () => {
   })
 
   describe("#includes", () => {
-    before(() => {
+    beforeEach(() => {
       fetchMock.get("http://example.com/api/v1/people?include=a.b,a.c.d", {
         data: [
           {
@@ -398,9 +410,7 @@ describe("Model finders", () => {
     })
 
     it("queries correctly", async () => {
-      const data = await resultData(
-        Person.includes({ a: ["b", { c: "d" }] }).all()
-      )
+      const { data } = await Person.includes({ a: ["b", { c: "d" }] }).all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
