@@ -5,7 +5,7 @@ import {
   IncludeArgHash,
   IncludeScopeHash
 } from "./util/include-directive"
-import { CollectionProxy, RecordProxy } from "./proxies"
+import { CollectionProxy, RecordProxy, NullProxy } from "./proxies"
 import { Request } from "./request"
 import { refreshJWT } from "./util/refresh-jwt"
 import { cloneDeep } from "./util/clonedeep"
@@ -65,7 +65,7 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     return this._buildRecordResult(json)
   }
 
-  async first(): Promise<RecordProxy<T["prototype"]>> {
+  async first(): Promise<RecordProxy<T["prototype"]> | NullProxy> {
     const newScope = this.per(1)
     let rawResult
 
@@ -279,12 +279,21 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     return response.jsonPayload
   }
 
+  private _buildRecordResult(
+    jsonResult: JsonapiResourceDoc
+  ): RecordProxy<T["prototype"]>
+  private _buildRecordResult(
+    jsonResult: JsonapiCollectionDoc
+  ): RecordProxy<T["prototype"]> | NullProxy
   private _buildRecordResult(jsonResult: JsonapiSuccessDoc) {
     let record: T["prototype"]
 
     let rawRecord: JsonapiResource
     if (jsonResult.data instanceof Array) {
       rawRecord = jsonResult.data[0]
+      if (!rawRecord) {
+        return new NullProxy(jsonResult)
+      }
     } else {
       rawRecord = jsonResult.data
     }
