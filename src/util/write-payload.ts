@@ -15,11 +15,13 @@ export class WritePayload<T extends JSORMBase> {
   jsonapiType: string
   includeDirective: IncludeScopeHash
   included: JsonapiResource[] = []
+  idOnly: boolean = false
 
-  constructor(model: T, relationships?: IncludeScope) {
+  constructor(model: T, relationships?: IncludeScope, idOnly: boolean = false) {
     const includeDirective = new IncludeDirective(relationships)
     this.includeDirective = includeDirective.toScopeObject()
     this.model = model
+    this.idOnly = idOnly
 
     if (!model.klass.jsonapiType) {
       throw new Error("Cannot serialize model: Undefined jsonapiType")
@@ -85,6 +87,12 @@ export class WritePayload<T extends JSORMBase> {
     Object.keys(this.includeDirective).forEach((key: any) => {
       const nested = (<any>this.includeDirective)[key]
 
+      let idOnly = false
+      if (key.indexOf('.') > -1) {
+        key = key.split('.')[0]
+        idOnly = true
+      }
+
       let data: any
       const relatedModels = (<any>this.model)[key]
       if (relatedModels) {
@@ -92,10 +100,11 @@ export class WritePayload<T extends JSORMBase> {
           data = []
           relatedModels.forEach(relatedModel => {
             if (
-              this.model.hasDirtyRelation(key, relatedModel) ||
-              relatedModel.isDirty(nested)
+              idOnly ||
+                this.model.hasDirtyRelation(key, relatedModel) ||
+                relatedModel.isDirty(nested)
             ) {
-              data.push(this._processRelatedModel(relatedModel, nested))
+              data.push(this._processRelatedModel(relatedModel, nested, idOnly))
             }
           })
           if (data.length === 0) {
@@ -105,10 +114,11 @@ export class WritePayload<T extends JSORMBase> {
           // Either the related model is dirty, or it's a dirty relation
           // (maybe the "department" is not dirty, but the employee changed departments
           if (
-            this.model.hasDirtyRelation(key, relatedModels) ||
-            relatedModels.isDirty(nested)
+            idOnly ||
+              this.model.hasDirtyRelation(key, relatedModels) ||
+              relatedModels.isDirty(nested)
           ) {
-            data = this._processRelatedModel(relatedModels, nested)
+            data = this._processRelatedModel(relatedModels, nested, idOnly)
           }
         }
 
@@ -136,9 +146,11 @@ export class WritePayload<T extends JSORMBase> {
       data["temp-id"] = this.model.temp_id
     }
 
-    const _attributes = this.attributes()
-    if (Object.keys(_attributes).length > 0) {
-      data.attributes = _attributes
+    if (!this.idOnly) {
+      const _attributes = this.attributes()
+      if (Object.keys(_attributes).length > 0) {
+        data.attributes = _attributes
+      }
     }
 
     const relationshipData = this.relationships()
@@ -157,21 +169,23 @@ export class WritePayload<T extends JSORMBase> {
 
   // private
 
-  private _processRelatedModel(model: T, nested: IncludeScopeHash) {
+  private _processRelatedModel(model: T, nested: IncludeScopeHash, idOnly: boolean) {
     model.clearErrors()
 
     if (!model.isPersisted) {
       model.temp_id = tempId.generate()
     }
 
-    const wp = new WritePayload(model, nested)
+    const wp = new WritePayload(model, nested, idOnly)
     const relatedJSON = wp.asJSON().data
 
-    const resourceIdentifier = this._resourceIdentifierFor(model)
     this._pushInclude(relatedJSON)
+
     wp.included.forEach(incl => {
       this._pushInclude(incl)
     })
+
+    const resourceIdentifier = this._resourceIdentifierFor(model)
     return resourceIdentifier
   }
 
