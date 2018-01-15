@@ -1,5 +1,5 @@
 /* tslint:disable:member-ordering */
-import { CollectionProxy, RecordProxy } from "./proxies"
+import { CollectionProxy, RecordProxy, NullProxy } from "./proxies"
 import { ValidationErrors } from "./util/validation-errors"
 import { refreshJWT } from "./util/refresh-jwt"
 import relationshipIdentifiersFor from "./util/relationship-identifiers"
