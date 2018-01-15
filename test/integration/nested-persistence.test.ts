@@ -351,4 +351,133 @@ describe("nested persistence", () => {
       expect(instance.books[0].genre).to.eq(null)
     })
   })
+
+  describe('when sideposting only id', () => {
+    beforeEach(() => {
+      let genre = new Genre({ id: 1 })
+      genre.isPersisted = true
+      genre.name = "Horror"
+      let book = new Book({ id: 1, title: "The Shining", genre })
+      book.isPersisted = true
+      instance.books = [book]
+    })
+
+    describe('one level', () => {
+      it('adds only resource identifier to the payload', async () => {
+        await instance.save({ with: ["books.id"] })
+        expect((<any>payloads)[0].data.relationships).to.deep.eq({
+          books: {
+            data: [
+              {
+                id: 1,
+                method: "update",
+                type: "books"
+              }
+            ]
+          }
+        })
+        expect((<any>payloads)[0].included).to.deep.eq([
+          {
+            type: "books",
+            id: 1
+          }
+        ])
+      })
+    })
+
+    describe('2 levels only id', () => {
+      it('sends only relationships, no attributes', async () => {
+        await instance.save({ with: { ["books.id"]: "genre.id" } })
+
+        expect((<any>payloads)[0].data.relationships).to.deep.eq({
+          books: {
+            data: [
+              {
+                id: 1,
+                method: "update",
+                type: "books"
+              }
+            ]
+          }
+        })
+
+        expect((<any>payloads)[0].included).to.deep.eq([
+          {
+            id: 1,
+            type: "books",
+            relationships: {
+              genre: {
+                data: {
+                  id: 1,
+                  type: "genres",
+                  method: "update"
+                }
+              }
+            }
+          },
+          {
+            id: 1,
+            type: "genres"
+          }
+        ])
+      })
+
+      describe('when relationships are not dirty', () => {
+        beforeEach(() => {
+          instance.books[0].isPersisted = true
+          instance.books[0].genre.isPersisted = true
+        })
+
+        it("still sends if id-only", async () => {
+          await instance.save({ with: { ["books.id"]: "genre.id" } })
+          expect((<any>payloads)[0].included).to.deep.eq([
+            {
+              id: 1,
+              type: "books",
+              relationships: {
+                genre: {
+                  data: {
+                    id: 1,
+                    type: "genres",
+                    method: "update"
+                  }
+                }
+              }
+            },
+            {
+              id: 1,
+              type: "genres"
+            }
+          ])
+        })
+      })
+    })
+
+    describe('one level id, then full payload', () => {
+      it('should only send relationships in the payload', async () => {
+        await instance.save({ with: { ["books.id"]: "genre" } })
+
+        expect((<any>payloads)[0].included).to.deep.eq([
+          {
+            id: 1,
+            type: "books",
+            relationships: {
+              genre: {
+                data: {
+                  id: 1,
+                  type: "genres",
+                  method: "update"
+                }
+              }
+            }
+          },
+          {
+            id: 1,
+            type: "genres",
+            attributes: { name: "Horror" }
+          }
+        ])
+      })
+    })
+  })
 })

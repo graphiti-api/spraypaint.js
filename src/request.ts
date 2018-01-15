@@ -93,12 +93,16 @@ export class Request {
       throw new ResponseError(null, e.message, e)
     }
 
-    await this._handleResponse(response)
+    await this._handleResponse(response, options)
 
     return response
   }
 
-  private async _handleResponse(response: Response) {
+  private async _handleResponse(response: Response, requestOptions: RequestInit) {
+    let wasDelete = requestOptions.method === 'DELETE' &&
+      [202, 204, 200].indexOf(response.status) > -1
+    if (wasDelete) return
+
     let json
     try {
       json = await response.json()

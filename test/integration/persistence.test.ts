@@ -43,7 +43,7 @@ const resetMocks = () => {
     "http://example.com/api/v1/people/1",
     (url, payload: any) => {
       deletePayloads.push({})
-      return serverResponse
+      return { meta: {} }
     }
   )
 }
@@ -258,6 +258,51 @@ describe("Model persistence", () => {
       await instance.destroy()
 
       expect(instance.isPersisted).to.eq(false)
+    })
+
+    describe("when the server returns 204 no content", () => {
+      beforeEach(() => {
+        fetchMock.restore()
+
+        fetchMock.mock({
+          matcher: "http://example.com/api/v1/people/1",
+          response: new Response({ status: 204 })
+        })
+      })
+
+      afterEach(() => {
+        resetMocks()
+      })
+
+      it('does not blow up', async () => {
+        expect(instance.isPersisted).to.eq(true)
+        await instance.destroy()
+
+        expect(instance.isPersisted).to.eq(false)
+      })
+    })
+
+
+    describe("when the server returns 202 accepted", () => {
+      beforeEach(() => {
+        fetchMock.restore()
+
+        fetchMock.mock({
+          matcher: "http://example.com/api/v1/people/1",
+          response: new Response({ status: 202 })
+        })
+      })
+
+      afterEach(() => {
+        resetMocks()
+      })
+
+      it('does not blow up', async () => {
+        expect(instance.isPersisted).to.eq(true)
+        await instance.destroy()
+
+        expect(instance.isPersisted).to.eq(false)
+      })
     })
 
     describe("when the server returns 422", () => {
