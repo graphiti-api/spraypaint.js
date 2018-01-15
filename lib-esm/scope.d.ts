@@ -1,6 +1,6 @@
 import { JSORMBase } from "./model";
 import { IncludeArgHash } from "./util/include-directive";
-import { CollectionProxy, RecordProxy } from "./proxies";
+import { CollectionProxy, RecordProxy, NullProxy } from "./proxies";
 export interface JsonapiQueryParams {
     page: AnyRecord;
     filter: AnyRecord;
@@ -30,7 +30,7 @@ export declare class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     constructor(model: T);
     all(): Promise<CollectionProxy<T["prototype"]>>;
     find(id: string | number): Promise<RecordProxy<T["prototype"]>>;
-    first(): Promise<RecordProxy<T["prototype"]>>;
+    first(): Promise<RecordProxy<T["prototype"]> | NullProxy>;
     merge(obj: Record<string, Scope>): Scope<T>;
     page(pageNumber: number): Scope<T>;
     per(size: number): Scope<T>;
@@ -48,6 +48,7 @@ export declare class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     private _transformAssociationSortParam(associationName, param);
     private _sortParam(clause);
     private _fetch(url);
+    private _buildRecordResult(jsonResult);
     private _buildRecordResult(jsonResult);
     private _buildCollectionResult(jsonResult);
 }

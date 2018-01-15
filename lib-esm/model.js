@@ -202,6 +202,7 @@ var JSORMBase = /** @class */ (function () {
         }
         ;
         [
+            "errors",
             "isPersisted",
             "isMarkedForDestruction",
             "isMarkedForDisassociation"

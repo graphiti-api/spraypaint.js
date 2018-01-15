@@ -7,7 +7,8 @@ export declare class WritePayload<T extends JSORMBase> {
     jsonapiType: string;
     includeDirective: IncludeScopeHash;
     included: JsonapiResource[];
-    constructor(model: T, relationships?: IncludeScope);
+    idOnly: boolean;
+    constructor(model: T, relationships?: IncludeScope, idOnly?: boolean);
     attributes(): {
         [P in ({
             [P in keyof T]: P;
@@ -46,7 +47,7 @@ export declare class WritePayload<T extends JSORMBase> {
     postProcess(): void;
     relationships(): object;
     asJSON(): JsonapiRequestDoc;
-    private _processRelatedModel(model, nested);
+    private _processRelatedModel(model, nested, idOnly);
     private _resourceIdentifierFor(model);
     private _pushInclude(include);
     private _isIncluded(include);

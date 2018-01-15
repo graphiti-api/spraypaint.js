@@ -1,7 +1,7 @@
 import * as tslib_1 from "tslib";
 import parameterize from "./util/parameterize";
 import { IncludeDirective } from "./util/include-directive";
-import { CollectionProxy, RecordProxy } from "./proxies";
+import { CollectionProxy, RecordProxy, NullProxy } from "./proxies";
 import { Request } from "./request";
 import { refreshJWT } from "./util/refresh-jwt";
 import { cloneDeep } from "./util/clonedeep";
@@ -232,6 +232,9 @@ var Scope = /** @class */ (function () {
         var rawRecord;
         if (jsonResult.data instanceof Array) {
             rawRecord = jsonResult.data[0];
+            if (!rawRecord) {
+                return new NullProxy(jsonResult);
+            }
         }
         else {
             rawRecord = jsonResult.data;

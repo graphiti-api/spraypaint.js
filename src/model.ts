@@ -378,6 +378,7 @@ export class JSORMBase {
     }
 
     ;[
+      "errors",
       "isPersisted",
       "isMarkedForDestruction",
       "isMarkedForDisassociation"
@@ -605,6 +606,7 @@ export class JSORMBase {
   static first<I extends typeof JSORMBase>(this: I) {
     return this.scope().first()
   }
+
   static all<I extends typeof JSORMBase>(this: I) {
     return this.scope().all()
   }

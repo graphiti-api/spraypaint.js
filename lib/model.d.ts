@@ -1,4 +1,4 @@
-import { CollectionProxy, RecordProxy } from "./proxies";
+import { CollectionProxy, RecordProxy, NullProxy } from "./proxies";
 import { LocalStorage, StorageBackend } from "./local-storage";
 import { Attribute } from "./attribute";
 import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } from "./scope";
@@ -119,7 +119,7 @@ export declare class JSORMBase {
     static fullBasePath(): string;
     static middlewareStack: MiddlewareStack;
     static scope<I extends typeof JSORMBase>(this: I): Scope<I>;
-    static first<I extends typeof JSORMBase>(this: I): Promise<RecordProxy<I["prototype"]>>;
+    static first<I extends typeof JSORMBase>(this: I): Promise<NullProxy | RecordProxy<I["prototype"]>>;
     static all<I extends typeof JSORMBase>(this: I): Promise<CollectionProxy<I["prototype"]>>;
     static find<I extends typeof JSORMBase>(this: I, id: string | number): Promise<RecordProxy<I["prototype"]>>;
     static where<I extends typeof JSORMBase>(this: I, clause: WhereClause): Scope<I>;

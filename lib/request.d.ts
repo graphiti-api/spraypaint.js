@@ -17,5 +17,5 @@ export declare class Request {
     private _logResponse(responseJSON);
     private _fetchWithLogging(url, options);
     private _fetch(url, options);
-    private _handleResponse(response);
+    private _handleResponse(response, requestOptions);
 }

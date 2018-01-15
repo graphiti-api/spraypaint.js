@@ -2,11 +2,14 @@ import { IncludeDirective } from "./include-directive";
 import { tempId } from "./temp-id";
 import { underscore } from "inflected";
 var WritePayload = /** @class */ (function () {
-    function WritePayload(model, relationships) {
+    function WritePayload(model, relationships, idOnly) {
+        if (idOnly === void 0) { idOnly = false; }
         this.included = [];
+        this.idOnly = false;
         var includeDirective = new IncludeDirective(relationships);
         this.includeDirective = includeDirective.toScopeObject();
         this.model = model;
+        this.idOnly = idOnly;
         if (!model.klass.jsonapiType) {
             throw new Error("Cannot serialize model: Undefined jsonapiType");
         }
@@ -63,15 +66,21 @@ var WritePayload = /** @class */ (function () {
         var _relationships = {};
         Object.keys(this.includeDirective).forEach(function (key) {
             var nested = _this.includeDirective[key];
+            var idOnly = false;
+            if (key.indexOf('.') > -1) {
+                key = key.split('.')[0];
+                idOnly = true;
+            }
             var data;
             var relatedModels = _this.model[key];
             if (relatedModels) {
                 if (Array.isArray(relatedModels)) {
                     data = [];
                     relatedModels.forEach(function (relatedModel) {
-                        if (_this.model.hasDirtyRelation(key, relatedModel) ||
+                        if (idOnly ||
+                            _this.model.hasDirtyRelation(key, relatedModel) ||
                             relatedModel.isDirty(nested)) {
-                            data.push(_this._processRelatedModel(relatedModel, nested));
+                            data.push(_this._processRelatedModel(relatedModel, nested, idOnly));
                         }
                     });
                     if (data.length === 0) {
@@ -81,9 +90,10 @@ var WritePayload = /** @class */ (function () {
                 else {
                     // Either the related model is dirty, or it's a dirty relation
                     // (maybe the "department" is not dirty, but the employee changed departments
-                    if (_this.model.hasDirtyRelation(key, relatedModels) ||
+                    if (idOnly ||
+                        _this.model.hasDirtyRelation(key, relatedModels) ||
                         relatedModels.isDirty(nested)) {
-                        data = _this._processRelatedModel(relatedModels, nested);
+                        data = _this._processRelatedModel(relatedModels, nested, idOnly);
                     }
                 }
                 if (data) {
@@ -104,9 +114,11 @@ var WritePayload = /** @class */ (function () {
         if (this.model.temp_id) {
             data["temp-id"] = this.model.temp_id;
         }
-        var _attributes = this.attributes();
-        if (Object.keys(_attributes).length > 0) {
-            data.attributes = _attributes;
+        if (!this.idOnly) {
+            var _attributes = this.attributes();
+            if (Object.keys(_attributes).length > 0) {
+                data.attributes = _attributes;
+            }
         }
         var relationshipData = this.relationships();
         if (Object.keys(relationshipData).length > 0) {
@@ -119,19 +131,19 @@ var WritePayload = /** @class */ (function () {
         return json;
     };
     // private
-    WritePayload.prototype._processRelatedModel = function (model, nested) {
+    WritePayload.prototype._processRelatedModel = function (model, nested, idOnly) {
         var _this = this;
         model.clearErrors();
         if (!model.isPersisted) {
             model.temp_id = tempId.generate();
         }
-        var wp = new WritePayload(model, nested);
+        var wp = new WritePayload(model, nested, idOnly);
         var relatedJSON = wp.asJSON().data;
-        var resourceIdentifier = this._resourceIdentifierFor(model);
         this._pushInclude(relatedJSON);
         wp.included.forEach(function (incl) {
             _this._pushInclude(incl);
         });
+        var resourceIdentifier = this._resourceIdentifierFor(model);
         return resourceIdentifier;
     };
     WritePayload.prototype._resourceIdentifierFor = function (model) {
