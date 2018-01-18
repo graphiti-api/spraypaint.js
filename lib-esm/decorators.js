@@ -2,6 +2,8 @@ import { pluralize, underscore } from "inflected";
 import { applyModelConfig, isModelClass, isModelInstance } from "./model";
 import { Attribute } from "./attribute";
 import { HasMany, HasOne, BelongsTo } from "./associations";
+import { config as envConfig, inBrowser } from "./util/env";
+import { logger } from "./logger";
 var ModelDecorator = function (config) {
     return function (target) {
         modelFactory(target, config);
@@ -16,6 +18,9 @@ var modelFactory = function (ModelClass, config) {
     applyModelConfig(ModelClass, config || {});
     if (!ModelClass.jsonapiType && !ModelClass.isBaseClass) {
         ModelClass.jsonapiType = pluralize(underscore(ModelClass.name));
+        if (envConfig.productionTip && inBrowser) {
+            logger.warn("Inferring model jsonapiType as \"" + ModelClass.jsonapiType + "\".\nYou should explicitly set this on your model if targeting a minified code bundle.");
+        }
     }
     ModelClass.registerType();
 };

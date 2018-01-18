@@ -19,6 +19,9 @@ import {
   BelongsTo
 } from "./associations"
 
+import { config as envConfig, inBrowser } from "./util/env"
+import { logger } from "./logger"
+
 type ModelDecorator = <M extends typeof JSORMBase>(target: M) => M
 
 const ModelDecorator = (config?: ModelConfigurationOptions): ModelDecorator => {
@@ -45,6 +48,14 @@ const modelFactory = <M extends typeof JSORMBase>(
 
   if (!ModelClass.jsonapiType && !ModelClass.isBaseClass) {
     ModelClass.jsonapiType = pluralize(underscore(ModelClass.name))
+
+    if (envConfig.productionTip && inBrowser) {
+      logger.warn(
+        `Inferring model jsonapiType as "${
+          ModelClass.jsonapiType
+        }".\nYou should explicitly set this on your model if targeting a minified code bundle.`
+      )
+    }
   }
 
   ModelClass.registerType()
