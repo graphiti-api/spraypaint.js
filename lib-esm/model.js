@@ -578,7 +578,7 @@ var JSORMBase = /** @class */ (function () {
     JSORMBase.logger = defaultLogger;
     JSORMBase.attributeList = {};
     JSORMBase.currentClass = JSORMBase;
-    JSORMBase.jwtLocalStorage = 'jwt';
+    JSORMBase.jwtLocalStorage = "jwt";
     /*
      *
      * This is to allow for sane type checking in collaboration with the

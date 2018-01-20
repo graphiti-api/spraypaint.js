@@ -27,6 +27,8 @@ import { camelize } from "inflected"
 import { ILogger, logger as defaultLogger } from "./logger"
 import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack"
 
+import { Omit } from "./util/omit"
+
 import {
   JsonapiResource,
   JsonapiResponseDoc,
@@ -136,7 +138,7 @@ export class JSORMBase {
   static currentClass: typeof JSORMBase = JSORMBase
   static beforeFetch: BeforeFilter | undefined
   static afterFetch: AfterFilter | undefined
-  static jwtLocalStorage: string | false = 'jwt'
+  static jwtLocalStorage: string | false = "jwt"
 
   private static _typeRegistry: JsonapiTypeRegistry
   private static _middlewareStack: MiddlewareStack

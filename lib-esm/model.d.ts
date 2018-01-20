@@ -5,6 +5,7 @@ import { Scope, WhereClause, SortScope, FieldScope, StatsScope, IncludeScope } f
 import { JsonapiTypeRegistry } from "./jsonapi-type-registry";
 import { ILogger } from "./logger";
 import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack";
+import { Omit } from "./util/omit";
 import { JsonapiResource, JsonapiResponseDoc, JsonapiResourceIdentifier } from "./jsonapi-spec";
 import { IncludeScopeHash } from "./util/include-directive";
 export interface ModelConfiguration {
