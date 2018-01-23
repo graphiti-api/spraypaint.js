@@ -817,6 +817,19 @@ describe("Model", () => {
       })
     })
 
+    describe('when previously persisted, dirty, then persisted again', () => {
+      it('is no longer dirty', () => {
+        const instance = new Author({ id: 1 })
+        instance.firstName = "foo"
+        instance.isPersisted = true
+        expect(instance.isDirty()).to.eq(false)
+        instance.firstName = "bar"
+        expect(instance.isDirty()).to.eq(true)
+        instance.isPersisted = true
+        expect(instance.isDirty()).to.eq(false)
+      })
+    })
+
     describe("when marked for destruction", () => {
       it("is dirty", () => {
         const instance = new Author()
