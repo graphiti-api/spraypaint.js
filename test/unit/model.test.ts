@@ -3,7 +3,7 @@ import { JSORMBase } from "../../src/model"
 import { hasOne } from "../../src/associations"
 import { attr } from "../../src/attribute"
 import { JsonapiTypeRegistry } from "../../src/jsonapi-type-registry"
-import { StorageBackend } from "../../src/local-storage"
+import { StorageBackend } from "../../src/credential-storage"
 import { JsonapiResource, JsonapiResponseDoc } from "../../src/index"
 
 import {
@@ -86,13 +86,13 @@ describe("Model", () => {
             })
           })
 
-          describe("when localStorage is configured", () => {
+          describe("when credentialStorage is configured", () => {
             let backend: StorageBackend
             const buildModel = () => {
               // need new class for this since it needs initialization to have the jwt config set
               @Model({
-                jwtLocalStorage: "MyJWT",
-                localStorageBackend: backend // Cast to any since we don't want this to be part of the standard model config interface. Just for test stubbing purposes
+                jwtStorage: "MyJWT",
+                credentialStorageBackend: backend // Cast to any since we don't want this to be part of the standard model config interface. Just for test stubbing purposes
               } as any)
               class Base extends JSORMBase {}
               BaseClass = Base
@@ -108,7 +108,7 @@ describe("Model", () => {
                 buildModel()
               })
 
-              it("adds to localStorage", () => {
+              it("adds to credentialStorage", () => {
                 BaseClass.setJWT("n3wt0k3n")
                 expect(backend.setItem).to.have.been.calledWith(
                   "MyJWT",

@@ -6,10 +6,10 @@ import relationshipIdentifiersFor from "./util/relationship-identifiers"
 import { Request, RequestVerbs, JsonapiResponse } from "./request"
 import { WritePayload } from "./util/write-payload"
 import {
-  LocalStorage,
+  CredentialStorage,
   NullStorageBackend,
   StorageBackend
-} from "./local-storage"
+} from "./credential-storage"
 
 import { deserialize, deserializeInstance } from "./util/deserialize"
 import { Attribute } from "./attribute"
@@ -45,7 +45,7 @@ export interface ModelConfiguration {
   jsonapiType: string
   endpoint: string
   jwt: string
-  jwtLocalStorage: string | false
+  jwtStorage: string | false
   camelizeKeys: boolean
   strictAttributes: boolean
   logger: ILogger
@@ -138,35 +138,35 @@ export class JSORMBase {
   static currentClass: typeof JSORMBase = JSORMBase
   static beforeFetch: BeforeFilter | undefined
   static afterFetch: AfterFilter | undefined
-  static jwtLocalStorage: string | false = "jwt"
+  static jwtStorage: string | false = "jwt"
 
   private static _typeRegistry: JsonapiTypeRegistry
   private static _middlewareStack: MiddlewareStack
-  private static _localStorageBackend?: StorageBackend
-  private static _localStorage?: LocalStorage
+  private static _credentialStorageBackend?: StorageBackend
+  private static _credentialStorage?: CredentialStorage
 
-  static get localStorage(): LocalStorage {
-    if (!this._localStorage) {
-      if (!this._localStorageBackend) {
-        if (this.jwtLocalStorage && typeof localStorage !== "undefined") {
-          this._localStorageBackend = localStorage
+  static get credentialStorage(): CredentialStorage {
+    if (!this._credentialStorage) {
+      if (!this._credentialStorageBackend) {
+        if (this.jwtStorage && typeof localStorage !== "undefined") {
+          this._credentialStorageBackend = localStorage
         } else {
-          this._localStorageBackend = new NullStorageBackend()
+          this._credentialStorageBackend = new NullStorageBackend()
         }
       }
 
-      this._localStorage = new LocalStorage(
-        this.jwtLocalStorage,
-        this._localStorageBackend
+      this._credentialStorage = new CredentialStorage(
+        this.jwtStorage,
+        this._credentialStorageBackend
       )
     }
 
-    return this._localStorage
+    return this._credentialStorage
   }
 
-  static set localStorageBackend(backend: StorageBackend | undefined) {
-    this._localStorageBackend = backend
-    this._localStorage = undefined
+  static set credentialStorageBackend(backend: StorageBackend | undefined) {
+    this._credentialStorageBackend = backend
+    this._credentialStorage = undefined
   }
 
   /*
@@ -214,7 +214,7 @@ export class JSORMBase {
       this._middlewareStack = new MiddlewareStack()
     }
 
-    const jwt = this.localStorage.getJWT()
+    const jwt = this.credentialStorage.getJWT()
     this.setJWT(jwt)
   }
 
@@ -665,7 +665,7 @@ export class JSORMBase {
     }
 
     this.baseClass.jwt = token || undefined
-    this.localStorage.setJWT(token)
+    this.credentialStorage.setJWT(token)
   }
 
   static getJWT(): string | undefined {

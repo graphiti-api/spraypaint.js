@@ -25,7 +25,7 @@ try {
   defaultBackend = new NullStorageBackend()
 }
 
-export class LocalStorage {
+export class CredentialStorage {
   private _jwtKey: string | false
   private _backend: StorageBackend
 

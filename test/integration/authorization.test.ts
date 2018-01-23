@@ -150,7 +150,7 @@ describe("authorization headers", () => {
     })
 
     describe("local storage", () => {
-      let localStorageMock: {
+      let credentialStorageMock: {
         getItem: SinonSpy
         setItem: SinonSpy
         removeItem: SinonSpy
@@ -163,31 +163,31 @@ describe("authorization headers", () => {
         ;(<any>ApplicationRecord) = null
         ;(<any>Author) = null
 
-        localStorageMock = {
+        credentialStorageMock = {
           setItem: sinon.spy(),
           getItem: sinon.spy(),
           removeItem: sinon.spy()
         }
-        JSORMBase.localStorageBackend = localStorageMock
+        JSORMBase.credentialStorageBackend = credentialStorageMock
       })
 
       afterEach(() => {
-        JSORMBase.localStorageBackend = undefined as any
-        JSORMBase.jwtLocalStorage = false
+        JSORMBase.credentialStorageBackend = undefined as any
+        JSORMBase.jwtStorage = false
       })
 
       describe("when configured to store jwt", () => {
-        describe("when JWT is not in localStorage", () => {
+        describe("when JWT is not in credentialStorage", () => {
           beforeEach(() => {
-            JSORMBase.jwtLocalStorage = "jwt"
+            JSORMBase.jwtStorage = "jwt"
 
             buildModels()
           })
 
-          it("updates localStorage on server response", async () => {
+          it("updates credentialStorage on server response", async () => {
             await Author.all()
 
-            expect(localStorageMock.setItem).to.have.been.calledWith(
+            expect(credentialStorageMock.setItem).to.have.been.calledWith(
               "jwt",
               "somet0k3n"
             )
@@ -213,11 +213,11 @@ describe("authorization headers", () => {
           })
         })
 
-        describe("when JWT is already in localStorage", () => {
+        describe("when JWT is already in credentialStorage", () => {
           beforeEach(() => {
-            JSORMBase.jwtLocalStorage = "jwt"
+            JSORMBase.jwtStorage = "jwt"
             fetchMock.restore()
-            JSORMBase.localStorage.getJWT = sinon.stub().returns("myt0k3n")
+            JSORMBase.credentialStorage.getJWT = sinon.stub().returns("myt0k3n")
 
             buildModels()
           })
@@ -240,15 +240,15 @@ describe("authorization headers", () => {
 
       describe("when configured to NOT store jwt", () => {
         beforeEach(() => {
-          JSORMBase.jwtLocalStorage = false
+          JSORMBase.jwtStorage = false
 
           buildModels()
         })
 
-        it("is does NOT update localStorage on server response", async () => {
+        it("is does NOT update credentialStorage on server response", async () => {
           await Author.all()
 
-          expect(localStorageMock.setItem).not.to.have.been.called
+          expect(credentialStorageMock.setItem).not.to.have.been.called
         })
       })
     })
