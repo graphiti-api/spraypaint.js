@@ -405,6 +405,10 @@ export class JSORMBase {
   }
   set isPersisted(val: boolean) {
     this._persisted = val
+    this.reset()
+  }
+
+  reset() : void {
     this._originalAttributes = cloneDeep(this._attributes)
     this._originalRelationships = this.relationshipResourceIdentifiers(
       Object.keys(this.relationships)

@@ -148,6 +148,7 @@ class Deserializer {
 
     // came from server, must be persisted
     instance.isPersisted = true
+    instance.reset()
 
     return instance
   }
