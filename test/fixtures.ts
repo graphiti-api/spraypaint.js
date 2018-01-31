@@ -35,6 +35,9 @@ export class PersonWithoutCamelizedKeys extends Person {
   @Attr first_name: string
 }
 
+@Model({ letterCase: "dasherized" })
+export class PersonWithDasherizedKeys extends Person {}
+
 @Model({
   endpoint: "/v1/authors",
   jsonapiType: "authors"

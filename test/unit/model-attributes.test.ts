@@ -20,6 +20,11 @@ describe("Model attributes", () => {
     expect(person.firstName).to.eq("Joe")
   })
 
+  xit("camelizes dasherized strings", function() {
+    const person = new Person({ "first-name": "Joe" })
+    expect(person.firstName).to.eq("Joe")
+  })
+
   it("does not camlize underscored strings if camelization is disabled", () => {
     const person = new PersonWithoutCamelizedKeys({ first_name: "Joe" })
     expect(person.firstName).to.eq(undefined)

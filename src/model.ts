@@ -47,6 +47,7 @@ export interface ModelConfiguration {
   jwt: string
   jwtStorage: string | false
   camelizeKeys: boolean
+  letterCase: string
   strictAttributes: boolean
   logger: ILogger
 }
@@ -129,6 +130,7 @@ export class JSORMBase {
   static isBaseClass: boolean
   static jwt?: string
   static camelizeKeys: boolean = true
+  static letterCase: string = "underscore"
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
 
@@ -408,7 +410,7 @@ export class JSORMBase {
     this.reset()
   }
 
-  reset() : void {
+  reset(): void {
     this._originalAttributes = cloneDeep(this._attributes)
     this._originalRelationships = this.relationshipResourceIdentifiers(
       Object.keys(this.relationships)
