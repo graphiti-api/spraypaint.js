@@ -257,7 +257,7 @@ export class WritePayload<T extends JSORMBase> {
 
   private _letterCaseKey(key): string {
     if (this.model.klass.letterCase == "dasherized") {
-      return dasherize(key)
+      return dasherize(underscore(key))
     }
     return underscore(key)
   }

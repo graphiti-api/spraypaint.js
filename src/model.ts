@@ -23,7 +23,7 @@ import {
   IncludeScope
 } from "./scope"
 import { JsonapiTypeRegistry } from "./jsonapi-type-registry"
-import { camelize } from "inflected"
+import { camelize, underscore } from "inflected"
 import { ILogger, logger as defaultLogger } from "./logger"
 import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack"
 
@@ -468,7 +468,7 @@ export class JSORMBase {
         let attributeName = key
 
         if (this.klass.camelizeKeys) {
-          attributeName = camelize(key, false)
+          attributeName = camelize(underscore(key), false)
         }
 
         if (key === "id" || this.klass.attributeList[attributeName]) {

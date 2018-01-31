@@ -1,6 +1,6 @@
 import { JsonapiTypeRegistry } from "../jsonapi-type-registry"
 import { JSORMBase } from "../model"
-import { camelize } from "inflected"
+import { camelize, underscore } from "inflected"
 import {
   IncludeDirective,
   IncludeScopeHash,
@@ -241,7 +241,11 @@ class Deserializer {
         let relationName = key
 
         if (instance.klass.camelizeKeys) {
-          relationName = camelize(key, false)
+          if (instance.klass.letterCase === "dasherized") {
+            relationName = camelize(underscore(key), false)
+          } else {
+            relationName = camelize(key, false)
+          }
         }
 
         if (instance.klass.attributeList[relationName]) {

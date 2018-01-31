@@ -20,7 +20,7 @@ describe("Model attributes", () => {
     expect(person.firstName).to.eq("Joe")
   })
 
-  xit("camelizes dasherized strings", function() {
+  it("camelizes dasherized strings", function() {
     const person = new Person({ "first-name": "Joe" })
     expect(person.firstName).to.eq("Joe")
   })
