@@ -23,7 +23,7 @@ const resetMocks = () => {
             status: "422",
             title: "Validation Error",
             detail: "Last Name cannot be blank",
-            meta: { attribute: "last_name", message: "cannot be blank" }
+            meta: { attribute: "last-name", message: "cannot be blank" }
           },
           {
             code: "unprocessable_entity",
@@ -136,7 +136,7 @@ describe("validations", () => {
 
       expect(instance.errors).to.deep.equal({
         first_name: "cannot be blank",
-        last_name: "cannot be blank"
+        "last-name": "cannot be blank"
       })
     })
   })
