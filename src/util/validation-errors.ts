@@ -43,7 +43,7 @@ export class ValidationErrors {
     let attribute = meta.attribute
 
     if (this.model.klass.camelizeKeys) {
-      attribute = this.model.deserializeKey(attribute)
+      attribute = this.model.klass.deserializeKey(attribute)
     }
 
     errorsAccumulator[attribute] = meta.message

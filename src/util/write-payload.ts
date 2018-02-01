@@ -33,7 +33,7 @@ export class WritePayload<T extends JSORMBase> {
 
     this._eachAttribute((key, value) => {
       if (!this.model.isPersisted || this.model.changes()[key]) {
-        attrs[this.model.serializeKey(key)] = value
+        attrs[this.model.klass.serializeKey(key)] = value
       }
     })
 
@@ -120,7 +120,7 @@ export class WritePayload<T extends JSORMBase> {
         }
 
         if (data) {
-          _relationships[this.model.serializeKey(key)] = { data }
+          _relationships[this.model.klass.serializeKey(key)] = { data }
         }
       }
     })

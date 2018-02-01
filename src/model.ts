@@ -468,7 +468,7 @@ export class JSORMBase {
         let attributeName = key
 
         if (this.klass.camelizeKeys) {
-          attributeName = this.deserializeKey(key)
+          attributeName = this.klass.deserializeKey(key)
         }
 
         if (key === "id" || this.klass.attributeList[attributeName]) {
@@ -694,6 +694,17 @@ export class JSORMBase {
     return this.baseClass
   }
 
+  static serializeKey(key: string): string {
+    if (this.letterCase == "dasherized") {
+      return dasherize(underscore(key))
+    }
+    return underscore(key)
+  }
+
+  static deserializeKey(key: string): string {
+    return camelize(underscore(key), false)
+  }
+
   async destroy(): Promise<boolean> {
     const url = this.klass.url(this.id)
     const verb = "delete"
@@ -739,17 +750,6 @@ export class JSORMBase {
       )
       payload.postProcess()
     })
-  }
-
-  serializeKey(key: string): string {
-    if (this.klass.letterCase == "dasherized") {
-      return dasherize(underscore(key))
-    }
-    return underscore(key)
-  }
-
-  deserializeKey(key: string): string {
-    return camelize(underscore(key), false)
   }
 
   private async _handleResponse(
