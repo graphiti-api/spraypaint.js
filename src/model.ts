@@ -23,7 +23,7 @@ import {
   IncludeScope
 } from "./scope"
 import { JsonapiTypeRegistry } from "./jsonapi-type-registry"
-import { camelize, underscore } from "inflected"
+import { camelize, underscore, dasherize } from "inflected"
 import { ILogger, logger as defaultLogger } from "./logger"
 import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack"
 
@@ -468,7 +468,7 @@ export class JSORMBase {
         let attributeName = key
 
         if (this.klass.camelizeKeys) {
-          attributeName = camelize(underscore(key), false)
+          attributeName = this.deserializeKey(key)
         }
 
         if (key === "id" || this.klass.attributeList[attributeName]) {
@@ -739,6 +739,17 @@ export class JSORMBase {
       )
       payload.postProcess()
     })
+  }
+
+  serializeKey(key: string): string {
+    if (this.klass.letterCase == "dasherized") {
+      return dasherize(underscore(key))
+    }
+    return underscore(key)
+  }
+
+  deserializeKey(key: string): string {
+    return camelize(underscore(key), false)
   }
 
   private async _handleResponse(

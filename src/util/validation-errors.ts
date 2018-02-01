@@ -1,5 +1,4 @@
 import { JSORMBase } from "../model"
-import { camelize, underscore } from "inflected"
 import { JsonapiResponseDoc, JsonapiErrorMeta } from "../jsonapi-spec"
 
 export class ValidationErrors {
@@ -44,7 +43,7 @@ export class ValidationErrors {
     let attribute = meta.attribute
 
     if (this.model.klass.camelizeKeys) {
-      attribute = camelize(underscore(attribute), false)
+      attribute = this.model.deserializeKey(attribute)
     }
 
     errorsAccumulator[attribute] = meta.message

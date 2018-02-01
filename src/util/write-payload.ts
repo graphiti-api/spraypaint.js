@@ -2,7 +2,6 @@ import { JSORMBase, ModelRecord } from "../model"
 import { IncludeDirective, IncludeScopeHash } from "./include-directive"
 import { IncludeScope } from "../scope"
 import { tempId } from "./temp-id"
-import { underscore, dasherize } from "inflected"
 import {
   JsonapiRequestDoc,
   JsonapiResourceIdentifier,
@@ -34,7 +33,7 @@ export class WritePayload<T extends JSORMBase> {
 
     this._eachAttribute((key, value) => {
       if (!this.model.isPersisted || this.model.changes()[key]) {
-        attrs[this._letterCaseKey(key)] = value
+        attrs[this.model.serializeKey(key)] = value
       }
     })
 
@@ -121,7 +120,7 @@ export class WritePayload<T extends JSORMBase> {
         }
 
         if (data) {
-          _relationships[this._letterCaseKey(key)] = { data }
+          _relationships[this.model.serializeKey(key)] = { data }
         }
       }
     })
@@ -253,12 +252,5 @@ export class WritePayload<T extends JSORMBase> {
         callback(key as keyof T, value)
       }
     })
-  }
-
-  private _letterCaseKey(key): string {
-    if (this.model.klass.letterCase == "dasherized") {
-      return dasherize(underscore(key))
-    }
-    return underscore(key)
   }
 }
