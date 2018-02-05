@@ -65,8 +65,7 @@ export class Attribute<T = any> {
 
   // The model calls this getter
   getter(context: JSORMBase): any {
-    const privateContext: any = context
-    return privateContext._attributes[this.name]
+    return context.attributes[this.name]
   }
 
   // This returns the getters/setters for use on the *model*
@@ -92,8 +91,8 @@ const simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/
 /*
  *  Function taken from VueJS's props assertion code here:
  *  https://github.com/vuejs/vue/blob/1dd6b6f046c3093950e599ccc6bbe7a393b8a494/src/core/util/props.js
- * 
- *  We aren't using this yet, but I don't want to lose the reference 
+ *
+ *  We aren't using this yet, but I don't want to lose the reference
  *  to it so I'm keeping it around.
  *
  */

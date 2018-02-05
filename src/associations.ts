@@ -13,6 +13,11 @@ export interface Association {
   jsonapiType: string
 }
 
+const wasDestroyed = (model: JSORMBase) => {
+  if (!model.klass.sync) return false // not supported if idmap is off
+  return (model.isPersisted || model.stale) && !model.stored
+}
+
 export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T>
   implements Association {
   isRelationship: true = true
@@ -40,6 +45,10 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T>
   }
 
   getter(context: JSORMBase) {
+    let gotten = context.relationships[this.name] as JSORMBase | null
+    if (gotten && wasDestroyed(gotten)) {
+      delete context.relationships[this.name]
+    }
     return context.relationships[this.name]
   }
 
@@ -82,13 +91,16 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]>
   }
 
   getter(context: JSORMBase) {
-    const gotten = context.relationships[this.name]
+    const gotten = context.relationships[this.name] as JSORMBase[]
     if (!gotten) {
       this.setter(context, [])
       return context.relationships[this.name]
-    } else {
-      return gotten
     }
+
+    context.relationships[this.name] = gotten.filter((g) => {
+      return !wasDestroyed(g)
+    })
+    return context.relationships[this.name]
   }
 
   setter(context: JSORMBase, val: any): void {

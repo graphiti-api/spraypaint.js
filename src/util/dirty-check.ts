@@ -19,6 +19,7 @@ class DirtyChecker<T extends JSORMBase> {
     if (relatedModel.isPersisted) {
       const identifiers: JsonapiResourceIdentifier[] =
         (<any>this.model)._originalRelationships[relationName] || []
+
       const found = identifiers.find(ri => {
         return (
           JSON.stringify(ri) === JSON.stringify(relatedModel.resourceIdentifier)

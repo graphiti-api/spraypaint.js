@@ -1,6 +1,11 @@
 import * as tslib_1 from "tslib";
 import { Attribute } from "./attribute";
 import { JSORMBase } from "./model";
+var wasDestroyed = function (model) {
+    if (!model.klass.sync)
+        return false; // not supported if idmap is off
+    return (model.isPersisted || model.stale) && !model.stored;
+};
 var SingleAssociationBase = /** @class */ (function (_super) {
     tslib_1.__extends(SingleAssociationBase, _super);
     function SingleAssociationBase(options) {
@@ -25,6 +30,10 @@ var SingleAssociationBase = /** @class */ (function (_super) {
         configurable: true
     });
     SingleAssociationBase.prototype.getter = function (context) {
+        var gotten = context.relationships[this.name];
+        if (gotten && wasDestroyed(gotten)) {
+            delete context.relationships[this.name];
+        }
         return context.relationships[this.name];
     };
     SingleAssociationBase.prototype.setter = function (context, val) {
@@ -70,9 +79,10 @@ var HasMany = /** @class */ (function (_super) {
             this.setter(context, []);
             return context.relationships[this.name];
         }
-        else {
-            return gotten;
-        }
+        context.relationships[this.name] = gotten.filter(function (g) {
+            return !wasDestroyed(g);
+        });
+        return context.relationships[this.name];
     };
     HasMany.prototype.setter = function (context, val) {
         if (val && !val.hasOwnProperty("isRelationship")) {

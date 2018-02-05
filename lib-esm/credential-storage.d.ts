@@ -8,7 +8,7 @@ export declare class NullStorageBackend implements StorageBackend {
     setItem(key: string, value: string | undefined): void;
     removeItem(key: string): void;
 }
-export declare class LocalStorage {
+export declare class CredentialStorage {
     private _jwtKey;
     private _backend;
     constructor(jwtKey: string | false, backend?: StorageBackend);

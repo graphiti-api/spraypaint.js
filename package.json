@@ -71,6 +71,7 @@
     "winston": "^2.3.1"
   },
   "dependencies": {
+    "eventbusjs": "0.2.0",
     "inflected": "2.0.3",
     "lodash": "4.17.4",
     "lodash-es": "4.17.4",

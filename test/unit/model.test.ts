@@ -5,6 +5,7 @@ import { attr } from "../../src/attribute"
 import { JsonapiTypeRegistry } from "../../src/jsonapi-type-registry"
 import { StorageBackend } from "../../src/credential-storage"
 import { JsonapiResource, JsonapiResponseDoc } from "../../src/index"
+import * as EventBus from "eventbusjs"
 
 import {
   ApplicationRecord,
@@ -398,14 +399,14 @@ describe("Model", () => {
        * but the type definitions were VERY complicated, and in
        * simplifying them, it was necessary to omit the case
        * where one was going FROM javascript TO typescript,
-       * which seems like a far edge case when there aren't any 
+       * which seems like a far edge case when there aren't any
        * type definitions exported by the library as well, so I'm
-       * punting on it for now until I figure out a typings fix. 
-       * 
+       * punting on it for now until I figure out a typings fix.
+       *
        * Keeping the tests around with a lot of coercion to verify
        * the underlying functionality still works from a JS-only
        * perspective.
-       * 
+       *
        */
       describe("inheritance with class-based declaration", () => {
         class ExtendedPost extends (<any>Post) {
@@ -1094,7 +1095,7 @@ describe("Model", () => {
         instance.fromJsonapi(newDoc.data as JsonapiResource, newDoc, {
           books: { genre: {} }
         })
-        expect(instance.books[0].genre).to.eq(null)
+        expect(instance.books[0].genre).to.eq(undefined)
       })
 
       describe("within a nested destruction", () => {
@@ -1165,6 +1166,72 @@ describe("Model", () => {
           })
           expect(instance.books.length).to.eq(0)
         })
+      })
+    })
+  })
+
+  describe("#unlisten()", () => {
+    let author: Author
+    let book: Book
+
+    beforeEach(() => {
+      ApplicationRecord.sync = true
+      sinon.spy(EventBus, 'removeEventListener')
+      book = new Book({ id : 1 })
+      book.isPersisted = true
+      author = new Author({ id: 1, books: [book] })
+      author.isPersisted = true
+    })
+
+    afterEach(() => {
+      EventBus.removeEventListener.restore()
+    })
+
+    it("removes event listener from self + relationships", () => {
+      author.unlisten()
+      expect(EventBus.removeEventListener.callCount).to.eq(2)
+    })
+
+    describe("when sync option is false", () => {
+      beforeEach(() => {
+        ApplicationRecord.sync = false
+        author = new Author()
+      })
+
+      it("does nothing", () => {
+        author.unlisten()
+        expect(EventBus.removeEventListener.callCount).to.eq(0)
+      })
+    })
+  })
+
+  describe("#listen()", () => {
+    let author: Author
+
+    beforeEach(() => {
+      ApplicationRecord.sync = true
+      sinon.spy(EventBus, 'addEventListener')
+      author = new Author()
+    })
+
+    afterEach(() => {
+      EventBus.addEventListener.restore()
+    })
+
+    it("adds event listener", () => {
+      author.listen()
+      expect(EventBus.addEventListener.callCount).to.eq(1)
+    })
+
+    describe("when sync option is false", () => {
+      beforeEach(() => {
+        ApplicationRecord.sync = false
+        author = new Author()
+      })
+
+      it("does nothing", () => {
+        author.listen()
+        expect(EventBus.addEventListener.callCount).to.eq(0)
       })
     })
   })

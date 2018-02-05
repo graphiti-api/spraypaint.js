@@ -21,13 +21,13 @@ try {
 catch (e) {
     defaultBackend = new NullStorageBackend();
 }
-var LocalStorage = /** @class */ (function () {
-    function LocalStorage(jwtKey, backend) {
+var CredentialStorage = /** @class */ (function () {
+    function CredentialStorage(jwtKey, backend) {
         if (backend === void 0) { backend = defaultBackend; }
         this._jwtKey = jwtKey;
         this._backend = backend;
     }
-    LocalStorage.prototype.getJWT = function () {
+    CredentialStorage.prototype.getJWT = function () {
         if (this._jwtKey) {
             return this._backend.getItem(this._jwtKey);
         }
@@ -35,7 +35,7 @@ var LocalStorage = /** @class */ (function () {
             return null;
         }
     };
-    LocalStorage.prototype.setJWT = function (value) {
+    CredentialStorage.prototype.setJWT = function (value) {
         if (this._jwtKey) {
             if (value) {
                 this._backend.setItem(this._jwtKey, value);
@@ -45,7 +45,7 @@ var LocalStorage = /** @class */ (function () {
             }
         }
     };
-    return LocalStorage;
+    return CredentialStorage;
 }());
-export { LocalStorage };
-//# sourceMappingURL=local-storage.js.map
+export { CredentialStorage };
+//# sourceMappingURL=credential-storage.js.map

@@ -4,7 +4,8 @@ import { refreshJWT } from "./util/refresh-jwt";
 import relationshipIdentifiersFor from "./util/relationship-identifiers";
 import { Request } from "./request";
 import { WritePayload } from "./util/write-payload";
-import { LocalStorage, NullStorageBackend } from "./local-storage";
+import { CredentialStorage, NullStorageBackend } from "./credential-storage";
+import { IDMap } from "./id-map";
 import { deserialize, deserializeInstance } from "./util/deserialize";
 import DirtyChecker from "./util/dirty-check";
 import { Scope } from "./scope";
@@ -12,6 +13,7 @@ import { JsonapiTypeRegistry } from "./jsonapi-type-registry";
 import { camelize } from "inflected";
 import { logger as defaultLogger } from "./logger";
 import { MiddlewareStack } from "./middleware-stack";
+import { EventBus } from "./event-bus";
 import { cloneDeep } from "./util/clonedeep";
 import { nonenumerable } from "./util/decorators";
 export var applyModelConfig = function (ModelClass, config) {
@@ -30,6 +32,8 @@ export var applyModelConfig = function (ModelClass, config) {
 };
 var JSORMBase = /** @class */ (function () {
     function JSORMBase(attrs) {
+        this.stale = false;
+        this.storeKey = '';
         this.relationships = {};
         this._persisted = false;
         this._markedForDestruction = false;
@@ -41,28 +45,28 @@ var JSORMBase = /** @class */ (function () {
         this._originalAttributes = cloneDeep(this._attributes);
         this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
     }
-    Object.defineProperty(JSORMBase, "localStorage", {
+    Object.defineProperty(JSORMBase, "credentialStorage", {
         get: function () {
-            if (!this._localStorage) {
-                if (!this._localStorageBackend) {
-                    if (this.jwtLocalStorage && typeof localStorage !== "undefined") {
-                        this._localStorageBackend = localStorage;
+            if (!this._credentialStorage) {
+                if (!this._credentialStorageBackend) {
+                    if (this.jwtStorage && typeof localStorage !== "undefined") {
+                        this._credentialStorageBackend = localStorage;
                     }
                     else {
-                        this._localStorageBackend = new NullStorageBackend();
+                        this._credentialStorageBackend = new NullStorageBackend();
                     }
                 }
-                this._localStorage = new LocalStorage(this.jwtLocalStorage, this._localStorageBackend);
+                this._credentialStorage = new CredentialStorage(this.jwtStorage, this._credentialStorageBackend);
             }
-            return this._localStorage;
+            return this._credentialStorage;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(JSORMBase, "localStorageBackend", {
+    Object.defineProperty(JSORMBase, "credentialStorageBackend", {
         set: function (backend) {
-            this._localStorageBackend = backend;
-            this._localStorage = undefined;
+            this._credentialStorageBackend = backend;
+            this._credentialStorage = undefined;
         },
         enumerable: true,
         configurable: true
@@ -85,7 +89,10 @@ var JSORMBase = /** @class */ (function () {
         if (!this.middlewareStack) {
             this._middlewareStack = new MiddlewareStack();
         }
-        var jwt = this.localStorage.getJWT();
+        if (!this._IDMap) {
+            this._IDMap = new IDMap();
+        }
+        var jwt = this.credentialStorage.getJWT();
         this.setJWT(jwt);
     };
     JSORMBase.isSubclassOf = function (maybeSuper) {
@@ -107,6 +114,16 @@ var JSORMBase = /** @class */ (function () {
                 }
                 current = current.parentClass;
             }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(JSORMBase, "store", {
+        get: function () {
+            if (this.baseClass === undefined) {
+                throw new Error("No base class for " + this.name);
+            }
+            return this.baseClass._IDMap;
         },
         enumerable: true,
         configurable: true
@@ -222,12 +239,59 @@ var JSORMBase = /** @class */ (function () {
         },
         set: function (val) {
             this._persisted = val;
-            this._originalAttributes = cloneDeep(this._attributes);
-            this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
+            if (!!val)
+                this.reset();
         },
         enumerable: true,
         configurable: true
     });
+    JSORMBase.prototype.onStoreChange = function () {
+        var _this = this;
+        if (this._onStoreChange)
+            return this._onStoreChange;
+        this._onStoreChange = function (_event, attrs) {
+            Object.keys(attrs).forEach(function (k) {
+                var self = _this;
+                if (self[k] !== attrs[k])
+                    self[k] = attrs[k];
+            });
+        };
+        return this._onStoreChange;
+    };
+    JSORMBase.prototype.unlisten = function () {
+        var _this = this;
+        if (!this.klass.sync)
+            return;
+        if (this.storeKey) {
+            EventBus.removeEventListener(this.storeKey, this.onStoreChange());
+        }
+        Object.keys(this.relationships).forEach(function (k) {
+            var related = _this.relationships[k];
+            if (related) {
+                if (Array.isArray(related)) {
+                    related.forEach(function (r) { return r.unlisten(); });
+                }
+                else {
+                    related.unlisten();
+                }
+            }
+        });
+    };
+    JSORMBase.prototype.listen = function () {
+        if (!this.klass.sync)
+            return;
+        if (!this._onStoreChange) {
+            EventBus.addEventListener(this.storeKey, this.onStoreChange());
+        }
+    };
+    JSORMBase.prototype.reset = function () {
+        if (this.klass.sync) {
+            this.klass.store.updateOrCreate(this);
+            this.listen();
+        }
+        this._originalAttributes = cloneDeep(this._attributes);
+        this._originalRelationships = this.relationshipResourceIdentifiers(Object.keys(this.relationships));
+    };
     Object.defineProperty(JSORMBase.prototype, "isMarkedForDestruction", {
         get: function () {
             return this._markedForDestruction;
@@ -255,6 +319,13 @@ var JSORMBase = /** @class */ (function () {
         set: function (attrs) {
             this._attributes = {};
             this.assignAttributes(attrs);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(JSORMBase.prototype, "stored", {
+        get: function () {
+            return this.klass.store.find(this);
         },
         enumerable: true,
         configurable: true
@@ -462,7 +533,7 @@ var JSORMBase = /** @class */ (function () {
             throw new Error("Cannot set JWT on " + this.name + ": No base class present.");
         }
         this.baseClass.jwt = token || undefined;
-        this.localStorage.setJWT(token);
+        this.credentialStorage.setJWT(token);
     };
     JSORMBase.getJWT = function () {
         var owner = this.baseClass;
@@ -480,7 +551,7 @@ var JSORMBase = /** @class */ (function () {
     JSORMBase.prototype.destroy = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var url, verb, request, response, err_1;
+            var url, verb, request, response, err_1, base;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -497,9 +568,12 @@ var JSORMBase = /** @class */ (function () {
                     case 3:
                         err_1 = _a.sent();
                         throw err_1;
-                    case 4: return [4 /*yield*/, this._handleResponse(response, function () {
-                            _this.isPersisted = false;
-                        })];
+                    case 4:
+                        base = this.klass.baseClass;
+                        base.store.destroy(this);
+                        return [4 /*yield*/, this._handleResponse(response, function () {
+                                _this.isPersisted = false;
+                            })];
                     case 5: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -576,9 +650,10 @@ var JSORMBase = /** @class */ (function () {
     JSORMBase.camelizeKeys = true;
     JSORMBase.strictAttributes = false;
     JSORMBase.logger = defaultLogger;
+    JSORMBase.sync = false;
     JSORMBase.attributeList = {};
     JSORMBase.currentClass = JSORMBase;
-    JSORMBase.jwtLocalStorage = "jwt";
+    JSORMBase.jwtStorage = "jwt";
     /*
      *
      * This is to allow for sane type checking in collaboration with the
