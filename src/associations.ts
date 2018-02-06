@@ -97,9 +97,14 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]>
       return context.relationships[this.name]
     }
 
-    context.relationships[this.name] = gotten.filter((g) => {
-      return !wasDestroyed(g)
-    })
+    let index = gotten.length
+    while (index--) {
+      if (wasDestroyed(gotten[index])) {
+        let related = context.relationships[this.name] as JSORMBase[]
+        gotten.splice(index, 1)
+      }
+    }
+
     return context.relationships[this.name]
   }
 
