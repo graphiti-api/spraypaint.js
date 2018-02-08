@@ -23,7 +23,7 @@ import {
   IncludeScope
 } from "./scope"
 import { JsonapiTypeRegistry } from "./jsonapi-type-registry"
-import { camelize } from "inflected"
+import { camelize, underscore, dasherize } from "inflected"
 import { ILogger, logger as defaultLogger } from "./logger"
 import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack"
 import { Omit } from "./util/omit"
@@ -39,6 +39,13 @@ import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
 
+export type KeyCaseValue = "dash" | "camel" | "snake"
+
+export interface KeyCase {
+  server: KeyCaseValue
+  client: KeyCaseValue
+}
+
 export interface ModelConfiguration {
   baseUrl: string
   apiNamespace: string
@@ -46,7 +53,7 @@ export interface ModelConfiguration {
   endpoint: string
   jwt: string
   jwtStorage: string | false
-  camelizeKeys: boolean
+  keyCase: KeyCase
   strictAttributes: boolean
   logger: ILogger
 }
@@ -128,7 +135,7 @@ export class JSORMBase {
   static endpoint: string
   static isBaseClass: boolean
   static jwt?: string
-  static camelizeKeys: boolean = true
+  static keyCase: KeyCase = { server: "snake", client: "camel" }
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
   static sync: boolean = false
@@ -344,7 +351,7 @@ export class JSORMBase {
   id?: string
   temp_id?: string
   stale: boolean = false
-  storeKey: string = ''
+  storeKey: string = ""
 
   @nonenumerable relationships: Record<string, JSORMBase | JSORMBase[]> = {}
   @nonenumerable klass: typeof JSORMBase
@@ -425,10 +432,10 @@ export class JSORMBase {
   }
 
   _onStoreChange: Function
-  private onStoreChange() : Function {
+  private onStoreChange(): Function {
     if (this._onStoreChange) return this._onStoreChange
-    this._onStoreChange =  (_event: any, attrs: any) => {
-      Object.keys(attrs).forEach((k) => {
+    this._onStoreChange = (_event: any, attrs: any) => {
+      Object.keys(attrs).forEach(k => {
         let self = this as any
         if (self[k] !== attrs[k]) self[k] = attrs[k]
       })
@@ -436,18 +443,18 @@ export class JSORMBase {
     return this._onStoreChange
   }
 
-  unlisten() : void {
+  unlisten(): void {
     if (!this.klass.sync) return
     if (this.storeKey) {
       EventBus.removeEventListener(this.storeKey, this.onStoreChange())
     }
 
-    Object.keys(this.relationships).forEach((k) => {
+    Object.keys(this.relationships).forEach(k => {
       let related = this.relationships[k]
 
       if (related) {
         if (Array.isArray(related)) {
-          related.forEach((r) => r.unlisten() )
+          related.forEach(r => r.unlisten())
         } else {
           related.unlisten()
         }
@@ -455,14 +462,15 @@ export class JSORMBase {
     })
   }
 
-  listen() : void {
+  listen(): void {
     if (!this.klass.sync) return
-    if (!this._onStoreChange) { // not already registered
+    if (!this._onStoreChange) {
+      // not already registered
       EventBus.addEventListener(this.storeKey, this.onStoreChange())
     }
   }
 
-  reset() : void {
+  reset(): void {
     if (this.klass.sync) {
       this.klass.store.updateOrCreate(this)
       this.listen()
@@ -527,9 +535,7 @@ export class JSORMBase {
       if (attrs.hasOwnProperty(key)) {
         let attributeName = key
 
-        if (this.klass.camelizeKeys) {
-          attributeName = camelize(key, false)
-        }
+        attributeName = this.klass.deserializeKey(key)
 
         if (key === "id" || this.klass.attributeList[attributeName]) {
           ;(<any>this)[attributeName] = attrs[key]
@@ -752,6 +758,34 @@ export class JSORMBase {
     )
 
     return this.baseClass
+  }
+
+  static serializeKey(key: string): string {
+    switch (this.keyCase.server) {
+      case "dash": {
+        return dasherize(underscore(key))
+      }
+      case "snake": {
+        return underscore(key)
+      }
+      case "camel": {
+        return camelize(underscore(key), false)
+      }
+    }
+  }
+
+  static deserializeKey(key: string): string {
+    switch (this.keyCase.client) {
+      case "dash": {
+        return dasherize(underscore(key))
+      }
+      case "snake": {
+        return underscore(key)
+      }
+      case "camel": {
+        return camelize(underscore(key), false)
+      }
+    }
   }
 
   async destroy(): Promise<boolean> {

@@ -1,6 +1,5 @@
 import { JsonapiTypeRegistry } from "../jsonapi-type-registry"
 import { JSORMBase } from "../model"
-import { camelize } from "inflected"
 import {
   IncludeDirective,
   IncludeScopeHash,
@@ -236,11 +235,7 @@ class Deserializer {
   ) {
     for (const key in relationships) {
       if (relationships.hasOwnProperty(key)) {
-        let relationName = key
-
-        if (instance.klass.camelizeKeys) {
-          relationName = camelize(key, false)
-        }
+        let relationName = instance.klass.deserializeKey(key)
 
         if (instance.klass.attributeList[relationName]) {
           const relationData = relationships[key].data

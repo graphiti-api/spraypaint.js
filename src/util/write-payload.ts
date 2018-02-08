@@ -2,7 +2,6 @@ import { JSORMBase, ModelRecord } from "../model"
 import { IncludeDirective, IncludeScopeHash } from "./include-directive"
 import { IncludeScope } from "../scope"
 import { tempId } from "./temp-id"
-import { underscore } from "inflected"
 import {
   JsonapiRequestDoc,
   JsonapiResourceIdentifier,
@@ -33,10 +32,8 @@ export class WritePayload<T extends JSORMBase> {
     const attrs: ModelRecord<T> = {}
 
     this._eachAttribute((key, value) => {
-      const snakeKey = underscore(key)
-
       if (!this.model.isPersisted || this.model.changes()[key]) {
-        attrs[snakeKey] = value
+        attrs[this.model.klass.serializeKey(key)] = value
       }
     })
 
@@ -88,8 +85,8 @@ export class WritePayload<T extends JSORMBase> {
       const nested = (<any>this.includeDirective)[key]
 
       let idOnly = false
-      if (key.indexOf('.') > -1) {
-        key = key.split('.')[0]
+      if (key.indexOf(".") > -1) {
+        key = key.split(".")[0]
         idOnly = true
       }
 
@@ -101,8 +98,8 @@ export class WritePayload<T extends JSORMBase> {
           relatedModels.forEach(relatedModel => {
             if (
               idOnly ||
-                this.model.hasDirtyRelation(key, relatedModel) ||
-                relatedModel.isDirty(nested)
+              this.model.hasDirtyRelation(key, relatedModel) ||
+              relatedModel.isDirty(nested)
             ) {
               data.push(this._processRelatedModel(relatedModel, nested, idOnly))
             }
@@ -115,15 +112,15 @@ export class WritePayload<T extends JSORMBase> {
           // (maybe the "department" is not dirty, but the employee changed departments
           if (
             idOnly ||
-              this.model.hasDirtyRelation(key, relatedModels) ||
-              relatedModels.isDirty(nested)
+            this.model.hasDirtyRelation(key, relatedModels) ||
+            relatedModels.isDirty(nested)
           ) {
             data = this._processRelatedModel(relatedModels, nested, idOnly)
           }
         }
 
         if (data) {
-          _relationships[underscore(key)] = { data }
+          _relationships[this.model.klass.serializeKey(key)] = { data }
         }
       }
     })
@@ -169,7 +166,11 @@ export class WritePayload<T extends JSORMBase> {
 
   // private
 
-  private _processRelatedModel(model: T, nested: IncludeScopeHash, idOnly: boolean) {
+  private _processRelatedModel(
+    model: T,
+    nested: IncludeScopeHash,
+    idOnly: boolean
+  ) {
     model.clearErrors()
 
     if (!model.isPersisted) {

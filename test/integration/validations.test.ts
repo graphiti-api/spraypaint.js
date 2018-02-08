@@ -23,7 +23,7 @@ const resetMocks = () => {
             status: "422",
             title: "Validation Error",
             detail: "Last Name cannot be blank",
-            meta: { attribute: "last_name", message: "cannot be blank" }
+            meta: { attribute: "last-name", message: "cannot be blank" }
           },
           {
             code: "unprocessable_entity",
@@ -122,13 +122,13 @@ describe("validations", () => {
     })
   })
 
-  describe("when camelizeKeys is false", () => {
+  describe("when keyCase.to is snake", () => {
     beforeEach(() => {
-      instance.klass.camelizeKeys = false
+      instance.klass.keyCase.client = "snake"
     })
 
     afterEach(() => {
-      instance.klass.camelizeKeys = true
+      instance.klass.keyCase.client = "camel"
     })
 
     it("does not camelize the error keys", async () => {

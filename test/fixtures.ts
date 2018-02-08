@@ -30,10 +30,13 @@ export class PersonWithExtraAttr extends Person {
   extraThing: string
 }
 
-@Model({ camelizeKeys: false })
+@Model({ keyCase: { server: "snake", client: "snake" } })
 export class PersonWithoutCamelizedKeys extends Person {
   @Attr first_name: string
 }
+
+@Model({ keyCase: { server: "dash", client: "camel" } })
+export class PersonWithDasherizedKeys extends Person {}
 
 @Model({
   endpoint: "/v1/authors",
@@ -67,7 +70,7 @@ export const NonFictionAuthor = Author.extend({
   static: {
     endpoint: "/v1/non_fiction_authors",
     jsonapiType: "non_fiction_authors",
-    camelizeKeys: false
+    keyCase: { server: "snake", client: "snake" }
   },
 
   attrs: {

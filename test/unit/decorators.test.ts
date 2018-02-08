@@ -35,7 +35,8 @@ describe("Decorators", () => {
 
       it("preserves defaults for unspecified items", () => {
         expect(TestModel.baseUrl).to.eq("http://please-set-a-base-url.com")
-        expect(TestModel.camelizeKeys).to.be.true
+        expect(TestModel.keyCase.server).to.eq("snake")
+        expect(TestModel.keyCase.client).to.eq("camel")
       })
 
       it("correctly assigns options", () => {

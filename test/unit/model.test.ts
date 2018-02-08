@@ -447,7 +447,8 @@ describe("Model", () => {
 
         it("preserves defaults for unspecified items", () => {
           expect(MyModel.baseUrl).to.eq("http://please-set-a-base-url.com")
-          expect(MyModel.camelizeKeys).to.be.true
+          expect(MyModel.keyCase.server).to.eq("snake")
+          expect(MyModel.keyCase.client).to.eq("camel")
         })
 
         it("correctly assigns options", () => {
@@ -818,8 +819,8 @@ describe("Model", () => {
       })
     })
 
-    describe('when previously persisted, dirty, then persisted again', () => {
-      it('is no longer dirty', () => {
+    describe("when previously persisted, dirty, then persisted again", () => {
+      it("is no longer dirty", () => {
         const instance = new Author({ id: 1 })
         instance.firstName = "foo"
         instance.isPersisted = true
@@ -1176,8 +1177,8 @@ describe("Model", () => {
 
     beforeEach(() => {
       ApplicationRecord.sync = true
-      sinon.spy(EventBus, 'removeEventListener')
-      book = new Book({ id : 1 })
+      sinon.spy(EventBus, "removeEventListener")
+      book = new Book({ id: 1 })
       book.isPersisted = true
       author = new Author({ id: 1, books: [book] })
       author.isPersisted = true
@@ -1210,7 +1211,7 @@ describe("Model", () => {
 
     beforeEach(() => {
       ApplicationRecord.sync = true
-      sinon.spy(EventBus, 'addEventListener')
+      sinon.spy(EventBus, "addEventListener")
       author = new Author()
     })
 
