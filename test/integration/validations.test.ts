@@ -124,11 +124,11 @@ describe("validations", () => {
 
   describe("when keyCase.to is snake", () => {
     beforeEach(() => {
-      instance.klass.keyCase.to = "snake"
+      instance.klass.keyCase.client = "snake"
     })
 
     afterEach(() => {
-      instance.klass.keyCase.to = "camel"
+      instance.klass.keyCase.client = "camel"
     })
 
     it("does not camelize the error keys", async () => {
