@@ -8,13 +8,13 @@ after(() => {
 
 let instance: Person
 let payloads: JsonapiRequestDoc[]
-let putPayloads: JsonapiRequestDoc[]
+let patchPayloads: JsonapiRequestDoc[]
 let deletePayloads: object[]
 let serverResponse: JsonapiResponseDoc
 
 beforeEach(() => {
   payloads = []
-  putPayloads = []
+  patchPayloads = []
   deletePayloads = []
   instance = new Person()
   serverResponse = {
@@ -34,8 +34,8 @@ const resetMocks = () => {
     return serverResponse
   })
 
-  fetchMock.put("http://example.com/api/v1/people/1", (url, payload: any) => {
-    putPayloads.push(JSON.parse(payload.body))
+  fetchMock.patch("http://example.com/api/v1/people/1", (url, payload: any) => {
+    patchPayloads.push(JSON.parse(payload.body))
     return serverResponse
   })
 
@@ -75,7 +75,7 @@ describe("Model persistence", () => {
         instance.firstName = "Joe"
         await instance.save()
 
-        expect(putPayloads[0]).to.deep.equal({
+        expect(patchPayloads[0]).to.deep.equal({
           data: {
             id: "1",
             type: "people",
@@ -104,7 +104,7 @@ describe("Model persistence", () => {
         it("does not send attributes to the server", async () => {
           await instance.save()
 
-          expect(putPayloads[0]).to.deep.equal({
+          expect(patchPayloads[0]).to.deep.equal({
             data: {
               id: "1",
               type: "people"
@@ -274,14 +274,13 @@ describe("Model persistence", () => {
         resetMocks()
       })
 
-      it('does not blow up', async () => {
+      it("does not blow up", async () => {
         expect(instance.isPersisted).to.eq(true)
         await instance.destroy()
 
         expect(instance.isPersisted).to.eq(false)
       })
     })
-
 
     describe("when the server returns 202 accepted", () => {
       beforeEach(() => {
@@ -297,7 +296,7 @@ describe("Model persistence", () => {
         resetMocks()
       })
 
-      it('does not blow up', async () => {
+      it("does not blow up", async () => {
         expect(instance.isPersisted).to.eq(true)
         await instance.destroy()
 

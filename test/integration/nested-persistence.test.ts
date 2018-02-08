@@ -5,7 +5,7 @@ import { JsonapiRequestDoc, JsonapiResponseDoc } from "../../src/index"
 
 let instance: Author
 let payloads: JsonapiRequestDoc[]
-let putPayloads: JsonapiRequestDoc[]
+let patchPayloads: JsonapiRequestDoc[]
 let deletePayloads: object[]
 let serverResponse: JsonapiResponseDoc
 
@@ -19,10 +19,13 @@ const resetMocks = () => {
     return serverResponse
   })
 
-  fetchMock.put("http://example.com/api/v1/authors/1", (url, payload: any) => {
-    putPayloads.push(JSON.parse(payload.body))
-    return serverResponse
-  })
+  fetchMock.patch(
+    "http://example.com/api/v1/authors/1",
+    (url, payload: any) => {
+      patchPayloads.push(JSON.parse(payload.body))
+      return serverResponse
+    }
+  )
 
   fetchMock.delete(
     "http://example.com/api/v1/authors/1",
@@ -155,7 +158,7 @@ const seedPersistedData = () => {
 describe("nested persistence", () => {
   beforeEach(() => {
     payloads = []
-    putPayloads = []
+    patchPayloads = []
     deletePayloads = []
     instance = new Author({ firstName: "Stephen" })
     serverResponse = {
@@ -290,7 +293,7 @@ describe("nested persistence", () => {
     it("sends the correct payload", async () => {
       await instance.save({ with: { books: "genre" } })
 
-      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload("update"))
+      expect(patchPayloads[0]).to.deep.equal(expectedUpdatePayload("update"))
     })
   })
 
@@ -304,7 +307,7 @@ describe("nested persistence", () => {
       instance.books[0].genre.isMarkedForDestruction = true
       await instance.save({ with: { books: "genre" } })
 
-      expect(putPayloads[0]).to.deep.equal(expectedUpdatePayload("destroy"))
+      expect(patchPayloads[0]).to.deep.equal(expectedUpdatePayload("destroy"))
     })
 
     it("removes the associated has_many data", async () => {
@@ -332,7 +335,7 @@ describe("nested persistence", () => {
       instance.books[0].genre.isMarkedForDisassociation = true
       await instance.save({ with: { books: "genre" } })
 
-      expect(putPayloads[0]).to.deep.equal(
+      expect(patchPayloads[0]).to.deep.equal(
         expectedUpdatePayload("disassociate")
       )
     })
@@ -352,7 +355,7 @@ describe("nested persistence", () => {
     })
   })
 
-  describe('when sideposting only id', () => {
+  describe("when sideposting only id", () => {
     beforeEach(() => {
       let genre = new Genre({ id: 1 })
       genre.isPersisted = true
@@ -362,8 +365,8 @@ describe("nested persistence", () => {
       instance.books = [book]
     })
 
-    describe('one level', () => {
-      it('adds only resource identifier to the payload', async () => {
+    describe("one level", () => {
+      it("adds only resource identifier to the payload", async () => {
         await instance.save({ with: ["books.id"] })
         expect((<any>payloads)[0].data.relationships).to.deep.eq({
           books: {
@@ -385,8 +388,8 @@ describe("nested persistence", () => {
       })
     })
 
-    describe('2 levels only id', () => {
-      it('sends only relationships, no attributes', async () => {
+    describe("2 levels only id", () => {
+      it("sends only relationships, no attributes", async () => {
         await instance.save({ with: { ["books.id"]: "genre.id" } })
 
         expect((<any>payloads)[0].data.relationships).to.deep.eq({
@@ -422,7 +425,7 @@ describe("nested persistence", () => {
         ])
       })
 
-      describe('when relationships are not dirty', () => {
+      describe("when relationships are not dirty", () => {
         beforeEach(() => {
           instance.books[0].isPersisted = true
           instance.books[0].genre.isPersisted = true
@@ -453,8 +456,8 @@ describe("nested persistence", () => {
       })
     })
 
-    describe('one level id, then full payload', () => {
-      it('should only send relationships in the payload', async () => {
+    describe("one level id, then full payload", () => {
+      it("should only send relationships in the payload", async () => {
         await instance.save({ with: { ["books.id"]: "genre" } })
 
         expect((<any>payloads)[0].included).to.deep.eq([

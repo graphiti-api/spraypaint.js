@@ -34,12 +34,12 @@ export class Request {
     return this._fetchWithLogging(url, options)
   }
 
-  put(
+  patch(
     url: string,
     payload: JsonapiRequestDoc,
     options: RequestInit
   ): Promise<any> {
-    options.method = "PUT"
+    options.method = "PATCH"
     options.body = JSON.stringify(payload)
 
     return this._fetchWithLogging(url, options)
@@ -98,8 +98,12 @@ export class Request {
     return response
   }
 
-  private async _handleResponse(response: Response, requestOptions: RequestInit) {
-    let wasDelete = requestOptions.method === 'DELETE' &&
+  private async _handleResponse(
+    response: Response,
+    requestOptions: RequestInit
+  ) {
+    let wasDelete =
+      requestOptions.method === "DELETE" &&
       [202, 204, 200].indexOf(response.status) > -1
     if (wasDelete) return
 
