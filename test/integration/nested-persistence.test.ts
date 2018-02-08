@@ -318,7 +318,7 @@ describe("nested persistence", () => {
       instance.books[0].genre.isMarkedForDestruction = true
       await instance.save({ with: { books: "genre" } })
 
-      expect(instance.books[0].genre).to.eq(null)
+      expect(instance.books[0].genre).to.eq(undefined)
     })
   })
 

@@ -10,7 +10,7 @@ import {
   NullStorageBackend,
   StorageBackend
 } from "./credential-storage"
-
+import { IDMap } from "./id-map"
 import { deserialize, deserializeInstance } from "./util/deserialize"
 import { Attribute } from "./attribute"
 import DirtyChecker from "./util/dirty-check"
@@ -26,8 +26,8 @@ import { JsonapiTypeRegistry } from "./jsonapi-type-registry"
 import { camelize, underscore, dasherize } from "inflected"
 import { ILogger, logger as defaultLogger } from "./logger"
 import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack"
-
 import { Omit } from "./util/omit"
+import { EventBus } from "./event-bus"
 
 import {
   JsonapiResource,
@@ -136,6 +136,7 @@ export class JSORMBase {
   static keyCase: KeyCase = { from: "snake", to: "camel" }
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
+  static sync: boolean = false
 
   static attributeList: Record<string, Attribute> = {}
   static extendOptions: any
@@ -146,6 +147,7 @@ export class JSORMBase {
   static jwtStorage: string | false = "jwt"
 
   private static _typeRegistry: JsonapiTypeRegistry
+  private static _IDMap: IDMap
   private static _middlewareStack: MiddlewareStack
   private static _credentialStorageBackend?: StorageBackend
   private static _credentialStorage?: CredentialStorage
@@ -219,6 +221,10 @@ export class JSORMBase {
       this._middlewareStack = new MiddlewareStack()
     }
 
+    if (!this._IDMap) {
+      this._IDMap = new IDMap()
+    }
+
     const jwt = this.credentialStorage.getJWT()
     this.setJWT(jwt)
   }
@@ -247,6 +253,14 @@ export class JSORMBase {
 
       current = current.parentClass
     }
+  }
+
+  static get store(): IDMap {
+    if (this.baseClass === undefined) {
+      throw new Error(`No base class for ${this.name}`)
+    }
+
+    return this.baseClass._IDMap
   }
 
   static get typeRegistry(): JsonapiTypeRegistry {
@@ -334,6 +348,8 @@ export class JSORMBase {
 
   id?: string
   temp_id?: string
+  stale: boolean = false
+  storeKey: string = ''
 
   @nonenumerable relationships: Record<string, JSORMBase | JSORMBase[]> = {}
   @nonenumerable klass: typeof JSORMBase
@@ -410,10 +426,53 @@ export class JSORMBase {
   }
   set isPersisted(val: boolean) {
     this._persisted = val
-    this.reset()
+    if (!!val) this.reset()
   }
 
-  reset(): void {
+  _onStoreChange: Function
+  private onStoreChange() : Function {
+    if (this._onStoreChange) return this._onStoreChange
+    this._onStoreChange =  (_event: any, attrs: any) => {
+      Object.keys(attrs).forEach((k) => {
+        let self = this as any
+        if (self[k] !== attrs[k]) self[k] = attrs[k]
+      })
+    }
+    return this._onStoreChange
+  }
+
+  unlisten() : void {
+    if (!this.klass.sync) return
+    if (this.storeKey) {
+      EventBus.removeEventListener(this.storeKey, this.onStoreChange())
+    }
+
+    Object.keys(this.relationships).forEach((k) => {
+      let related = this.relationships[k]
+
+      if (related) {
+        if (Array.isArray(related)) {
+          related.forEach((r) => r.unlisten() )
+        } else {
+          related.unlisten()
+        }
+      }
+    })
+  }
+
+  listen() : void {
+    if (!this.klass.sync) return
+    if (!this._onStoreChange) { // not already registered
+      EventBus.addEventListener(this.storeKey, this.onStoreChange())
+    }
+  }
+
+
+  reset() : void {
+    if (this.klass.sync) {
+      this.klass.store.updateOrCreate(this)
+      this.listen()
+    }
     this._originalAttributes = cloneDeep(this._attributes)
     this._originalRelationships = this.relationshipResourceIdentifiers(
       Object.keys(this.relationships)
@@ -436,6 +495,10 @@ export class JSORMBase {
 
   get attributes(): Record<string, any> {
     return this._attributes
+  }
+
+  get stored() {
+    return this.klass.store.find(this)
   }
 
   set attributes(attrs: Record<string, any>) {
@@ -734,6 +797,9 @@ export class JSORMBase {
     } catch (err) {
       throw err
     }
+
+    let base = this.klass.baseClass as typeof JSORMBase
+    base.store.destroy(this)
 
     return await this._handleResponse(response, () => {
       this.isPersisted = false

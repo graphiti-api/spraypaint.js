@@ -90,6 +90,7 @@ var Deserializer = /** @class */ (function () {
         this._removeDeletions(instance, includeDirective);
         // came from server, must be persisted
         instance.isPersisted = true;
+        instance.reset();
         return instance;
     };
     Deserializer.prototype._removeDeletions = function (model, includeDirective) {
@@ -100,8 +101,10 @@ var Deserializer = /** @class */ (function () {
             if (relatedObjects) {
                 if (Array.isArray(relatedObjects)) {
                     relatedObjects.forEach(function (relatedObject, index) {
-                        if (relatedObject.isMarkedForDestruction ||
-                            relatedObject.isMarkedForDisassociation) {
+                        if (relatedObject.isMarkedForDestruction) {
+                            modelIdx.klass.store.destroy(relatedObject);
+                        }
+                        else if (relatedObject.isMarkedForDisassociation) {
                             modelIdx[key].splice(index, 1);
                         }
                         else {
@@ -111,8 +114,10 @@ var Deserializer = /** @class */ (function () {
                 }
                 else {
                     var relatedObject = relatedObjects;
-                    if (relatedObject.isMarkedForDestruction ||
-                        relatedObject.isMarkedForDisassociation) {
+                    if (relatedObject.isMarkedForDestruction) {
+                        modelIdx.klass.store.destroy(relatedObject);
+                    }
+                    else if (relatedObject.isMarkedForDisassociation) {
                         modelIdx[key] = null;
                     }
                     else {

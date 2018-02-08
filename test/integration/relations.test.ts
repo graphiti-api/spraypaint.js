@@ -73,10 +73,7 @@ describe("Relations", () => {
     })
 
     it("contains the right records for each relationship", async () => {
-      const data = await resultData(
-        Author.includes(["books", "multi_words"]).find(1)
-      )
-
+      const { data } = await Author.includes(["books", "multi_words"]).find(1)
       expect(data.books[0].title).to.eql("The Shining")
       expect(data.multiWords[0].id).to.eql("multi_word1")
     })
