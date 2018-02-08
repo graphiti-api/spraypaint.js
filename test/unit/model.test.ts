@@ -446,7 +446,8 @@ describe("Model", () => {
 
         it("preserves defaults for unspecified items", () => {
           expect(MyModel.baseUrl).to.eq("http://please-set-a-base-url.com")
-          expect(MyModel.camelizeKeys).to.be.true
+          expect(MyModel.keyCase.from).to.eq("snake")
+          expect(MyModel.keyCase.to).to.eq("camel")
         })
 
         it("correctly assigns options", () => {
@@ -817,8 +818,8 @@ describe("Model", () => {
       })
     })
 
-    describe('when previously persisted, dirty, then persisted again', () => {
-      it('is no longer dirty', () => {
+    describe("when previously persisted, dirty, then persisted again", () => {
+      it("is no longer dirty", () => {
         const instance = new Author({ id: 1 })
         instance.firstName = "foo"
         instance.isPersisted = true

@@ -39,6 +39,11 @@ import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
 
+export interface KeyCase {
+  from: "dash" | "camel" | "snake"
+  to: "dash" | "camel" | "snake"
+}
+
 export interface ModelConfiguration {
   baseUrl: string
   apiNamespace: string
@@ -46,8 +51,7 @@ export interface ModelConfiguration {
   endpoint: string
   jwt: string
   jwtStorage: string | false
-  camelizeKeys: boolean
-  letterCase: string
+  keyCase: KeyCase
   strictAttributes: boolean
   logger: ILogger
 }
@@ -129,8 +133,7 @@ export class JSORMBase {
   static endpoint: string
   static isBaseClass: boolean
   static jwt?: string
-  static camelizeKeys: boolean = true
-  static letterCase: string = "underscore"
+  static keyCase: KeyCase = { from: "snake", to: "camel" }
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
 
@@ -467,9 +470,7 @@ export class JSORMBase {
       if (attrs.hasOwnProperty(key)) {
         let attributeName = key
 
-        if (this.klass.camelizeKeys) {
-          attributeName = this.klass.deserializeKey(key)
-        }
+        attributeName = this.klass.deserializeKey(key)
 
         if (key === "id" || this.klass.attributeList[attributeName]) {
           ;(<any>this)[attributeName] = attrs[key]
@@ -695,14 +696,31 @@ export class JSORMBase {
   }
 
   static serializeKey(key: string): string {
-    if (this.letterCase == "dasherized") {
-      return dasherize(underscore(key))
+    switch (this.keyCase.from) {
+      case "dash": {
+        return dasherize(underscore(key))
+      }
+      case "snake": {
+        return underscore(key)
+      }
+      case "camel": {
+        return camelize(underscore(key), false)
+      }
     }
-    return underscore(key)
   }
 
   static deserializeKey(key: string): string {
-    return camelize(underscore(key), false)
+    switch (this.keyCase.to) {
+      case "dash": {
+        return dasherize(underscore(key))
+      }
+      case "snake": {
+        return underscore(key)
+      }
+      case "camel": {
+        return camelize(underscore(key), false)
+      }
+    }
   }
 
   async destroy(): Promise<boolean> {

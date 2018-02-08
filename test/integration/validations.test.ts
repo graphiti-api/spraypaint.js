@@ -122,13 +122,13 @@ describe("validations", () => {
     })
   })
 
-  describe("when camelizeKeys is false", () => {
+  describe("when keyCase.to is snake", () => {
     beforeEach(() => {
-      instance.klass.camelizeKeys = false
+      instance.klass.keyCase.to = "snake"
     })
 
     afterEach(() => {
-      instance.klass.camelizeKeys = true
+      instance.klass.keyCase.to = "camel"
     })
 
     it("does not camelize the error keys", async () => {
@@ -136,7 +136,7 @@ describe("validations", () => {
 
       expect(instance.errors).to.deep.equal({
         first_name: "cannot be blank",
-        "last-name": "cannot be blank"
+        last_name: "cannot be blank"
       })
     })
   })

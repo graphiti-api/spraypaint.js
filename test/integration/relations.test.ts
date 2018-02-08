@@ -100,7 +100,7 @@ describe("Relations", () => {
     })
   })
 
-  describe("when camelizeKeys is false", () => {
+  describe("when keyCase is snake_case", () => {
     beforeEach(() => {
       fetchMock.get(
         "http://example.com/api/v1/non_fiction_authors/1?include=books,multi_words",
@@ -110,7 +110,7 @@ describe("Relations", () => {
 
     afterEach(fetchMock.restore)
 
-    it("Doesn't convert relationships to snake_case if camelization is off", async () => {
+    it("Doesn't convert relationships to snake_case if keyCase.to is snake is off", async () => {
       const data = await resultData(
         NonFictionAuthor.includes(["books", "multi_words"]).find(1)
       )

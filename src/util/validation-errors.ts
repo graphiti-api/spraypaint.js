@@ -40,11 +40,7 @@ export class ValidationErrors {
     errorsAccumulator: Record<string, string>,
     meta: JsonapiErrorMeta
   ) {
-    let attribute = meta.attribute
-
-    if (this.model.klass.camelizeKeys) {
-      attribute = this.model.klass.deserializeKey(attribute)
-    }
+    let attribute = this.model.klass.deserializeKey(meta.attribute)
 
     errorsAccumulator[attribute] = meta.message
   }

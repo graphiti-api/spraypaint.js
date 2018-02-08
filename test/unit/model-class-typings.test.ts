@@ -44,7 +44,7 @@ describe("Model Class static attributes typings", () => {
           const endpoint: string = RootClass.endpoint
           const jwt: string | undefined = RootClass.jwt
           const jwtLocalStorage: string | false = RootClass.jwtLocalStorage
-          const camelizeKeys: boolean = RootClass.camelizeKeys
+          const keyCase: KeyCase = RootClass.keyCase
           const strictAttributes: boolean = RootClass.strictAttributes
         })
       })
