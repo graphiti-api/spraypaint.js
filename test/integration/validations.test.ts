@@ -154,6 +154,19 @@ describe("validations", () => {
     expect(instance.errors).to.deep.eq({})
   })
 
+  it("clears errors via the public setter", async () => {
+    fetchMock.restore()
+    fetchMock.mock({
+      matcher: "*",
+      response: { data: { id: "1", type: "employees" } }
+    })
+    let spy = (<any>sinon.spy)(instance, "errors", ["set"])
+
+    await instance.save()
+
+    expect(spy.set).to.have.been.calledOnce
+  })
+
   it("instantiates a new error object instance after save", async () => {
     const originalErrors = (instance.errors = { foo: "bar" })
     const result = instance.save({ with: { books: "genre" } })

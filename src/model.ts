@@ -588,7 +588,7 @@ export class JSORMBase {
   }
 
   clearErrors() {
-    this._errors = {}
+    this.errors = {}
   }
 
   isDirty(relationships?: IncludeScope): boolean {
@@ -819,6 +819,8 @@ export class JSORMBase {
       url = this.klass.url(this.id)
       verb = "patch"
     }
+
+    this.clearErrors()
 
     const json = payload.asJSON()
 
