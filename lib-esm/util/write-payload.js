@@ -1,6 +1,5 @@
 import { IncludeDirective } from "./include-directive";
 import { tempId } from "./temp-id";
-import { underscore } from "inflected";
 var WritePayload = /** @class */ (function () {
     function WritePayload(model, relationships, idOnly) {
         if (idOnly === void 0) { idOnly = false; }
@@ -19,9 +18,8 @@ var WritePayload = /** @class */ (function () {
         var _this = this;
         var attrs = {};
         this._eachAttribute(function (key, value) {
-            var snakeKey = underscore(key);
             if (!_this.model.isPersisted || _this.model.changes()[key]) {
-                attrs[snakeKey] = value;
+                attrs[_this.model.klass.serializeKey(key)] = value;
             }
         });
         return attrs;
@@ -67,8 +65,8 @@ var WritePayload = /** @class */ (function () {
         Object.keys(this.includeDirective).forEach(function (key) {
             var nested = _this.includeDirective[key];
             var idOnly = false;
-            if (key.indexOf('.') > -1) {
-                key = key.split('.')[0];
+            if (key.indexOf(".") > -1) {
+                key = key.split(".")[0];
                 idOnly = true;
             }
             var data;
@@ -97,7 +95,7 @@ var WritePayload = /** @class */ (function () {
                     }
                 }
                 if (data) {
-                    _relationships[underscore(key)] = { data: data };
+                    _relationships[_this.model.klass.serializeKey(key)] = { data: data };
                 }
             }
         });
@@ -107,7 +105,6 @@ var WritePayload = /** @class */ (function () {
         var data = {
             type: this.jsonapiType
         };
-        this.model.clearErrors();
         if (this.model.id) {
             data.id = this.model.id;
         }

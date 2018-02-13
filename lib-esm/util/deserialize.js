@@ -1,4 +1,3 @@
-import { camelize } from "inflected";
 var deserialize = function (registry, datum, payload) {
     var deserializer = new Deserializer(registry, payload);
     return deserializer.deserialize(datum);
@@ -156,10 +155,7 @@ var Deserializer = /** @class */ (function () {
     Deserializer.prototype._iterateValidRelationships = function (instance, relationships, callback) {
         for (var key in relationships) {
             if (relationships.hasOwnProperty(key)) {
-                var relationName = key;
-                if (instance.klass.camelizeKeys) {
-                    relationName = camelize(key, false);
-                }
+                var relationName = instance.klass.deserializeKey(key);
                 if (instance.klass.attributeList[relationName]) {
                     var relationData = relationships[key].data;
                     if (!relationData) {

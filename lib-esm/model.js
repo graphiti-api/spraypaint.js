@@ -10,7 +10,7 @@ import { deserialize, deserializeInstance } from "./util/deserialize";
 import DirtyChecker from "./util/dirty-check";
 import { Scope } from "./scope";
 import { JsonapiTypeRegistry } from "./jsonapi-type-registry";
-import { camelize } from "inflected";
+import { camelize, underscore, dasherize } from "inflected";
 import { logger as defaultLogger } from "./logger";
 import { MiddlewareStack } from "./middleware-stack";
 import { EventBus } from "./event-bus";
@@ -33,7 +33,7 @@ export var applyModelConfig = function (ModelClass, config) {
 var JSORMBase = /** @class */ (function () {
     function JSORMBase(attrs) {
         this.stale = false;
-        this.storeKey = '';
+        this.storeKey = "";
         this.relationships = {};
         this._persisted = false;
         this._markedForDestruction = false;
@@ -250,11 +250,18 @@ var JSORMBase = /** @class */ (function () {
         if (this._onStoreChange)
             return this._onStoreChange;
         this._onStoreChange = function (_event, attrs) {
+            var diff = {};
             Object.keys(attrs).forEach(function (k) {
                 var self = _this;
-                if (self[k] !== attrs[k])
+                if (self[k] !== attrs[k]) {
+                    diff[k] = [self[k], attrs[k]];
                     self[k] = attrs[k];
+                }
             });
+            var hasDiff = Object.keys(diff).length > 0;
+            var hasAfterSync = typeof _this.afterSync !== "undefined";
+            if (hasDiff && hasAfterSync)
+                _this.afterSync(diff);
         };
         return this._onStoreChange;
     };
@@ -281,6 +288,7 @@ var JSORMBase = /** @class */ (function () {
         if (!this.klass.sync)
             return;
         if (!this._onStoreChange) {
+            // not already registered
             EventBus.addEventListener(this.storeKey, this.onStoreChange());
         }
     };
@@ -358,9 +366,7 @@ var JSORMBase = /** @class */ (function () {
         for (var key in attrs) {
             if (attrs.hasOwnProperty(key)) {
                 var attributeName = key;
-                if (this.klass.camelizeKeys) {
-                    attributeName = camelize(key, false);
-                }
+                attributeName = this.klass.deserializeKey(key);
                 if (key === "id" || this.klass.attributeList[attributeName]) {
                     ;
                     this[attributeName] = attrs[key];
@@ -412,7 +418,7 @@ var JSORMBase = /** @class */ (function () {
         configurable: true
     });
     JSORMBase.prototype.clearErrors = function () {
-        this._errors = {};
+        this.errors = {};
     };
     JSORMBase.prototype.isDirty = function (relationships) {
         var dc = new DirtyChecker(this);
@@ -548,6 +554,32 @@ var JSORMBase = /** @class */ (function () {
         this.logger.warn("JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead");
         return this.baseClass;
     };
+    JSORMBase.serializeKey = function (key) {
+        switch (this.keyCase.server) {
+            case "dash": {
+                return dasherize(underscore(key));
+            }
+            case "snake": {
+                return underscore(key);
+            }
+            case "camel": {
+                return camelize(underscore(key), false);
+            }
+        }
+    };
+    JSORMBase.deserializeKey = function (key) {
+        switch (this.keyCase.client) {
+            case "dash": {
+                return dasherize(underscore(key));
+            }
+            case "snake": {
+                return underscore(key);
+            }
+            case "camel": {
+                return camelize(underscore(key), false);
+            }
+        }
+    };
     JSORMBase.prototype.destroy = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var _this = this;
@@ -593,8 +625,9 @@ var JSORMBase = /** @class */ (function () {
                         payload = new WritePayload(this, options.with);
                         if (this.isPersisted) {
                             url = this.klass.url(this.id);
-                            verb = "put";
+                            verb = "patch";
                         }
+                        this.clearErrors();
                         json = payload.asJSON();
                         _a.label = 1;
                     case 1:
@@ -647,7 +680,7 @@ var JSORMBase = /** @class */ (function () {
     };
     JSORMBase.baseUrl = "http://please-set-a-base-url.com";
     JSORMBase.apiNamespace = "/";
-    JSORMBase.camelizeKeys = true;
+    JSORMBase.keyCase = { server: "snake", client: "camel" };
     JSORMBase.strictAttributes = false;
     JSORMBase.logger = defaultLogger;
     JSORMBase.sync = false;
@@ -672,6 +705,9 @@ var JSORMBase = /** @class */ (function () {
      *
      */
     JSORMBase.isJSORMModel = true;
+    tslib_1.__decorate([
+        nonenumerable
+    ], JSORMBase.prototype, "afterSync", void 0);
     tslib_1.__decorate([
         nonenumerable
     ], JSORMBase.prototype, "relationships", void 0);

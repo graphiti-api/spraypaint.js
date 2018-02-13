@@ -9,6 +9,11 @@ import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack";
 import { Omit } from "./util/omit";
 import { JsonapiResource, JsonapiResponseDoc, JsonapiResourceIdentifier } from "./jsonapi-spec";
 import { IncludeScopeHash } from "./util/include-directive";
+export declare type KeyCaseValue = "dash" | "camel" | "snake";
+export interface KeyCase {
+    server: KeyCaseValue;
+    client: KeyCaseValue;
+}
 export interface ModelConfiguration {
     baseUrl: string;
     apiNamespace: string;
@@ -16,7 +21,7 @@ export interface ModelConfiguration {
     endpoint: string;
     jwt: string;
     jwtStorage: string | false;
-    camelizeKeys: boolean;
+    keyCase: KeyCase;
     strictAttributes: boolean;
     logger: ILogger;
 }
@@ -57,7 +62,7 @@ export declare class JSORMBase {
     static endpoint: string;
     static isBaseClass: boolean;
     static jwt?: string;
-    static camelizeKeys: boolean;
+    static keyCase: KeyCase;
     static strictAttributes: boolean;
     static logger: ILogger;
     static sync: boolean;
@@ -89,6 +94,7 @@ export declare class JSORMBase {
     temp_id?: string;
     stale: boolean;
     storeKey: string;
+    afterSync: (diff: Record<string, any>) => any | undefined;
     relationships: Record<string, JSORMBase | JSORMBase[]>;
     klass: typeof JSORMBase;
     private _persisted;
@@ -148,6 +154,8 @@ export declare class JSORMBase {
     static getJWT(): string | undefined;
     static generateAuthHeader(jwt: string): string;
     static getJWTOwner(): typeof JSORMBase | undefined;
+    static serializeKey(key: string): string;
+    static deserializeKey(key: string): string;
     destroy(): Promise<boolean>;
     save(options?: SaveOptions): Promise<boolean>;
     private _handleResponse(response, callback);
