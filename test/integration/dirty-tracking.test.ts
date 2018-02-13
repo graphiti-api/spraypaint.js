@@ -23,17 +23,17 @@ describe("Dirty tracking", () => {
 
   beforeEach(() => {
     let url = "http://example.com/api/v1/authors"
-    fetchMock.post(url, responsePayload('John'))
-    fetchMock.put(`${url}/1`, responsePayload('Jake'))
+    fetchMock.post(url, responsePayload("John"))
+    fetchMock.patch(`${url}/1`, responsePayload("Jake"))
   })
 
   describe("when persisted, dirty, updated", () => {
     it("calls reset()", async () => {
-      let instance = new Author({ firstName: 'John' })
+      let instance = new Author({ firstName: "John" })
       await instance.save()
       expect(instance.isPersisted).to.eq(true)
       expect(instance.isDirty()).to.eq(false)
-      instance.firstName = 'Jake'
+      instance.firstName = "Jake"
       expect(instance.isDirty()).to.eq(true)
       let spy = sinon.spy()
       instance.reset = spy
