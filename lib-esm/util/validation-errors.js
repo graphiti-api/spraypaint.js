@@ -1,4 +1,3 @@
-import { camelize } from "inflected";
 var ValidationErrors = /** @class */ (function () {
     function ValidationErrors(model, payload) {
         this.model = model;
@@ -27,10 +26,7 @@ var ValidationErrors = /** @class */ (function () {
         this.model.errors = errorsAccumulator;
     };
     ValidationErrors.prototype._processResource = function (errorsAccumulator, meta) {
-        var attribute = meta.attribute;
-        if (this.model.klass.camelizeKeys) {
-            attribute = camelize(attribute, false);
-        }
+        var attribute = this.model.klass.deserializeKey(meta.attribute);
         errorsAccumulator[attribute] = meta.message;
     };
     ValidationErrors.prototype._processRelationship = function (model, meta) {

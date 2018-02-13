@@ -11,7 +11,7 @@ export declare class Request {
     constructor(middleware: MiddlewareStack, logger: ILogger);
     get(url: string, options: RequestInit): Promise<any>;
     post(url: string, payload: JsonapiRequestDoc, options: RequestInit): Promise<any>;
-    put(url: string, payload: JsonapiRequestDoc, options: RequestInit): Promise<any>;
+    patch(url: string, payload: JsonapiRequestDoc, options: RequestInit): Promise<any>;
     delete(url: string, options: RequestInit): Promise<any>;
     private _logRequest(verb, url);
     private _logResponse(responseJSON);

@@ -20,6 +20,7 @@ export declare class WritePayload<T extends JSORMBase> {
             temp_id: never;
             stale: never;
             storeKey: never;
+            afterSync: never;
             relationships: never;
             klass: never;
             isType: never;

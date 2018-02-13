@@ -1,4 +1,4 @@
-import { expect, fetchMock } from "../test-helper"
+import { expect, fetchMock, sinon } from "../test-helper"
 import { ApplicationRecord, Author, Book, Bio } from "../fixtures"
 import { IDMap } from "../../src/id-map"
 
@@ -66,6 +66,36 @@ describe("ID Map", () => {
       author1.firstName = "updated"
       let author2 = (await Author.find(1)).data
       expect(author1.firstName).to.eq("John")
+    })
+
+    describe("when implementing afterSync hook", () => {
+      let originalAfterSync: any
+
+      beforeEach(() => {
+        originalAfterSync = Author.prototype.afterSync
+        Author.prototype.afterSync = sinon.spy()
+      })
+
+      afterEach(() => {
+        Author.prototype.afterSync = originalAfterSync
+      })
+
+      it("fires after sync, passing changes as an argument", async() => {
+        let author1 = (await Author.find(1)).data
+        author1.firstName = 'updated'
+        let author2 = (await Author.find(1)).data
+        expect(author1.afterSync).to
+          .have.been.calledWith({ firstName: ["updated", "John"] })
+      })
+
+      describe("when store updates, but no changes", () => {
+        it("does not fire the hook", async() => {
+          let author1 = (await Author.find(1)).data
+          let author2 = (await Author.find(1)).data
+          let called = (<any>author1.afterSync).called
+          expect(called).to.eq(false)
+        })
+      })
     })
 
     describe("when syncing, then unlistening", () => {

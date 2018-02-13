@@ -74,18 +74,18 @@ var HasMany = /** @class */ (function (_super) {
         configurable: true
     });
     HasMany.prototype.getter = function (context) {
-        var _this = this;
         var gotten = context.relationships[this.name];
         if (!gotten) {
             this.setter(context, []);
             return context.relationships[this.name];
         }
-        gotten.forEach(function (g, index) {
-            if (wasDestroyed(g)) {
-                var related = context.relationships[_this.name];
-                related.splice(index, 1);
+        var index = gotten.length;
+        while (index--) {
+            if (wasDestroyed(gotten[index])) {
+                var related = context.relationships[this.name];
+                gotten.splice(index, 1);
             }
-        });
+        }
         return context.relationships[this.name];
     };
     HasMany.prototype.setter = function (context, val) {

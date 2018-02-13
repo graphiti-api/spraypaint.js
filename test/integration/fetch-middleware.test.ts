@@ -117,6 +117,8 @@ describe("fetch middleware", () => {
       if (shouldAbort) {
         throw ABORT_ERR
       }
+
+      options.headers["CUSTOM-HEADER"] = "whatever"
     })
 
     middleware.afterFilters.push((response, json) => {
@@ -151,7 +153,8 @@ describe("fetch middleware", () => {
           expect(before.options).to.deep.eq({
             headers: {
               Accept: "application/json",
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "CUSTOM-HEADER": "whatever"
             },
             method: "GET"
           })
@@ -307,6 +310,7 @@ describe("fetch middleware", () => {
           expect(before.options).to.deep.eq({
             headers: {
               Accept: "application/json",
+              "CUSTOM-HEADER": "whatever",
               "Content-Type": "application/json"
             },
             body: JSON.stringify({ data: { type: "authors" } }),

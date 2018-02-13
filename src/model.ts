@@ -353,6 +353,8 @@ export class JSORMBase {
   stale: boolean = false
   storeKey: string = ""
 
+
+  @nonenumerable afterSync: (diff: Record<string, any>) => any | undefined
   @nonenumerable relationships: Record<string, JSORMBase | JSORMBase[]> = {}
   @nonenumerable klass: typeof JSORMBase
 
@@ -434,11 +436,19 @@ export class JSORMBase {
   _onStoreChange: Function
   private onStoreChange(): Function {
     if (this._onStoreChange) return this._onStoreChange
-    this._onStoreChange = (_event: any, attrs: any) => {
+    this._onStoreChange =  (_event: any, attrs: any) => {
+      let diff = {} as any
       Object.keys(attrs).forEach(k => {
         let self = this as any
-        if (self[k] !== attrs[k]) self[k] = attrs[k]
+        if (self[k] !== attrs[k]) {
+          diff[k] = [self[k], attrs[k]]
+          self[k] = attrs[k]
+        }
       })
+
+      let hasDiff = Object.keys(diff).length > 0
+      let hasAfterSync = typeof this.afterSync !== "undefined"
+      if (hasDiff && hasAfterSync) this.afterSync(diff)
     }
     return this._onStoreChange
   }
