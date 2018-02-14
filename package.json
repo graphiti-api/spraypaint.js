@@ -1,6 +1,6 @@
 {
   "name": "jsorm",
-  "version": "1.0.0-beta4",
+  "version": "1.0.0-beta5",
   "description": "Javascript ORM",
   "main": "lib/index.js",
   "module": "lib-esm/index.js",
