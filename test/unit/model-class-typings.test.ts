@@ -4,6 +4,7 @@ import {
   WhereClause,
   SortScope,
   FieldScope,
+  FieldArg,
   IncludeScope,
   StatsScope
 } from "../../src/scope"
@@ -64,8 +65,10 @@ describe("Model Class static attributes typings", () => {
             RootClass.where
           const order: (opts: SortScope) => Scope<typeof RootClass> =
             RootClass.order
-          const selectExtra: (opts: FieldScope) => Scope<typeof RootClass> =
+          const select: (opts: FieldArg) => Scope<typeof RootClass> =
             RootClass.select
+          const selectExtra: (opts: FieldArg) => Scope<typeof RootClass> =
+            RootClass.selectExtra
           const includes: (opts: IncludeScope) => Scope<typeof RootClass> =
             RootClass.includes
           const merge: (

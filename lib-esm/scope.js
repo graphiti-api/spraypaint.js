@@ -109,18 +109,32 @@ var Scope = /** @class */ (function () {
     };
     Scope.prototype.select = function (clause) {
         var copy = this.copy();
-        for (var key in clause) {
-            if (clause.hasOwnProperty(key)) {
-                copy._fields[key] = clause[key];
+        if (Array.isArray(clause)) {
+            var _clause = clause;
+            var jsonapiType = this.model.jsonapiType;
+            copy._fields[jsonapiType] = _clause;
+        }
+        else {
+            for (var key in clause) {
+                if (clause.hasOwnProperty(key)) {
+                    copy._fields[key] = clause[key];
+                }
             }
         }
         return copy;
     };
     Scope.prototype.selectExtra = function (clause) {
         var copy = this.copy();
-        for (var key in clause) {
-            if (clause.hasOwnProperty(key)) {
-                copy._extra_fields[key] = clause[key];
+        if (Array.isArray(clause)) {
+            var _clause = clause;
+            var jsonapiType = this.model.jsonapiType;
+            copy._extra_fields[jsonapiType] = _clause;
+        }
+        else {
+            for (var key in clause) {
+                if (clause.hasOwnProperty(key)) {
+                    copy._extra_fields[key] = clause[key];
+                }
             }
         }
         return copy;

@@ -18,7 +18,7 @@ import {
   Scope,
   WhereClause,
   SortScope,
-  FieldScope,
+  FieldArg,
   StatsScope,
   IncludeScope
 } from "./scope"
@@ -717,11 +717,11 @@ export class JSORMBase {
     return this.scope().order(clause)
   }
 
-  static select<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
+  static select<I extends typeof JSORMBase>(this: I, clause: FieldArg) {
     return this.scope().select(clause)
   }
 
-  static selectExtra<I extends typeof JSORMBase>(this: I, clause: FieldScope) {
+  static selectExtra<I extends typeof JSORMBase>(this: I, clause: FieldArg) {
     return this.scope().selectExtra(clause)
   }
 
