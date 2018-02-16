@@ -54,9 +54,10 @@ export class ValidationErrorBuilder<T extends JSORMBase> {
     errorsAccumulator[attribute] = {
       title: error.title,
       code: error.code,
-      attribute,
+      attribute: meta.attribute,
       message: meta.message,
-      fullMessage: attribute === "base" ? meta.message : error.detail
+      fullMessage: attribute === "base" ? meta.message : error.detail,
+      rawPayload: error,
     } as any
   }
 

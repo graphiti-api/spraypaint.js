@@ -7,6 +7,7 @@ export interface IValidationError<T extends JSORMBase> {
   title: string
   message: string
   fullMessage: string
+  rawPayload: Record<string, any>
 }
 
 export class ValidationError<T extends JSORMBase>
@@ -16,6 +17,7 @@ export class ValidationError<T extends JSORMBase>
   title: string
   message: string
   fullMessage: string
+  rawPayload: Record<string, any>
 
   constructor(options: IValidationError<T>) {
     let key: keyof IValidationError<T>
