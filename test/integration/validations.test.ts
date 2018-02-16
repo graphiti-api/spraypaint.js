@@ -1,86 +1,96 @@
 import { expect, sinon, fetchMock } from "../test-helper"
 import { Author, Book, Genre } from "../fixtures"
 import { tempId } from "../../src/util/temp-id"
+import { JSORMBase, ModelRecord } from "../../src/model"
+import { ValidationError } from "../../src/validation-errors"
+
+const mockErrors = {
+  firstName: {
+    code: "unprocessable_entity",
+    status: "422",
+    title: "Validation Error",
+    detail: "First Name cannot be blank",
+    meta: { attribute: "first_name", message: "cannot be blank" }
+  },
+  lastName: {
+    code: "unprocessable_entity",
+    status: "422",
+    title: "Validation Error",
+    detail: "Last Name cannot be blank",
+    meta: { attribute: "last-name", message: "cannot be blank" }
+  },
+  bookTitle: {
+    code: "unprocessable_entity",
+    status: "422",
+    title: "Validation Error",
+    detail: "Title cannot be blank",
+    meta: {
+      relationship: {
+        name: "books",
+        type: "books",
+        ["temp-id"]: "abc1",
+        attribute: "title",
+        message: "cannot be blank"
+      }
+    }
+  },
+  bookGenreName: {
+    code: "unprocessable_entity",
+    status: "422",
+    title: "Validation Error",
+    detail: "Name cannot be blank",
+    meta: {
+      relationship: {
+        name: "books",
+        type: "books",
+        ["temp-id"]: "abc1",
+        relationship: {
+          name: "genre",
+          type: "genres",
+          id: "1",
+          attribute: "name",
+          message: "cannot be blank"
+        }
+      }
+    }
+  },
+  bookGenreBase: {
+    code: "unprocessable_entity",
+    status: "422",
+    title: "Validation Error",
+    detail: "base some error",
+    meta: {
+      relationship: {
+        name: "books",
+        type: "books",
+        ["temp-id"]: "abc1",
+        relationship: {
+          name: "genre",
+          type: "genres",
+          id: "1",
+          attribute: "base",
+          message: "some error"
+        }
+      }
+    }
+  }
+} as any
 
 const resetMocks = () => {
   fetchMock.restore()
+
+  let errors = []
+
+  for(let key in mockErrors) {
+    errors.push(mockErrors[key])
+  }
 
   fetchMock.mock({
     matcher: "*",
     response: {
       status: 422,
       body: {
-        errors: [
-          {
-            code: "unprocessable_entity",
-            status: "422",
-            title: "Validation Error",
-            detail: "First Name cannot be blank",
-            meta: { attribute: "first_name", message: "cannot be blank" }
-          },
-          {
-            code: "unprocessable_entity",
-            status: "422",
-            title: "Validation Error",
-            detail: "Last Name cannot be blank",
-            meta: { attribute: "last-name", message: "cannot be blank" }
-          },
-          {
-            code: "unprocessable_entity",
-            status: "422",
-            title: "Validation Error",
-            detail: "Title cannot be blank",
-            meta: {
-              relationship: {
-                name: "books",
-                type: "books",
-                ["temp-id"]: "abc1",
-                attribute: "title",
-                message: "cannot be blank"
-              }
-            }
-          },
-          {
-            code: "unprocessable_entity",
-            status: "422",
-            title: "Validation Error",
-            detail: "Name cannot be blank",
-            meta: {
-              relationship: {
-                name: "books",
-                type: "books",
-                ["temp-id"]: "abc1",
-                relationship: {
-                  name: "genre",
-                  type: "genres",
-                  id: "1",
-                  attribute: "name",
-                  message: "cannot be blank"
-                }
-              }
-            }
-          },
-          {
-            code: "unprocessable_entity",
-            status: "422",
-            title: "Validation Error",
-            detail: "base some error",
-            meta: {
-              relationship: {
-                name: "books",
-                type: "books",
-                ["temp-id"]: "abc1",
-                relationship: {
-                  name: "genre",
-                  type: "genres",
-                  id: "1",
-                  attribute: "base",
-                  message: "some error"
-                }
-              }
-            }
-          }
-        ]
+        errors
       }
     }
   })
@@ -117,8 +127,22 @@ describe("validations", () => {
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
     expect(instance.errors).to.deep.equal({
-      firstName: "cannot be blank",
-      lastName: "cannot be blank"
+      firstName: {
+        attribute: "first_name",
+        code: "unprocessable_entity",
+        fullMessage: "First Name cannot be blank",
+        message: "cannot be blank",
+        title: "Validation Error",
+        rawPayload: mockErrors.firstName,
+      },
+      lastName: {
+        attribute: "last-name",
+        code: "unprocessable_entity",
+        fullMessage: "Last Name cannot be blank",
+        message: "cannot be blank",
+        title: "Validation Error",
+        rawPayload: mockErrors.lastName,
+      }
     })
   })
 
@@ -135,8 +159,22 @@ describe("validations", () => {
       await instance.save({ with: { books: "genre" } })
 
       expect(instance.errors).to.deep.equal({
-        first_name: "cannot be blank",
-        last_name: "cannot be blank"
+        first_name: {
+          attribute: "first_name",
+          code: "unprocessable_entity",
+          fullMessage: "First Name cannot be blank",
+          message: "cannot be blank",
+          title: "Validation Error",
+          rawPayload: mockErrors.firstName,
+        },
+        last_name: {
+          attribute: "last-name",
+          code: "unprocessable_entity",
+          fullMessage: "Last Name cannot be blank",
+          message: "cannot be blank",
+          title: "Validation Error",
+          rawPayload: mockErrors.lastName,
+        }
       })
     })
   })
@@ -147,7 +185,6 @@ describe("validations", () => {
       matcher: "*",
       response: { data: { id: "1", type: "employees" } }
     })
-    instance.errors = { foo: "bar" }
 
     await instance.save()
 
@@ -168,7 +205,18 @@ describe("validations", () => {
   })
 
   it("instantiates a new error object instance after save", async () => {
-    const originalErrors = (instance.errors = { foo: "bar" })
+    instance.errors = {
+      nilly: {
+        title: "Validation Error",
+        attribute: "nilly",
+        code: "required",
+        message: "is required",
+        fullMessage: "Nilly is required",
+        rawPayload: { foo: 'bar' }
+      }
+    }
+
+    const originalErrors = instance.errors
     const result = instance.save({ with: { books: "genre" } })
     const postSavePreValidateErrors = instance.errors
 
@@ -193,7 +241,14 @@ describe("validations", () => {
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
     expect(instance.books[0].errors).to.deep.equal({
-      title: "cannot be blank"
+      title: {
+        title: "Validation Error",
+        attribute: "title",
+        code: "unprocessable_entity",
+        message: "cannot be blank",
+        fullMessage: "Title cannot be blank",
+        rawPayload: mockErrors.bookTitle,
+      }
     })
   })
 
@@ -205,8 +260,22 @@ describe("validations", () => {
 
     // note we're validating multiple properties
     expect(instance.books[0].genre.errors).to.deep.equal({
-      name: "cannot be blank",
-      base: "some error"
+      name: {
+        title: "Validation Error",
+        attribute: "name",
+        code: "unprocessable_entity",
+        fullMessage: "Name cannot be blank",
+        message: "cannot be blank",
+        rawPayload: mockErrors.bookGenreName,
+      },
+      base: {
+        title: "Validation Error",
+        attribute: "base",
+        code: "unprocessable_entity",
+        fullMessage: "some error",
+        message: "some error",
+        rawPayload: mockErrors.bookGenreBase,
+      }
     })
   })
 })

@@ -15,7 +15,6 @@ export declare class WritePayload<T extends JSORMBase> {
         } & {
             reset: never;
             destroy: never;
-            fromJsonapi: never;
             id: never;
             temp_id: never;
             stale: never;
@@ -37,6 +36,7 @@ export declare class WritePayload<T extends JSORMBase> {
             assignAttributes: never;
             setMeta: never;
             relationshipResourceIdentifiers: never;
+            fromJsonapi: never;
             resourceIdentifier: never;
             errors: never;
             hasError: never;

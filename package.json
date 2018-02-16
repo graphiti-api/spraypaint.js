@@ -26,7 +26,7 @@
     "lint:tslint": "tslint -p .",
     "lint:prettier": "prettier \"{src,test}/**/*.{ts,js}\" --list-different",
     "update:dependencies": "ncu -u",
-    "precommit": "pretty-quick --staged"
+    "prettier": "pretty-quick --staged"
   },
   "prettier": {
     "semi": false

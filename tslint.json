@@ -15,6 +15,7 @@
     "semicolon": false,
     "prefer-const": false,
     "forin": false,
+    "curly": false,
 
     "array-type": [true, "array"],
     "variable-name": [true, "ban-keywords"],
