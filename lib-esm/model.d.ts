@@ -9,6 +9,7 @@ import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack";
 import { Omit } from "./util/omit";
 import { JsonapiResource, JsonapiResponseDoc, JsonapiResourceIdentifier } from "./jsonapi-spec";
 import { IncludeScopeHash } from "./util/include-directive";
+import { ValidationErrors } from "./validation-errors";
 export declare type KeyCaseValue = "dash" | "camel" | "snake";
 export interface KeyCase {
     server: KeyCaseValue;
@@ -110,7 +111,7 @@ export declare class JSORMBase {
     private _copyPrototypeDescriptors();
     isType(jsonapiType: string): boolean;
     isPersisted: boolean;
-    _onStoreChange: Function;
+    _onStoreChange?: (event: any, attrs: any) => void;
     private onStoreChange();
     unlisten(): void;
     listen(): void;
@@ -126,7 +127,7 @@ export declare class JSORMBase {
     relationshipResourceIdentifiers(relationNames: string[]): Record<string, JsonapiResourceIdentifier[]>;
     fromJsonapi(resource: JsonapiResource, payload: JsonapiResponseDoc, includeDirective?: IncludeScopeHash): any;
     readonly resourceIdentifier: JsonapiResourceIdentifier;
-    errors: object;
+    errors: ValidationErrors<this>;
     readonly hasError: boolean;
     clearErrors(): void;
     isDirty(relationships?: IncludeScope): boolean;

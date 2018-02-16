@@ -1,5 +1,5 @@
 import * as tslib_1 from "tslib";
-import { ValidationErrors } from "./util/validation-errors";
+import { ValidationErrorBuilder } from "./util/validation-error-builder";
 import { refreshJWT } from "./util/refresh-jwt";
 import relationshipIdentifiersFor from "./util/relationship-identifiers";
 import { Request } from "./request";
@@ -249,7 +249,7 @@ var JSORMBase = /** @class */ (function () {
         var _this = this;
         if (this._onStoreChange)
             return this._onStoreChange;
-        this._onStoreChange = function (_event, attrs) {
+        this._onStoreChange = function (event, attrs) {
             var diff = {};
             Object.keys(attrs).forEach(function (k) {
                 var self = _this;
@@ -653,7 +653,7 @@ var JSORMBase = /** @class */ (function () {
             return tslib_1.__generator(this, function (_a) {
                 refreshJWT(this.klass, response);
                 if (response.status === 422) {
-                    ValidationErrors.apply(this, response.jsonPayload);
+                    ValidationErrorBuilder.apply(this, response.jsonPayload);
                     return [2 /*return*/, false];
                 }
                 else {

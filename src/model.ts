@@ -1,6 +1,6 @@
 /* tslint:disable:member-ordering */
 import { CollectionProxy, RecordProxy, NullProxy } from "./proxies"
-import { ValidationErrors } from "./util/validation-errors"
+import { ValidationErrorBuilder } from "./util/validation-error-builder"
 import { refreshJWT } from "./util/refresh-jwt"
 import relationshipIdentifiersFor from "./util/relationship-identifiers"
 import { Request, RequestVerbs, JsonapiResponse } from "./request"
@@ -38,6 +38,7 @@ import {
 import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
+import { ValidationErrors } from "./validation-errors"
 
 export type KeyCaseValue = "dash" | "camel" | "snake"
 
@@ -353,7 +354,6 @@ export class JSORMBase {
   stale: boolean = false
   storeKey: string = ""
 
-
   @nonenumerable afterSync: (diff: Record<string, any>) => any | undefined
   @nonenumerable relationships: Record<string, JSORMBase | JSORMBase[]> = {}
   @nonenumerable klass: typeof JSORMBase
@@ -369,7 +369,7 @@ export class JSORMBase {
   @nonenumerable private _attributes: ModelRecord<this>
   @nonenumerable private _originalAttributes: ModelRecord<this>
   @nonenumerable private __meta__: any
-  @nonenumerable private _errors: object = {}
+  @nonenumerable private _errors: ValidationErrors<this> = {}
 
   constructor(attrs?: Record<string, any>) {
     this._initializeAttributes()
@@ -433,10 +433,10 @@ export class JSORMBase {
     if (!!val) this.reset()
   }
 
-  _onStoreChange: Function
-  private onStoreChange(): Function {
+  _onStoreChange?: (event: any, attrs: any) => void
+  private onStoreChange() {
     if (this._onStoreChange) return this._onStoreChange
-    this._onStoreChange =  (_event: any, attrs: any) => {
+    this._onStoreChange = (event, attrs) => {
       let diff = {} as any
       Object.keys(attrs).forEach(k => {
         let self = this as any
@@ -508,14 +508,13 @@ export class JSORMBase {
   get attributes(): Record<string, any> {
     return this._attributes
   }
-
-  get stored() {
-    return this.klass.store.find(this)
-  }
-
   set attributes(attrs: Record<string, any>) {
     this._attributes = {}
     this.assignAttributes(attrs)
+  }
+
+  get stored() {
+    return this.klass.store.find(this)
   }
 
   /*
@@ -585,11 +584,11 @@ export class JSORMBase {
     }
   }
 
-  get errors() {
+  get errors(): ValidationErrors<this> {
     return this._errors
   }
 
-  set errors(errs: object) {
+  set errors(errs: ValidationErrors<this>) {
     this._errors = errs
   }
 
@@ -857,7 +856,7 @@ export class JSORMBase {
     refreshJWT(this.klass, response)
 
     if (response.status === 422) {
-      ValidationErrors.apply(this, response.jsonPayload)
+      ValidationErrorBuilder.apply(this, response.jsonPayload)
       return false
     } else {
       callback()

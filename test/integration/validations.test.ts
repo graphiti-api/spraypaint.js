@@ -1,6 +1,8 @@
 import { expect, sinon, fetchMock } from "../test-helper"
 import { Author, Book, Genre } from "../fixtures"
 import { tempId } from "../../src/util/temp-id"
+import { JSORMBase, ModelRecord } from "../../src/model"
+import { ValidationError } from "../../src/validation-errors"
 
 const resetMocks = () => {
   fetchMock.restore()
@@ -117,8 +119,20 @@ describe("validations", () => {
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
     expect(instance.errors).to.deep.equal({
-      firstName: "cannot be blank",
-      lastName: "cannot be blank"
+      firstName: {
+        attribute: "firstName",
+        code: "unprocessable_entity",
+        fullMessage: "First Name cannot be blank",
+        message: "cannot be blank",
+        title: "Validation Error"
+      },
+      lastName: {
+        attribute: "lastName",
+        code: "unprocessable_entity",
+        fullMessage: "Last Name cannot be blank",
+        message: "cannot be blank",
+        title: "Validation Error"
+      }
     })
   })
 
@@ -135,8 +149,20 @@ describe("validations", () => {
       await instance.save({ with: { books: "genre" } })
 
       expect(instance.errors).to.deep.equal({
-        first_name: "cannot be blank",
-        last_name: "cannot be blank"
+        first_name: {
+          attribute: "first_name",
+          code: "unprocessable_entity",
+          fullMessage: "First Name cannot be blank",
+          message: "cannot be blank",
+          title: "Validation Error"
+        },
+        last_name: {
+          attribute: "last_name",
+          code: "unprocessable_entity",
+          fullMessage: "Last Name cannot be blank",
+          message: "cannot be blank",
+          title: "Validation Error"
+        }
       })
     })
   })
@@ -147,7 +173,6 @@ describe("validations", () => {
       matcher: "*",
       response: { data: { id: "1", type: "employees" } }
     })
-    instance.errors = { foo: "bar" }
 
     await instance.save()
 
@@ -168,7 +193,17 @@ describe("validations", () => {
   })
 
   it("instantiates a new error object instance after save", async () => {
-    const originalErrors = (instance.errors = { foo: "bar" })
+    instance.errors = {
+      nilly: {
+        title: "Validation Error",
+        attribute: "nilly",
+        code: "required",
+        message: "is required",
+        fullMessage: "Nilly is required"
+      }
+    }
+
+    const originalErrors = instance.errors
     const result = instance.save({ with: { books: "genre" } })
     const postSavePreValidateErrors = instance.errors
 
@@ -193,7 +228,13 @@ describe("validations", () => {
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
     expect(instance.books[0].errors).to.deep.equal({
-      title: "cannot be blank"
+      title: {
+        title: "Validation Error",
+        attribute: "title",
+        code: "unprocessable_entity",
+        message: "cannot be blank",
+        fullMessage: "Title cannot be blank"
+      }
     })
   })
 
@@ -205,8 +246,20 @@ describe("validations", () => {
 
     // note we're validating multiple properties
     expect(instance.books[0].genre.errors).to.deep.equal({
-      name: "cannot be blank",
-      base: "some error"
+      name: {
+        title: "Validation Error",
+        attribute: "name",
+        code: "unprocessable_entity",
+        fullMessage: "Name cannot be blank",
+        message: "cannot be blank"
+      },
+      base: {
+        title: "Validation Error",
+        attribute: "base",
+        code: "unprocessable_entity",
+        fullMessage: "some error",
+        message: "some error"
+      }
     })
   })
 })
