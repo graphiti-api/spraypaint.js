@@ -6,9 +6,6 @@ var ValidationError = /** @class */ (function () {
             this[key] = options[key];
         }
     }
-    ValidationError.prototype.toString = function () {
-        return this.message;
-    };
     return ValidationError;
 }());
 export { ValidationError };

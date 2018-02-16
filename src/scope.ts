@@ -30,6 +30,7 @@ export interface JsonapiQueryParams {
 export type SortDir = "asc" | "desc"
 export type SortScope = Record<string, SortDir>
 export type FieldScope = Record<string, string[]>
+export type FieldArg = FieldScope | string[]
 export type WhereClause = Record<string, string | number | boolean>
 export type StatsScope = Record<string, string | string[]>
 export type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[]
@@ -138,24 +139,36 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     return copy
   }
 
-  select(clause: FieldScope) {
+  select(clause: FieldArg) {
     const copy = this.copy()
 
-    for (const key in clause) {
-      if (clause.hasOwnProperty(key)) {
-        copy._fields[key] = clause[key]
+    if (Array.isArray(clause)) {
+      let _clause = clause as string[]
+      let jsonapiType = this.model.jsonapiType as string
+      copy._fields[jsonapiType] = _clause
+    } else {
+      for (const key in clause) {
+        if (clause.hasOwnProperty(key)) {
+          copy._fields[key] = clause[key]
+        }
       }
     }
 
     return copy
   }
 
-  selectExtra(clause: FieldScope) {
+  selectExtra(clause: FieldArg) {
     const copy = this.copy()
 
-    for (const key in clause) {
-      if (clause.hasOwnProperty(key)) {
-        copy._extra_fields[key] = clause[key]
+    if (Array.isArray(clause)) {
+      let _clause = clause as string[]
+      let jsonapiType = this.model.jsonapiType as string
+      copy._extra_fields[jsonapiType] = _clause
+    } else {
+      for (const key in clause) {
+        if (clause.hasOwnProperty(key)) {
+          copy._extra_fields[key] = clause[key]
+        }
       }
     }
 

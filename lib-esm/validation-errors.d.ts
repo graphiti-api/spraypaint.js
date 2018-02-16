@@ -6,6 +6,7 @@ export interface IValidationError<T extends JSORMBase> {
     title: string;
     message: string;
     fullMessage: string;
+    rawPayload: Record<string, any>;
 }
 export declare class ValidationError<T extends JSORMBase> implements IValidationError<T> {
     code: string;
@@ -13,8 +14,8 @@ export declare class ValidationError<T extends JSORMBase> implements IValidation
     title: string;
     message: string;
     fullMessage: string;
+    rawPayload: Record<string, any>;
     constructor(options: IValidationError<T>);
-    toString(): string;
 }
 export declare type ValidationErrors<T extends JSORMBase> = ErrorAttrs<T, keyof (Omit<T, keyof JSORMBase>)>;
 export declare type ErrorAttrs<T extends JSORMBase, K extends keyof T> = {

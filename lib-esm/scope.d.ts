@@ -13,6 +13,7 @@ export interface JsonapiQueryParams {
 export declare type SortDir = "asc" | "desc";
 export declare type SortScope = Record<string, SortDir>;
 export declare type FieldScope = Record<string, string[]>;
+export declare type FieldArg = FieldScope | string[];
 export declare type WhereClause = Record<string, string | number | boolean>;
 export declare type StatsScope = Record<string, string | string[]>;
 export declare type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[];
@@ -37,8 +38,8 @@ export declare class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     where(clause: WhereClause): Scope<T>;
     stats(clause: StatsScope): Scope<T>;
     order(clause: SortScope | string): Scope<T>;
-    select(clause: FieldScope): Scope<T>;
-    selectExtra(clause: FieldScope): Scope<T>;
+    select(clause: FieldArg): Scope<T>;
+    selectExtra(clause: FieldArg): Scope<T>;
     includes(clause: IncludeScope): Scope<T>;
     scope(): Scope<T>;
     asQueryParams(): JsonapiQueryParams;

@@ -5,8 +5,9 @@ import { Author } from "../fixtures"
 let scope: Scope<typeof Author>
 
 beforeEach(() => {
-  const model = sinon.stub()
-  scope = new Scope(model as any)
+  const model = sinon.stub() as any
+  model['jsonapiType'] = "people"
+  scope = new Scope(model)
 })
 
 describe("Scope", () => {
@@ -103,6 +104,42 @@ describe("Scope", () => {
       const newScope = scope.select({ people: ["foo"] })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
+    })
+
+    describe("when passed an array of strings", () => {
+      it("infers the jsonapi type", () => {
+        const newScope = scope.select(["foo"])
+        expect((newScope as any)._fields).to.eql({
+          people: ["foo"]
+        })
+      })
+    })
+  })
+
+  describe("#selectExtra()", () => {
+    it("updates fields criteria", () => {
+      scope = scope
+        .selectExtra({ people: ["foo", "bar"] })
+        .selectExtra({ things: ["baz"] })
+      expect((scope as any)._extra_fields).to.eql({
+        people: ["foo", "bar"],
+        things: ["baz"]
+      })
+    })
+
+    it("returns a new scope", () => {
+      const newScope = scope.selectExtra({ people: ["foo"] })
+      expect(newScope).to.be.instanceof(Scope)
+      expect(newScope).not.to.equal(scope)
+    })
+
+    describe("when passed an array of strings", () => {
+      it("infers the jsonapi type", () => {
+        const newScope = scope.selectExtra(["foo"])
+        expect((newScope as any)._extra_fields).to.eql({
+          people: ["foo"]
+        })
+      })
     })
   })
 
