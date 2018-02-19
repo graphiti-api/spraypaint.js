@@ -10,6 +10,7 @@ export const nonenumerable = (target: any, key: string) => {
       Object.defineProperty(this, key, {
         value: val,
         writable: true,
+        configurable: true,
         enumerable: false
       })
     },

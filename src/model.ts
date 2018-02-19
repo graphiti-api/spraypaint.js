@@ -5,6 +5,7 @@ import { refreshJWT } from "./util/refresh-jwt"
 import relationshipIdentifiersFor from "./util/relationship-identifiers"
 import { Request, RequestVerbs, JsonapiResponse } from "./request"
 import { WritePayload } from "./util/write-payload"
+import { flipEnumerable, getNonEnumerables } from "./util/enumerables"
 import {
   CredentialStorage,
   NullStorageBackend,
@@ -616,7 +617,12 @@ export class JSORMBase {
   }
 
   dup(): this {
-    return cloneDeep(this)
+    let nonEnums = getNonEnumerables(this)
+    flipEnumerable(this, nonEnums, true)
+    let cloned = cloneDeep(this)
+    flipEnumerable(this, nonEnums, false)
+    flipEnumerable(cloned, nonEnums, false)
+    return cloned
   }
 
   /*
