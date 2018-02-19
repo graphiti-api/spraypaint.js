@@ -4,6 +4,7 @@ import { refreshJWT } from "./util/refresh-jwt";
 import relationshipIdentifiersFor from "./util/relationship-identifiers";
 import { Request } from "./request";
 import { WritePayload } from "./util/write-payload";
+import { flipEnumerable, getNonEnumerables } from "./util/enumerables";
 import { CredentialStorage, NullStorageBackend } from "./credential-storage";
 import { IDMap } from "./id-map";
 import { deserialize, deserializeInstance } from "./util/deserialize";
@@ -433,7 +434,12 @@ var JSORMBase = /** @class */ (function () {
         return dc.checkRelation(relationName, relatedModel);
     };
     JSORMBase.prototype.dup = function () {
-        return cloneDeep(this);
+        var nonEnums = getNonEnumerables(this);
+        flipEnumerable(this, nonEnums, true);
+        var cloned = cloneDeep(this);
+        flipEnumerable(this, nonEnums, false);
+        flipEnumerable(cloned, nonEnums, false);
+        return cloned;
     };
     /*
      *

@@ -10,6 +10,7 @@ export var nonenumerable = function (target, key) {
             Object.defineProperty(this, key, {
                 value: val,
                 writable: true,
+                configurable: true,
                 enumerable: false
             });
         },
