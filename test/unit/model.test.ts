@@ -1325,6 +1325,26 @@ describe("Model", () => {
     })
   })
 
+  describe("#dup()", () => {
+    it("returns a new instance of the same object", () => {
+      let author = new Author({ firstName: "Stephen" })
+      let duped = author.dup()
+      duped.firstName = "updated"
+      expect(author.firstName).to.eq("Stephen")
+      expect(duped.firstName).to.eq("updated")
+    })
+
+    it("does not recast nonenumerables to enumerable", () => {
+      let author = new Author({ firstName: "Stephen" })
+      let duped = author.dup()
+
+      let descriptor = Object.getOwnPropertyDescriptor(author, 'relationships')
+      expect(descriptor.enumerable).to.eq(false)
+      descriptor = Object.getOwnPropertyDescriptor(duped, 'relationships')
+      expect(descriptor.enumerable).to.eq(false)
+    })
+  })
+
   describe("#fetchOptions", () => {
     context("jwt is set", () => {
       beforeEach(() => {
