@@ -13,25 +13,39 @@ import { JSORMBase, Model, Attr, HasMany } from "jsorm"
 
 class ApplicationRecord extends JSORMBase {
   static baseUrl = "http://localhost:3000"
-  static jsonapiType = "people"
+  static apiNamespace = "/api/v1"
 }
 
 @Model()
 class Person extends ApplicationRecord {
+  static jsonapiType = "people"
+    
   @Attr() firstName: string 
   @Attr() lastName: string
+  
+  @HasMany() pets: Pet[]
   
   get fullName() {
     return `${this.firstName} ${this.lastName}`
   }
 }
 
+@Model()
+class Pet extends ApplicationRecord {
+  static jsonapiType = "pets"
+  
+  @Attr() name: string
+}
+
 let { data } = await Person
   .where({ name: 'Joe' })
   .page(2).per(10)
   .sort('name')
+  .includes("pets")
   .all()
   
 let names = data.map((p) => { return p.fullName })
 console.log(names) // ['Joe Blow', 'Joe DiMaggio', ...]
+
+console.log(data[0].pets[0].name) // "Fido"
 ```
