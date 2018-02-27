@@ -6,18 +6,19 @@ afterEach(() => {
   ApplicationRecord.store.data = {}
 })
 
+let responsePayload = (firstName: string) => {
+  return {
+    data: {
+      id: "1",
+      type: "authors",
+      attributes: { firstName }
+    }
+  }
+}
+
 describe("ID Map", () => {
   beforeEach(() => {
     ApplicationRecord.sync = true
-    let responsePayload = (firstName: string) => {
-      return {
-        data: {
-          id: "1",
-          type: "authors",
-          attributes: { firstName }
-        }
-      }
-    }
 
     fetchMock.get(
       "http://example.com/api/v1/authors/1",
@@ -38,7 +39,7 @@ describe("ID Map", () => {
   })
 
   afterEach(() => {
-    fetchMock.reset()
+    fetchMock.restore()
   })
 
   describe("when fetching from server", () => {
@@ -61,36 +62,71 @@ describe("ID Map", () => {
       expect(stored["authors-1"]).to.deep.eq(data.attributes)
     })
 
-    it("syncs with id map", async () => {
+    it("syncs non-dirty attributes with id map", async () => {
+      let author1 = (await Author.find(1)).data
+      expect(author1.firstName).to.eq("John")
+
+      fetchMock.restore()
+      fetchMock.get(
+        "http://example.com/api/v1/authors/1",
+        responsePayload("Jane")
+      )
+
+      let author2 = (await Author.find(1)).data
+      expect(author2.firstName).to.eq("Jane")
+      expect(author1.firstName).to.eq("Jane")
+    })
+
+    it("does not see mark newly-synced attributes as dirty", async () => {
+      let author1 = (await Author.find(1)).data
+      expect(author1.firstName).to.eq("John")
+
+      fetchMock.restore()
+      fetchMock.get(
+        "http://example.com/api/v1/authors/1",
+        responsePayload("Jane")
+      )
+
+      await Author.find(1)
+      expect(author1.firstName).to.eq("Jane")
+      expect(author1.isDirty()).to.eq(false)
+    })
+
+    it("does not sync dirty attributes with id map", async () => {
       let author1 = (await Author.find(1)).data
       author1.firstName = "updated"
+
+      fetchMock.restore()
+      fetchMock.get(
+        "http://example.com/api/v1/authors/1",
+        responsePayload("Jane")
+      )
+
       let author2 = (await Author.find(1)).data
-      expect(author1.firstName).to.eq("John")
+      expect(author2.firstName).to.eq("Jane")
+      expect(author1.firstName).to.eq("updated")
     })
 
     describe("when implementing afterSync hook", () => {
-      let originalAfterSync: any
-
-      beforeEach(() => {
-        originalAfterSync = Author.prototype.afterSync
-        Author.prototype.afterSync = sinon.spy()
-      })
-
-      afterEach(() => {
-        Author.prototype.afterSync = originalAfterSync
-      })
-
       it("fires after sync, passing changes as an argument", async() => {
         let author1 = (await Author.find(1)).data
-        author1.firstName = 'updated'
+        author1.afterSync = sinon.spy()
+
+        fetchMock.restore()
+        fetchMock.get(
+          "http://example.com/api/v1/authors/1",
+          responsePayload("Jane")
+        )
+
         let author2 = (await Author.find(1)).data
         expect(author1.afterSync).to
-          .have.been.calledWith({ firstName: ["updated", "John"] })
+          .have.been.calledWith({ firstName: ["John", "Jane"] })
       })
 
       describe("when store updates, but no changes", () => {
         it("does not fire the hook", async() => {
           let author1 = (await Author.find(1)).data
+          author1.afterSync = sinon.spy()
           let author2 = (await Author.find(1)).data
           let called = (<any>author1.afterSync).called
           expect(called).to.eq(false)
