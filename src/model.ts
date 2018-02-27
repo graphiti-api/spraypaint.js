@@ -439,14 +439,20 @@ export class JSORMBase {
     if (this._onStoreChange) return this._onStoreChange
     this._onStoreChange = (event, attrs) => {
       let diff = {} as any
+      // Update all non-dirty attributes
       Object.keys(attrs).forEach(k => {
         let self = this as any
-        if (self[k] !== attrs[k]) {
+        let changes = this.changes() as any
+        if (self[k] !== attrs[k] && !changes[k]) {
           diff[k] = [self[k], attrs[k]]
           self[k] = attrs[k]
+
+          // ensure this property is not marked as dirty
+          self._originalAttributes[k] = attrs[k]
         }
       })
 
+      // fire afterSync hook if applicable
       let hasDiff = Object.keys(diff).length > 0
       let hasAfterSync = typeof this.afterSync !== "undefined"
       if (hasDiff && hasAfterSync) this.afterSync(diff)
