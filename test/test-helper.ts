@@ -7,6 +7,8 @@ import * as fetchMock from "fetch-mock"
 import "mocha"
 
 import { JSORMBase } from "../src/index"
+import { config as envConfig } from "../src/util/env"
+envConfig.productionTip = false
 
 es6Promise.polyfill()
 

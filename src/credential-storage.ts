@@ -4,15 +4,21 @@ export interface StorageBackend {
   removeItem(key: string): void
 }
 
-export class NullStorageBackend implements StorageBackend {
-  getItem(key: string) {
-    return null
+export class InMemoryStorageBackend implements StorageBackend {
+  private _data : Record<string, string | undefined>
+
+  constructor() {
+    this._data = {}
+  }
+
+  getItem(key: string) : string | null {
+    return this._data[key] || null // Cast undefined to null
   }
   setItem(key: string, value: string | undefined) {
-    /*noop*/
+    this._data[key] = value
   }
   removeItem(key: string) {
-    /*noop*/
+    delete this._data[key]
   }
 }
 
@@ -22,36 +28,34 @@ let defaultBackend: StorageBackend
 try {
   defaultBackend = localStorage
 } catch (e) {
-  defaultBackend = new NullStorageBackend()
+  defaultBackend = new InMemoryStorageBackend()
 }
 
 export class CredentialStorage {
-  private _jwtKey: string | false
+  private _jwtKey: string
   private _backend: StorageBackend
 
   constructor(
-    jwtKey: string | false,
+    jwtKey: string,
     backend: StorageBackend = defaultBackend
   ) {
     this._jwtKey = jwtKey
     this._backend = backend
   }
 
-  getJWT(): string | null {
-    if (this._jwtKey) {
-      return this._backend.getItem(this._jwtKey)
-    } else {
-      return null
-    }
+  get backend() : StorageBackend {
+    return this._backend
+  }
+
+  getJWT(): string | undefined {
+    return this._backend.getItem(this._jwtKey) || undefined
   }
 
   setJWT(value: string | undefined | null): void {
-    if (this._jwtKey) {
-      if (value) {
-        this._backend.setItem(this._jwtKey, value)
-      } else {
-        this._backend.removeItem(this._jwtKey)
-      }
+    if (value) {
+      this._backend.setItem(this._jwtKey, value)
+    } else {
+      this._backend.removeItem(this._jwtKey)
     }
   }
 }

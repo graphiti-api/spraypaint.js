@@ -8,7 +8,7 @@ import { WritePayload } from "./util/write-payload"
 import { flipEnumerable, getNonEnumerables } from "./util/enumerables"
 import {
   CredentialStorage,
-  NullStorageBackend,
+  InMemoryStorageBackend,
   StorageBackend
 } from "./credential-storage"
 import { IDMap } from "./id-map"
@@ -118,9 +118,16 @@ export const applyModelConfig = <T extends typeof JSORMBase>(
   let k: keyof ModelConfigurationOptions
 
   for (k in config) {
-    if (config.hasOwnProperty(k)) {
+    if (config.hasOwnProperty(k) && k !== 'jwt') {
       ModelClass[k] = config[k]
     }
+  }
+
+  // Run this one last, since either the Credential Storage strategy
+  // or the store key could be set in options alongside this, otherwise
+  // this is dependent on option declaration order 
+  if (config.jwt) {
+    ModelClass.setJWT(config.jwt)
   }
 
   if (ModelClass.isBaseClass === undefined) {
@@ -136,7 +143,6 @@ export class JSORMBase {
   static jsonapiType?: string
   static endpoint: string
   static isBaseClass: boolean
-  static jwt?: string
   static keyCase: KeyCase = { server: "snake", client: "camel" }
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
@@ -148,36 +154,48 @@ export class JSORMBase {
   static currentClass: typeof JSORMBase = JSORMBase
   static beforeFetch: BeforeFilter | undefined
   static afterFetch: AfterFilter | undefined
-  static jwtStorage: string | false = "jwt"
 
   private static _typeRegistry: JsonapiTypeRegistry
   private static _IDMap: IDMap
   private static _middlewareStack: MiddlewareStack
-  private static _credentialStorageBackend?: StorageBackend
-  private static _credentialStorage?: CredentialStorage
+  private static _credentialStorageBackend: StorageBackend
+  private static _credentialStorage: CredentialStorage
+  private static _jwtStorage: string | false = "jwt"
 
   static get credentialStorage(): CredentialStorage {
-    if (!this._credentialStorage) {
-      if (!this._credentialStorageBackend) {
-        if (this.jwtStorage && typeof localStorage !== "undefined") {
-          this._credentialStorageBackend = localStorage
-        } else {
-          this._credentialStorageBackend = new NullStorageBackend()
-        }
-      }
-
-      this._credentialStorage = new CredentialStorage(
-        this.jwtStorage,
-        this._credentialStorageBackend
-      )
-    }
-
     return this._credentialStorage
   }
 
-  static set credentialStorageBackend(backend: StorageBackend | undefined) {
+  static set jwtStorage(val : string | false) {
+    if (val !== this._jwtStorage) {
+      this._jwtStorage = val
+      this.credentialStorageBackend = this._credentialStorageBackend
+    }
+  }
+
+  static get jwtStorage() : string | false {
+    return this._jwtStorage
+  }
+
+  static set credentialStorageBackend(backend: StorageBackend) {
     this._credentialStorageBackend = backend
-    this._credentialStorage = undefined
+
+    this._credentialStorage = new CredentialStorage(
+      this.jwtStorage || 'jwt',
+      this._credentialStorageBackend
+    )
+  }
+
+  static get credentialStorageBackend() : StorageBackend {
+    return this._credentialStorageBackend
+  }
+
+  static initializeCredentialStorage() {
+    if (this.jwtStorage && typeof localStorage !== "undefined") {
+      this.credentialStorageBackend = localStorage
+    } else {
+      this.credentialStorageBackend = new InMemoryStorageBackend()
+    }
   }
 
   /*
@@ -228,9 +246,6 @@ export class JSORMBase {
     if (!this._IDMap) {
       this._IDMap = new IDMap()
     }
-
-    const jwt = this.credentialStorage.getJWT()
-    this.setJWT(jwt)
   }
 
   static isSubclassOf(maybeSuper: typeof JSORMBase): boolean {
@@ -753,21 +768,15 @@ export class JSORMBase {
   }
 
   static setJWT(token: string | undefined | null): void {
-    if (this.baseClass === undefined) {
-      throw new Error(`Cannot set JWT on ${this.name}: No base class present.`)
-    }
-
-    this.baseClass.jwt = token || undefined
     this.credentialStorage.setJWT(token)
   }
 
   static getJWT(): string | undefined {
-    const owner = this.baseClass
-
-    if (owner) {
-      return owner.jwt
-    }
+    return this.credentialStorage.getJWT()
   }
+
+  static get jwt(): string | undefined { return this.getJWT() }
+  static set jwt(token: string | undefined) { this.setJWT(token) }
 
   static generateAuthHeader(jwt: string): string {
     return `Token token="${jwt}"`
@@ -897,6 +906,7 @@ export class JSORMBase {
 }
 
 ;(<any>JSORMBase.prototype).klass = JSORMBase
+JSORMBase.initializeCredentialStorage()
 
 export const isModelClass = (arg: any): arg is typeof JSORMBase => {
   if (!arg) {
