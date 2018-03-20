@@ -53,6 +53,7 @@ export interface ModelConfiguration {
   apiNamespace: string
   jsonapiType: string
   endpoint: string
+  credentialStorageBackend: StorageBackend,
   jwt: string
   jwtStorage: string | false
   keyCase: KeyCase
@@ -117,17 +118,30 @@ export const applyModelConfig = <T extends typeof JSORMBase>(
 ): void => {
   let k: keyof ModelConfigurationOptions
 
-  for (k in config) {
-    if (config.hasOwnProperty(k) && k !== 'jwt') {
-      ModelClass[k] = config[k]
-    }
+  config = { ...config } // clone since we're going to mutate it
+
+  // Handle all JWT configuration at once since it's run-order dependent
+  // We'll delete each key we encounter then pass the rest off to 
+  // a loop for assigning other arbitrary options
+  if (config.credentialStorageBackend) {
+    ModelClass.credentialStorageBackend = config.credentialStorageBackend
+    delete config.jwtStorage
   }
 
-  // Run this one last, since either the Credential Storage strategy
-  // or the store key could be set in options alongside this, otherwise
-  // this is dependent on option declaration order 
+  if (config.jwtStorage) {
+    ModelClass.jwtStorage = config.jwtStorage
+    delete config.jwtStorage
+  }
+
   if (config.jwt) {
     ModelClass.setJWT(config.jwt)
+    delete config.jwt
+  }
+
+  for (k in config) {
+    if (config.hasOwnProperty(k)) {
+      ModelClass[k] = config[k]
+    }
   }
 
   if (ModelClass.isBaseClass === undefined) {
