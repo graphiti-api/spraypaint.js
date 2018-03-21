@@ -1,11 +1,12 @@
 import { expect, sinon } from "../test-helper"
+import { SinonSpy, SinonStub } from "sinon"
 import { JSORMBase } from "../../src/model"
 import { hasOne } from "../../src/associations"
 import { attr } from "../../src/attribute"
 import { JsonapiTypeRegistry } from "../../src/jsonapi-type-registry"
-import { StorageBackend } from "../../src/credential-storage"
+import { StorageBackend, InMemoryStorageBackend, CredentialStorage } from "../../src/credential-storage"
 import { JsonapiResource, JsonapiResponseDoc } from "../../src/index"
-import * as EventBus from "eventbusjs"
+import { EventBus } from "../../src/event-bus"
 
 import {
   ApplicationRecord,
@@ -23,6 +24,9 @@ const modelAttrs = (model: JSORMBase): Record<string, any> =>
   (<any>model)._attributes
 
 describe("Model", () => {
+  beforeEach(() => {
+    JSORMBase.initializeCredentialStorage()
+  })
   describe("Class Creation/Initialization", () => {
     describe("Typescript Classes + Decorators API", () => {
       describe("Base Class", () => {
@@ -54,94 +58,162 @@ describe("Model", () => {
           expect(SubClass.baseClass).to.eq(BaseClass)
         })
 
-        describe("#getJWT", () => {
+        describe('#credentialStorage', () => {
+          let originalStore : CredentialStorage
+
           beforeEach(() => {
-            BaseClass.jwt = "g3tm3"
+            originalStore = (JSORMBase as any)._credentialStorage
           })
 
-          it("it grabs jwt from top-most parent", () => {
-            expect(SubClass.getJWT()).to.eq("g3tm3")
+          afterEach(() => {
+            ;(JSORMBase as any)._credentialStorage = originalStore
+          })
+          
+          context('localStorage API is present', () => {
+            let localStorageStub: {
+              getItem: SinonSpy
+              setItem: SinonSpy
+              removeItem: SinonSpy
+            }
+            let originalStorage : any
+
+            beforeEach(() => {
+              localStorageStub = {
+                getItem: sinon.spy(),
+                setItem: sinon.spy(),
+                removeItem: sinon.spy(),
+              }
+
+              if (typeof localStorage !== 'undefined') {
+                originalStorage = localStorage
+              }
+              ;(global as any).localStorage = localStorageStub
+              JSORMBase.initializeCredentialStorage()
+            })
+
+            afterEach(() => {
+              ;(global as any).localStorage = originalStorage
+              JSORMBase.initializeCredentialStorage()
+            })
+
+            it('defaults to use localStorage', () => {
+              expect(JSORMBase.credentialStorageBackend).to.eq(localStorageStub)
+            })
           })
 
-          describe("when no JWT owner", () => {
-            it("returns undefined", () => {
-              @Model()
-              class NoJWT extends JSORMBase {}
+          context('localStorage API is not defined', () => {
+            let originalStorage : any
 
-              expect(NoJWT.getJWT()).to.eq(undefined)
+            beforeEach(() => {
+              if (typeof localStorage !== 'undefined') {
+                originalStorage = localStorage
+                ;(localStorage as any) = undefined
+              }
+            })
+
+            afterEach(() => {
+              if (originalStorage) {
+                localStorage = originalStorage
+              }
+            })
+
+            it('defaults an in-memory store', () => {
+              JSORMBase.initializeCredentialStorage()
+              expect(JSORMBase.credentialStorageBackend).to.be.instanceOf(InMemoryStorageBackend)
+            })
+          })
+
+          describe('Assigning credential storage backend', () => {
+            it('re-initializes the credential store with the new backend', () => {
+              let backend = {} as any
+              JSORMBase.credentialStorageBackend = backend
+
+              expect(JSORMBase.credentialStorage).not.to.eq(originalStore)
+              expect((JSORMBase.credentialStorage as any)._backend).to.eq(backend)
             })
           })
         })
 
-        describe("#setJWT", () => {
-          it("it sets jwt on the base class", () => {
-            SubClass.setJWT("n3wt0k3n")
-            expect(BaseClass.jwt).to.eq("n3wt0k3n")
-          })
+        describe('JWT Persistence', () => {
+          beforeEach(() => {
+            BaseClass.credentialStorageBackend = new InMemoryStorageBackend()
+          }) 
 
-          context("when user attempts to set jwt on JSORMBase", () => {
-            it("throws an error", () => {
-              expect(() => {
-                JSORMBase.setJWT("foobar")
-              }).to.throw(/Cannot set JWT on JSORMBase/)
+          describe("#getJWT", () => {
+            beforeEach(() => {
+              BaseClass.jwt = "g3tm3"
+            })
+
+            it("it grabs jwt from top-most parent", () => {
+              expect(SubClass.getJWT()).to.eq("g3tm3")
+            })
+
+            describe("when JWT storage is disabled", () => {
+              it("returns undefined", () => {
+                @Model({
+                  jwtStorage: false
+                })
+                class NoJWT extends JSORMBase {}
+                expect(NoJWT.getJWT()).to.eq(undefined)
+              })
             })
           })
 
-          describe("when credentialStorage is configured", () => {
-            let backend: StorageBackend
-            const buildModel = () => {
-              // need new class for this since it needs initialization to have the jwt config set
-              @Model({
-                jwtStorage: "MyJWT",
-                credentialStorageBackend: backend // Cast to any since we don't want this to be part of the standard model config interface. Just for test stubbing purposes
-              } as any)
-              class Base extends JSORMBase {}
-              BaseClass = Base
-            }
+          describe("#setJWT", () => {
+            it("it sets jwt on the base class", () => {
+              SubClass.setJWT("n3wt0k3n")
+              expect(BaseClass.jwt).to.eq("n3wt0k3n")
+            })
 
-            describe("JWT Updates", () => {
-              beforeEach(() => {
-                backend = {
-                  setItem: sinon.spy(),
-                  getItem: sinon.spy(),
-                  removeItem: sinon.spy()
-                }
-                buildModel()
-              })
+            describe("when credentialStorage is configured", () => {
+              let backend: StorageBackend
+              const buildModel = () => {
+                // need new class for this since it needs initialization to have the jwt config set
+                @Model({
+                  jwtStorage: "MyJWT",
+                })
+                class Base extends JSORMBase {}
+                BaseClass = Base
 
-              it("adds to credentialStorage", () => {
-                BaseClass.setJWT("n3wt0k3n")
-                expect(backend.setItem).to.have.been.calledWith(
-                  "MyJWT",
-                  "n3wt0k3n"
-                )
-              })
+                BaseClass.credentialStorageBackend = backend
+              }
 
-              context("when new token is undefined", () => {
-                it("correctly clears the token", () => {
-                  BaseClass.setJWT(undefined)
-                  expect(backend.removeItem).to.have.been.calledWith("MyJWT")
+              describe("JWT Updates", () => {
+                beforeEach(() => {
+                  backend = new InMemoryStorageBackend()
+
+                  buildModel()
+                })
+
+                it("adds to credentialStorage", () => {
+                  BaseClass.setJWT("n3wt0k3n")
+                  expect(backend.getItem('MyJWT')).to.eq("n3wt0k3n")
+                })
+
+                context("when new token is undefined", () => {
+                  it("correctly clears the token", () => {
+                    BaseClass.setJWT(undefined)
+                    expect(backend.getItem('MyJWT')).be.null
+                  })
                 })
               })
-            })
 
-            describe("JWT Initialization", () => {
-              beforeEach(() => {
-                backend = {
-                  setItem: sinon.spy(),
-                  getItem: sinon.stub().returns("or!g!nalt0k3n"),
-                  removeItem: sinon.spy()
-                }
-                buildModel()
-              })
+              describe("JWT Initialization", () => {
+                beforeEach(() => {
+                  backend = new InMemoryStorageBackend()
+                  backend.setItem('MyJWT', "or!g!nalt0k3n")
 
-              it("sets the token correctly", () => {
-                expect(BaseClass.getJWT()).to.equal("or!g!nalt0k3n")
-              })
+                  buildModel()
+                })
 
-              it("does not set it on the base class or other sibling classes", () => {
-                expect(JSORMBase.getJWT()).to.equal(undefined)
-                expect(ApplicationRecord.getJWT()).to.equal(undefined)
+                it("sets the token correctly", () => {
+                  expect(BaseClass.getJWT()).to.equal("or!g!nalt0k3n")
+                })
+
+                it("does not set it on the base class or other sibling classes", () => {
+                  expect(JSORMBase.getJWT()).to.equal(undefined)
+                  expect(ApplicationRecord.getJWT()).to.equal(undefined)
+                })
               })
             })
           })
@@ -438,11 +510,23 @@ describe("Model", () => {
       describe("class options", () => {
         const config = {
           apiNamespace: "api/v1",
-          jwt: "abc123"
+          jwtStorage: 'foobarJWT',
+          jwt: "abc123",
         }
+        let MyModel : typeof JSORMBase
+        let originalStore : StorageBackend
 
-        const MyModel = BaseModel.extend({
-          static: config
+        beforeEach(() => {
+          originalStore = BaseModel.credentialStorage.backend
+          BaseModel.credentialStorageBackend = new InMemoryStorageBackend()
+
+          MyModel = BaseModel.extend({
+            static: config
+          })
+        })
+
+        afterEach(() => {
+          BaseModel.credentialStorageBackend = originalStore
         })
 
         it("preserves defaults for unspecified items", () => {
@@ -458,7 +542,6 @@ describe("Model", () => {
 
         it("does not override parent class options", () => {
           expect(BaseModel.apiNamespace).not.to.eq(config.apiNamespace)
-          expect(BaseModel.jwt).not.to.eq(config.jwt)
         })
       })
     })
@@ -1347,12 +1430,15 @@ describe("Model", () => {
 
   describe("#fetchOptions", () => {
     context("jwt is set", () => {
+      let stub : SinonStub
+
       beforeEach(() => {
-        ApplicationRecord.jwt = "g3tm3"
+        stub = sinon.stub(ApplicationRecord, 'getJWT') 
+        stub.returns('g3tm3')
       })
 
       afterEach(() => {
-        ApplicationRecord.jwt = undefined
+        stub.restore()
       })
 
       it("sets the auth header", () => {

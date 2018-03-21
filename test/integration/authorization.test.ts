@@ -1,7 +1,7 @@
 import { sinon, expect, fetchMock } from "../test-helper"
 import { SinonSpy } from "sinon"
 import { JSORMBase, Model, Attr } from "../../src/index"
-import { StorageBackend } from "../../src/local-storage"
+import { StorageBackend, InMemoryStorageBackend } from "../../src/credential-storage"
 
 const authorResponse = {
   id: "1",
@@ -44,6 +44,8 @@ const buildModels = () => {
     @Attr nilly: string
   }
   Author = A
+
+  ApplicationRecord.credentialStorageBackend = new InMemoryStorageBackend()
 }
 
 describe("authorization headers", () => {
@@ -114,7 +116,7 @@ describe("authorization headers", () => {
     it("does not override the JWT", async () => {
       await Author.all()
 
-      expect(ApplicationRecord.jwt).to.eq("dont change me")
+      expect(ApplicationRecord.getJWT()).to.eq("dont change me")
     })
   })
 
@@ -145,17 +147,11 @@ describe("authorization headers", () => {
       )
 
       expect(Author.getJWT()).to.eq("somet0k3n")
-      expect(ApplicationRecord.jwt).to.eq("somet0k3n")
+      expect(ApplicationRecord.getJWT()).to.eq("somet0k3n")
       await Author.all()
     })
 
     describe("local storage", () => {
-      let credentialStorageMock: {
-        getItem: SinonSpy
-        setItem: SinonSpy
-        removeItem: SinonSpy
-      }
-
       beforeEach(() => {
         // Clear out model classes sot that each test block must recreate them after doing
         // necessary stubbing. Otherwise we might hide errors by mistake. See above comment
@@ -163,70 +159,64 @@ describe("authorization headers", () => {
         ;(<any>ApplicationRecord) = null
         ;(<any>Author) = null
 
-        credentialStorageMock = {
-          setItem: sinon.spy(),
-          getItem: sinon.spy(),
-          removeItem: sinon.spy()
-        }
-        JSORMBase.credentialStorageBackend = credentialStorageMock
+        buildModels()
       })
 
-      afterEach(() => {
-        JSORMBase.credentialStorageBackend = undefined as any
-        JSORMBase.jwtStorage = false
-      })
+      describe("when JWT is not in credentialStorage", () => {
+        it("updates credentialStorage on server response", async () => {
+          await Author.all()
 
-      describe("when configured to store jwt", () => {
-        describe("when JWT is not in credentialStorage", () => {
-          beforeEach(() => {
-            JSORMBase.jwtStorage = "jwt"
-
-            buildModels()
-          })
-
-          it("updates credentialStorage on server response", async () => {
-            await Author.all()
-
-            expect(credentialStorageMock.setItem).to.have.been.calledWith(
-              "jwt",
-              "somet0k3n"
-            )
-          })
-
-          it("uses the new jwt in subsequent requests", async () => {
-            await Author.all()
-            fetchMock.restore()
-
-            fetchMock.mock(
-              (url, opts: any) => {
-                expect(opts.headers.Authorization).to.eq(
-                  'Token token="somet0k3n"'
-                )
-                return true
-              },
-              { status: 200, body: stubAll, sendAsJson: true }
-            )
-            expect(Author.getJWT()).to.eq("somet0k3n")
-            expect(ApplicationRecord.jwt).to.eq("somet0k3n")
-
-            await Author.all()
-          })
+          expect(ApplicationRecord.getJWT()).to.eq("somet0k3n")
         })
 
-        describe("when JWT is already in credentialStorage", () => {
-          beforeEach(() => {
-            JSORMBase.jwtStorage = "jwt"
-            fetchMock.restore()
-            JSORMBase.credentialStorage.getJWT = sinon.stub().returns("myt0k3n")
+        it("uses the new jwt in subsequent requests", async () => {
+          await Author.all()
+          fetchMock.restore()
 
-            buildModels()
-          })
+          fetchMock.mock(
+            (url, opts: any) => {
+              expect(opts.headers.Authorization).to.eq(
+                'Token token="somet0k3n"'
+              )
+              return true
+            },
+            { status: 200, body: stubAll, sendAsJson: true }
+          )
+          expect(Author.getJWT()).to.eq("somet0k3n")
+          expect(ApplicationRecord.getJWT()).to.eq("somet0k3n")
 
-          it("sends it in initial request", async () => {
+          await Author.all()
+        })
+      })
+
+      describe("when JWT is already in credentialStorage", () => {
+        beforeEach(() => {
+          fetchMock.restore()
+
+          ApplicationRecord.credentialStorage.setJWT("myt0k3n")
+        })
+
+        it("sends it in initial request", async () => {
+          fetchMock.mock(
+            (url: string, opts: any) => {
+              expect(opts.headers.Authorization).to.eq(
+                'Token token="myt0k3n"'
+              )
+              return true
+            },
+            { status: 200, body: stubFind, sendAsJson: true }
+          )
+
+          await Author.find(1)
+        })
+
+        describe("when JWT is update from outside the model classes", () => {
+          it('uses the new token in requests', async () => {
+            ApplicationRecord.credentialStorage.setJWT("newToken")
             fetchMock.mock(
               (url: string, opts: any) => {
                 expect(opts.headers.Authorization).to.eq(
-                  'Token token="myt0k3n"'
+                  'Token token="newToken"'
                 )
                 return true
               },
@@ -235,20 +225,6 @@ describe("authorization headers", () => {
 
             await Author.find(1)
           })
-        })
-      })
-
-      describe("when configured to NOT store jwt", () => {
-        beforeEach(() => {
-          JSORMBase.jwtStorage = false
-
-          buildModels()
-        })
-
-        it("is does NOT update credentialStorage on server response", async () => {
-          await Author.all()
-
-          expect(credentialStorageMock.setItem).not.to.have.been.called
         })
       })
     })
@@ -272,13 +248,12 @@ describe("authorization headers", () => {
       const author = new Author({ firstName: "foo" })
       await author.save()
 
-      expect(ApplicationRecord.jwt).to.eq("somet0k3n")
+      expect(ApplicationRecord.getJWT()).to.eq("somet0k3n")
     })
   })
 
   afterEach(() => {
     fetchMock.restore()
-    ApplicationRecord.jwt = undefined
   })
 })
 
