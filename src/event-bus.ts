@@ -1,14 +1,8 @@
-export interface IAddListener {
-  (key: string, callback: Function): void
-}
+export type IAddListener = (key: string, callback: Function) => void
 
-export interface IRemoveListener {
-  (key: string, callback: Function): void
-}
+export type IRemoveListener = (key: string, callback: Function) => void
 
-export interface IDispatch {
-  (key: string, context: any, value: any): void
-}
+export type IDispatch = (key: string, context: any, value: any) => void
 
 export interface IEventBus {
   addEventListener: IAddListener
@@ -16,5 +10,6 @@ export interface IEventBus {
   dispatch: IDispatch
 }
 
-const EventBus: IEventBus = require('eventbusjs')
+import * as EventBusAny from 'eventbusjs'
+const EventBus: IEventBus = EventBusAny
 export { EventBus }
