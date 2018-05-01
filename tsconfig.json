@@ -13,6 +13,7 @@
     "importHelpers": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
     "noLib": false,
     "removeComments": false,
     "strict": true,

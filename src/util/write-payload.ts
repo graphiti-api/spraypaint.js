@@ -32,7 +32,7 @@ export class WritePayload<T extends JSORMBase> {
     const attrs: ModelRecord<T> = {}
 
     this._eachAttribute((key, value) => {
-      if (!this.model.isPersisted || this.model.changes()[key]) {
+      if (!this.model.isPersisted || (<any>this.model.changes())[key]) {
         attrs[this.model.klass.serializeKey(key)] = value
       }
     })
@@ -241,13 +241,13 @@ export class WritePayload<T extends JSORMBase> {
     return false
   }
 
-  private _eachAttribute(callback: (key: keyof T, val: any) => void): void {
+  private _eachAttribute<K extends keyof T>(callback: (key: K, val: T[K]) => void): void {
     const modelAttrs = this.model.typedAttributes
 
     Object.keys(modelAttrs).forEach(key => {
       if (this.model.klass.attributeList[key].persist) {
         const value = modelAttrs[key]
-        callback(key as keyof T, value)
+        callback(key as K, value)
       }
     })
   }

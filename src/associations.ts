@@ -21,9 +21,9 @@ const wasDestroyed = (model: JSORMBase) => {
 export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T>
   implements Association {
   isRelationship: true = true
-  jsonapiType: string
-  typeRegistry: JsonapiTypeRegistry
-  private _klass: typeof JSORMBase
+  jsonapiType!: string
+  typeRegistry!: JsonapiTypeRegistry
+  private _klass!: typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {
     super(options)
@@ -67,9 +67,9 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T>
 export class HasMany<T extends JSORMBase> extends Attribute<T[]>
   implements Association {
   isRelationship: true = true
-  jsonapiType: string
-  typeRegistry: JsonapiTypeRegistry
-  private _klass: typeof JSORMBase
+  jsonapiType!: string
+  typeRegistry!: JsonapiTypeRegistry
+  private _klass!: typeof JSORMBase
 
   constructor(options: AssociationRecord<T>) {
     super(options as any)

@@ -110,7 +110,7 @@ describe("fetch middleware", () => {
       if (url.indexOf("page") > -1) {
         shouldAbort = true
       }
-      if (options.body && options.body.indexOf("abortme") > -1) {
+      if (options.body && (options.body as string).indexOf("abortme") > -1) {
         shouldAbort = true
       }
 
@@ -118,7 +118,7 @@ describe("fetch middleware", () => {
         throw ABORT_ERR
       }
 
-      options.headers["CUSTOM-HEADER"] = "whatever"
+      ;(options.headers as Headers)["CUSTOM-HEADER"] = "whatever"
     })
 
     middleware.afterFilters.push((response, json) => {

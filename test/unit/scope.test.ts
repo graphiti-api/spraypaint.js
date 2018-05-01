@@ -6,7 +6,7 @@ let scope: Scope<typeof Author>
 
 beforeEach(() => {
   const model = sinon.stub() as any
-  model['jsonapiType'] = "people"
+  model.jsonapiType = "people"
   scope = new Scope(model)
 })
 
