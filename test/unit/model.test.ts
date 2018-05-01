@@ -68,7 +68,7 @@ describe("Model", () => {
           afterEach(() => {
             ;(JSORMBase as any)._credentialStorage = originalStore
           })
-          
+
           context('localStorage API is present', () => {
             let localStorageStub: {
               getItem: SinonSpy
@@ -137,7 +137,7 @@ describe("Model", () => {
         describe('JWT Persistence', () => {
           beforeEach(() => {
             BaseClass.credentialStorageBackend = new InMemoryStorageBackend()
-          }) 
+          })
 
           describe("#getJWT", () => {
             beforeEach(() => {
@@ -1421,9 +1421,9 @@ describe("Model", () => {
       let author = new Author({ firstName: "Stephen" })
       let duped = author.dup()
 
-      let descriptor = Object.getOwnPropertyDescriptor(author, 'relationships')
+      let descriptor = Object.getOwnPropertyDescriptor(author, 'relationships') as PropertyDescriptor
       expect(descriptor.enumerable).to.eq(false)
-      descriptor = Object.getOwnPropertyDescriptor(duped, 'relationships')
+      descriptor = Object.getOwnPropertyDescriptor(duped, 'relationships') as PropertyDescriptor
       expect(descriptor.enumerable).to.eq(false)
     })
   })
@@ -1433,7 +1433,7 @@ describe("Model", () => {
       let stub : SinonStub
 
       beforeEach(() => {
-        stub = sinon.stub(ApplicationRecord, 'getJWT') 
+        stub = sinon.stub(ApplicationRecord, 'getJWT')
         stub.returns('g3tm3')
       })
 

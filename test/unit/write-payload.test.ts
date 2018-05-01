@@ -3,7 +3,7 @@ import { WritePayload } from "../../src/util/write-payload"
 import { Person, PersonWithDasherizedKeys } from "../fixtures"
 
 describe("WritePayload", () => {
-  it("underscores attributes", function() {
+  it("underscores attributes", () => {
     let person = new Person({ first_name: "Joe" })
     let payload = new WritePayload(person, true)
     expect(payload.asJSON()).to.deep.equal({
@@ -16,7 +16,7 @@ describe("WritePayload", () => {
     })
   })
 
-  it("dasherizes attributes", function() {
+  it("dasherizes attributes", () => {
     let person = new PersonWithDasherizedKeys({ first_name: "Joe" })
     let payload = new WritePayload(person, true)
     expect(payload.asJSON()).to.deep.equal({

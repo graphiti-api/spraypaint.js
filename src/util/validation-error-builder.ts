@@ -4,7 +4,7 @@ import {
   JsonapiError,
   JsonapiErrorMeta
 } from "../jsonapi-spec"
-import { ValidationErrors } from "../validation-errors"
+import { ValidationErrors, ValidationError } from "../validation-errors"
 
 export class ValidationErrorBuilder<T extends JSORMBase> {
   static apply<T extends JSORMBase>(
@@ -44,21 +44,20 @@ export class ValidationErrorBuilder<T extends JSORMBase> {
     this.model.errors = errorsAccumulator
   }
 
-  private _processResource(
-    errorsAccumulator: ValidationErrors<T>,
+  private _processResource<R extends JSORMBase=T>(
+    errorsAccumulator: ValidationErrors<R>,
     meta: JsonapiErrorMeta,
     error: JsonapiError
   ) {
     let attribute = this.model.klass.deserializeKey(meta.attribute)
-
     errorsAccumulator[attribute] = {
-      title: error.title,
-      code: error.code,
+      title: error.title as string,
+      code: error.code as string,
       attribute: meta.attribute,
       message: meta.message,
       fullMessage: attribute === "base" ? meta.message : error.detail,
       rawPayload: error,
-    } as any
+    }
   }
 
   private _processRelationship<R extends JSORMBase>(
@@ -66,7 +65,7 @@ export class ValidationErrorBuilder<T extends JSORMBase> {
     meta: JsonapiErrorMeta,
     err: JsonapiError
   ) {
-    let relatedObject = (<any>model)[meta.name]
+    let relatedObject = model[meta.name]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find(r => {
         return r.id === meta.id || r.temp_id === meta["temp-id"]

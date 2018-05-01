@@ -388,7 +388,7 @@ describe("ID Map", () => {
         book = new Book({ id: 1, author })
         book.isPersisted = true
         author.isMarkedForDisassociation = true
-        ;(await book.save({ with: "author" })) || this
+        ;(await book.save({ with: "author" }))
       })
 
       it("is still in the store, but removed from the relation", async () => {

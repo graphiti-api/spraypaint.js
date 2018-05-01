@@ -121,7 +121,7 @@ export const applyModelConfig = <T extends typeof JSORMBase>(
   config = { ...config } // clone since we're going to mutate it
 
   // Handle all JWT configuration at once since it's run-order dependent
-  // We'll delete each key we encounter then pass the rest off to 
+  // We'll delete each key we encounter then pass the rest off to
   // a loop for assigning other arbitrary options
   if (config.credentialStorageBackend) {
     ModelClass.credentialStorageBackend = config.credentialStorageBackend
@@ -384,9 +384,9 @@ export class JSORMBase {
   stale: boolean = false
   storeKey: string = ""
 
-  @nonenumerable afterSync: (diff: Record<string, any>) => any | undefined
+  @nonenumerable afterSync?: (diff: Record<string, any>) => any | undefined
   @nonenumerable relationships: Record<string, JSORMBase | JSORMBase[]> = {}
-  @nonenumerable klass: typeof JSORMBase
+  @nonenumerable klass!: typeof JSORMBase
 
   @nonenumerable private _persisted: boolean = false
   @nonenumerable private _markedForDestruction: boolean = false
@@ -396,7 +396,7 @@ export class JSORMBase {
     string,
     JsonapiResourceIdentifier[]
   > = {}
-  @nonenumerable private _attributes: ModelRecord<this>
+  @nonenumerable private _attributes!: ModelRecord<this>
   @nonenumerable private _originalAttributes: ModelRecord<this>
   @nonenumerable private __meta__: any
   @nonenumerable private _errors: ValidationErrors<this> = {}
@@ -483,8 +483,9 @@ export class JSORMBase {
 
       // fire afterSync hook if applicable
       let hasDiff = Object.keys(diff).length > 0
-      let hasAfterSync = typeof this.afterSync !== "undefined"
-      if (hasDiff && hasAfterSync) this.afterSync(diff)
+      if (hasDiff && typeof this.afterSync !== "undefined") {
+        this.afterSync(diff)
+      }
     }
     return this._onStoreChange
   }
