@@ -129,24 +129,24 @@ type DecoratorArgs<T extends JSORMBase> =
   | AssociationFactoryOpts<T>
   | string
   | typeof JSORMBase
-/* 
- * Yup that's a super-Java-y method name.  Decorators in 
+/*
+ * Yup that's a super-Java-y method name.  Decorators in
  * ES7/TS are either of the form:
- * 
+ *
  * @decorator foo : string
- * or 
+ * or
  * @decorator(options) foo : string
- * 
- * The first is a function that directly decorates the 
+ *
+ * The first is a function that directly decorates the
  * property, while this second is a factory function
  * that returns a decorator function.
- * 
+ *
  * This method builds the factory function for each of our
- * association types. 
- * 
+ * association types.
+ *
  * Additionally, users without decorator support can apply these
  * to their ES6-compatible classes directly if they prefer:
- * 
+ *
  * ``` javascript
  * class Person extends ApplicationRecord {
  *   fullName() { `${this.firstName} ${this.lastName} `}
@@ -155,7 +155,7 @@ type DecoratorArgs<T extends JSORMBase> =
  * Attr(Person, 'lastName')
  * BelongsTo(Person, 'mother', { type: Person })
  * ```
- * 
+ *
  */
 
 const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(
@@ -220,7 +220,7 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(
       attrDefinition.owner = target.constructor
       attrDefinition.apply(ModelClass)
 
-      attrDefinition.descriptor()
+      return attrDefinition.descriptor()
     }
 
     if (isModelClass(targetOrConfig) && propertyKey) {
