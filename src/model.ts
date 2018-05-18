@@ -752,6 +752,10 @@ export class JSORMBase {
     return this.scope().per(size)
   }
 
+  static extraParams<I extends typeof JSORMBase>(this: I, clause: any) {
+    return this.scope().extraParams(clause)
+  }
+
   static order<I extends typeof JSORMBase>(
     this: I,
     clause: SortScope | string

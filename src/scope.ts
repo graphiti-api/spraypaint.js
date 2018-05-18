@@ -47,6 +47,7 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
   private _extra_fields: FieldScope = {}
   private _include: IncludeScopeHash = {}
   private _stats: StatsScope = {}
+  private _extraParams: any = {}
 
   constructor(model: T) {
     this.model = model
@@ -107,6 +108,17 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     for (const key in clause) {
       if (clause.hasOwnProperty(key)) {
         copy._filter[key] = clause[key]
+      }
+    }
+    return copy
+  }
+
+  extraParams(clause: any): Scope<T> {
+    const copy = this.copy()
+
+    for (const key in clause) {
+      if (clause.hasOwnProperty(key)) {
+        copy._extraParams[key] = clause[key]
       }
     }
     return copy
@@ -209,6 +221,10 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
     }
 
     this._mergeAssociationQueryParams(qp, this._associations)
+
+    Object.keys(this._extraParams).forEach((k) => {
+      qp[k] = this._extraParams[k]
+    })
 
     return qp
   }

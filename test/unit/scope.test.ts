@@ -203,6 +203,7 @@ describe("Scope", () => {
         .select({ pets: ["type"] })
         .selectExtra({ people: ["net_worth"] })
         .stats({ total: "count" })
+        .extraParams({ foo: "bar" })
         .includes({ a: ["b", { c: "d" }] })
       const qp = scope.asQueryParams()
 
@@ -226,6 +227,7 @@ describe("Scope", () => {
         stats: {
           total: "count"
         },
+        foo: "bar",
         include: "a.b,a.c.d"
       })
     })
@@ -257,6 +259,23 @@ describe("Scope", () => {
     describe("when no scoping criteria present", () => {
       it("returns undefined", () => {
         expect(scope.toQueryParams()).to.eq(undefined)
+      })
+    })
+
+    describe("when arbitrary query params added", () => {
+      it("adds to the param string", () => {
+        scope = scope.extraParams({ foo: "bar", bar: "baz" })
+        expect((<string>scope.toQueryParams())).to.eq("foo=bar&bar=baz")
+      })
+
+      it("casts arrays correctly", () => {
+        scope = scope.extraParams({ foo: "bar,baz" })
+        expect((<string>scope.toQueryParams())).to.eq("foo=bar,baz")
+      })
+
+      it("casts objects correctly", () => {
+        scope = scope.extraParams({ foo: { bar: "baz" } })
+        expect((<string>scope.toQueryParams())).to.eq("foo[bar]=baz")
       })
     })
   })
