@@ -11,6 +11,7 @@ Please see [our documentation page](https://jsonapi-suite.github.io/jsonapi_suit
 ```ts
 import { JSORMBase, Model, Attr, HasMany } from "jsorm"
 
+@Model()
 class ApplicationRecord extends JSORMBase {
   static baseUrl = "http://localhost:3000"
   static apiNamespace = "/api/v1"
