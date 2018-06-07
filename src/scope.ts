@@ -258,6 +258,9 @@ export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
         queryParams.filter[key] = associationQueryParams.filter
         queryParams.stats[key] = associationQueryParams.stats
 
+        Object.assign(queryParams.fields, associationQueryParams.fields)
+        Object.assign(queryParams.extra_fields, associationQueryParams.extra_fields)
+
         associationQueryParams.sort.forEach(s => {
           const transformed = this._transformAssociationSortParam(key, s)
           queryParams.sort.push(transformed)

@@ -374,6 +374,50 @@ describe("Model finders", () => {
       expect(data[0]).to.be.instanceof(Person)
       expect(data[0]).to.have.property("id", "2")
     })
+
+    describe("when merging association #select", () => {
+      describe("and primary data already has a #select", () => {
+        beforeEach(() => {
+          fetchMock.reset()
+          fetchMock.get(
+            "http://example.com/api/v1/people?fields[people]=first_name&fields[books]=title,foo",
+            {
+              data: [{ id: "1", type: "people" }]
+            }
+          )
+        })
+
+        it("queries correctly", async () => {
+          const books = Book.select(['title', 'foo'])
+          const personScope = Person.select(['first_name']).merge({ books })
+          const { data } = await personScope.all()
+
+          expect(data.length).to.eq(1)
+          expect(data[0]).to.be.instanceof(Person)
+        })
+      })
+
+      describe("and primary data does not already have a #select", () => {
+        beforeEach(() => {
+          fetchMock.reset()
+          fetchMock.get(
+            "http://example.com/api/v1/people?fields[books]=title,foo",
+            {
+              data: [{ id: "1", type: "people" }]
+            }
+          )
+        })
+
+        it("queries correctly", async () => {
+          const books = Book.select(['title', 'foo'])
+          const personScope = Person.merge({ books })
+          const { data } = await personScope.all()
+
+          expect(data.length).to.eq(1)
+          expect(data[0]).to.be.instanceof(Person)
+        })
+      })
+    })
   })
 
   describe("#select_extra", () => {
@@ -394,6 +438,50 @@ describe("Model finders", () => {
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
       expect(data[0]).to.have.property("id", "2")
+    })
+
+    describe("when merging association #selectExtra", () => {
+      describe("and primary data already has a #selectExtra", () => {
+        beforeEach(() => {
+          fetchMock.reset()
+          fetchMock.get(
+            "http://example.com/api/v1/people?extra_fields[people]=first_name&extra_fields[books]=title,foo",
+            {
+              data: [{ id: "1", type: "people" }]
+            }
+          )
+        })
+
+        it("queries correctly", async () => {
+          const books = Book.selectExtra(['title', 'foo'])
+          const personScope = Person.selectExtra(['first_name']).merge({ books })
+          const { data } = await personScope.all()
+
+          expect(data.length).to.eq(1)
+          expect(data[0]).to.be.instanceof(Person)
+        })
+      })
+
+      describe("and primary data does not already have a #selectExtra", () => {
+        beforeEach(() => {
+          fetchMock.reset()
+          fetchMock.get(
+            "http://example.com/api/v1/people?extra_fields[books]=title,foo",
+            {
+              data: [{ id: "1", type: "people" }]
+            }
+          )
+        })
+
+        it("queries correctly", async () => {
+          const books = Book.selectExtra(['title', 'foo'])
+          const personScope = Person.merge({ books })
+          const { data } = await personScope.all()
+
+          expect(data.length).to.eq(1)
+          expect(data[0]).to.be.instanceof(Person)
+        })
+      })
     })
   })
 
