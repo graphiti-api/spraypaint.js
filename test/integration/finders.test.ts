@@ -272,6 +272,23 @@ describe("Model finders", () => {
       expect(data[0]).to.have.property("id", "2")
     })
 
+    describe("when value is an array", () => {
+      beforeEach(() => {
+        fetchMock.reset()
+        fetchMock.get(
+          "http://example.com/api/v1/people?filter[id]=1,2,3",
+          {
+            data: [{ id: "2", type: "people" }]
+          }
+        )
+      })
+
+      it('converts to comma-delimited string', async () => {
+        const { data } = await Person.where({ id: [1, 2, 3] }).all()
+        expect(data.length).to.eq(1)
+      })
+    })
+
     describe("when value is false", () => {
       beforeEach(() => {
         fetchMock.reset()
