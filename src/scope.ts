@@ -31,7 +31,7 @@ export type SortDir = "asc" | "desc"
 export type SortScope = Record<string, SortDir>
 export type FieldScope = Record<string, string[]>
 export type FieldArg = FieldScope | string[]
-export type WhereClause = Record<string, string | number | boolean>
+export type WhereClause = Record<string, string | number | boolean | string[] | number[]>
 export type StatsScope = Record<string, string | string[]>
 export type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[]
 
