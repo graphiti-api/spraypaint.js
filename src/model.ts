@@ -653,11 +653,8 @@ export class JSORMBase {
   }
 
   dup(): this {
-    let nonEnums = getNonEnumerables(this)
-    flipEnumerable(this, nonEnums, true)
-    let cloned = cloneDeep(this)
-    flipEnumerable(this, nonEnums, false)
-    flipEnumerable(cloned, nonEnums, false)
+    let attrs = Object.assign({}, this.attributes, this.relationships)
+    let cloned = new this.klass(attrs) as any
     return cloned
   }
 

@@ -18,6 +18,7 @@ import {
 } from "../fixtures"
 
 import { Model, Attr, HasOne, HasMany, BelongsTo } from "../../src/decorators"
+import { eq } from 'lodash-es';
 
 // Accessing private property in unit tests so we need a type-loose conversion function
 const modelAttrs = (model: JSORMBase): Record<string, any> =>
@@ -1425,6 +1426,24 @@ describe("Model", () => {
       expect(descriptor.enumerable).to.eq(false)
       descriptor = Object.getOwnPropertyDescriptor(duped, 'relationships') as PropertyDescriptor
       expect(descriptor.enumerable).to.eq(false)
+    })
+
+    // NB: does NOT dupe the relationships
+    describe("when nested relationships", () => {
+      it("still works", () => {
+        let author = new Author({ firstName: "Stephen" })
+        author.isPersisted = true
+        let genre = new Genre({ name: 'Horror' })
+        genre.isPersisted = true
+        let book1 = new Book({ genre })
+        book1.isPersisted = true
+        author.books = [book1]
+        let duped = author.dup()
+        expect(duped.books).to.deep.eq([book1])
+        expect(duped.books[0].isPersisted).to.eq(true)
+        expect(duped.books[0].genre).to.eq(genre)
+        expect(duped.books[0].genre.isPersisted).to.eq(true)
+      })
     })
   })
 
