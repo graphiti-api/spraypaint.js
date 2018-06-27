@@ -1411,11 +1411,27 @@ describe("Model", () => {
 
   describe("#dup()", () => {
     it("returns a new instance of the same object", () => {
-      let author = new Author({ firstName: "Stephen" })
+      let author = new Author({ id: '1', firstName: "Stephen" })
+      author.isPersisted = true
+      author.isMarkedForDestruction = true
+      author.isMarkedForDisassociation = true
+
+      let errors = { firstName: { title: "asdf" } } as any
+      author.errors = errors
       let duped = author.dup()
       duped.firstName = "updated"
       expect(author.firstName).to.eq("Stephen")
       expect(duped.firstName).to.eq("updated")
+      expect(duped.id).to.eq("1")
+      expect(duped.isPersisted).to.eq(true)
+      expect(duped.isMarkedForDestruction).to.eq(true)
+      expect(duped.isMarkedForDisassociation).to.eq(true)
+      expect(duped.errors).to.deep.equal({ firstName: { title: "asdf" } })
+      duped.isPersisted = false
+      expect(author.isPersisted).to.eq(true)
+      let dupErrors = duped.errors as any
+      dupErrors.firstName = "new"
+      expect(author.errors.firstName).to.deep.eq({ title: "asdf" })
     })
 
     it("does not recast nonenumerables to enumerable", () => {

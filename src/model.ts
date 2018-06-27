@@ -655,6 +655,11 @@ export class JSORMBase {
   dup(): this {
     let attrs = Object.assign({}, this.attributes, this.relationships)
     let cloned = new this.klass(attrs) as any
+    cloned.id = this.id
+    cloned.isPersisted = this.isPersisted
+    cloned.isMarkedForDestruction = this.isMarkedForDestruction
+    cloned.isMarkedForDisassociation = this.isMarkedForDisassociation
+    cloned.errors = Object.assign({}, this.errors)
     return cloned
   }
 
