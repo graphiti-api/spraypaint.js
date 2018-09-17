@@ -1,6 +1,6 @@
 import { expect, sinon } from "../test-helper"
 import { SinonSpy, SinonStub } from "sinon"
-import { JSORMBase } from "../../src/model"
+import { SpraypaintBase } from "../../src/model"
 import { hasOne } from "../../src/associations"
 import { attr } from "../../src/attribute"
 import { JsonapiTypeRegistry } from "../../src/jsonapi-type-registry"
@@ -21,22 +21,22 @@ import { Model, Attr, HasOne, HasMany, BelongsTo } from "../../src/decorators"
 import { eq } from 'lodash-es';
 
 // Accessing private property in unit tests so we need a type-loose conversion function
-const modelAttrs = (model: JSORMBase): Record<string, any> =>
+const modelAttrs = (model: SpraypaintBase): Record<string, any> =>
   (<any>model)._attributes
 
 describe("Model", () => {
   beforeEach(() => {
-    JSORMBase.initializeCredentialStorage()
+    SpraypaintBase.initializeCredentialStorage()
   })
   describe("Class Creation/Initialization", () => {
     describe("Typescript Classes + Decorators API", () => {
       describe("Base Class", () => {
-        let BaseClass: typeof JSORMBase
-        let SubClass: typeof JSORMBase
+        let BaseClass: typeof SpraypaintBase
+        let SubClass: typeof SpraypaintBase
 
         beforeEach(() => {
           @Model()
-          class TestBase extends JSORMBase {}
+          class TestBase extends SpraypaintBase {}
           BaseClass = TestBase
 
           @Model()
@@ -45,7 +45,7 @@ describe("Model", () => {
         })
 
         it("creates a new model types registry", () => {
-          expect((<any>JSORMBase)._typeRegistry).to.be.undefined
+          expect((<any>SpraypaintBase)._typeRegistry).to.be.undefined
           expect(BaseClass.typeRegistry).to.be.instanceOf(JsonapiTypeRegistry)
         })
 
@@ -63,11 +63,11 @@ describe("Model", () => {
           let originalStore : CredentialStorage
 
           beforeEach(() => {
-            originalStore = (JSORMBase as any)._credentialStorage
+            originalStore = (SpraypaintBase as any)._credentialStorage
           })
 
           afterEach(() => {
-            ;(JSORMBase as any)._credentialStorage = originalStore
+            ;(SpraypaintBase as any)._credentialStorage = originalStore
           })
 
           context('localStorage API is present', () => {
@@ -89,16 +89,16 @@ describe("Model", () => {
                 originalStorage = localStorage
               }
               ;(global as any).localStorage = localStorageStub
-              JSORMBase.initializeCredentialStorage()
+              SpraypaintBase.initializeCredentialStorage()
             })
 
             afterEach(() => {
               ;(global as any).localStorage = originalStorage
-              JSORMBase.initializeCredentialStorage()
+              SpraypaintBase.initializeCredentialStorage()
             })
 
             it('defaults to use localStorage', () => {
-              expect(JSORMBase.credentialStorageBackend).to.eq(localStorageStub)
+              expect(SpraypaintBase.credentialStorageBackend).to.eq(localStorageStub)
             })
           })
 
@@ -119,18 +119,18 @@ describe("Model", () => {
             })
 
             it('defaults an in-memory store', () => {
-              JSORMBase.initializeCredentialStorage()
-              expect(JSORMBase.credentialStorageBackend).to.be.instanceOf(InMemoryStorageBackend)
+              SpraypaintBase.initializeCredentialStorage()
+              expect(SpraypaintBase.credentialStorageBackend).to.be.instanceOf(InMemoryStorageBackend)
             })
           })
 
           describe('Assigning credential storage backend', () => {
             it('re-initializes the credential store with the new backend', () => {
               let backend = {} as any
-              JSORMBase.credentialStorageBackend = backend
+              SpraypaintBase.credentialStorageBackend = backend
 
-              expect(JSORMBase.credentialStorage).not.to.eq(originalStore)
-              expect((JSORMBase.credentialStorage as any)._backend).to.eq(backend)
+              expect(SpraypaintBase.credentialStorage).not.to.eq(originalStore)
+              expect((SpraypaintBase.credentialStorage as any)._backend).to.eq(backend)
             })
           })
         })
@@ -154,7 +154,7 @@ describe("Model", () => {
                 @Model({
                   jwtStorage: false
                 })
-                class NoJWT extends JSORMBase {}
+                class NoJWT extends SpraypaintBase {}
                 expect(NoJWT.getJWT()).to.eq(undefined)
               })
             })
@@ -173,7 +173,7 @@ describe("Model", () => {
                 @Model({
                   jwtStorage: "MyJWT",
                 })
-                class Base extends JSORMBase {}
+                class Base extends SpraypaintBase {}
                 BaseClass = Base
 
                 BaseClass.credentialStorageBackend = backend
@@ -212,7 +212,7 @@ describe("Model", () => {
                 })
 
                 it("does not set it on the base class or other sibling classes", () => {
-                  expect(JSORMBase.getJWT()).to.equal(undefined)
+                  expect(SpraypaintBase.getJWT()).to.equal(undefined)
                   expect(ApplicationRecord.getJWT()).to.equal(undefined)
                 })
               })
@@ -222,7 +222,7 @@ describe("Model", () => {
       })
 
       @Model()
-      class BaseModel extends JSORMBase {}
+      class BaseModel extends SpraypaintBase {}
 
       @Model()
       class Post extends BaseModel {
@@ -351,7 +351,7 @@ describe("Model", () => {
     })
 
     describe(".extend() API", () => {
-      const BaseModel = JSORMBase.extend({})
+      const BaseModel = SpraypaintBase.extend({})
 
       const Human = BaseModel.extend({
         attrs: {
@@ -466,7 +466,7 @@ describe("Model", () => {
       /*
        *
        * While the underlying javascript functions correctly, the
-       * current type definitions for the JSORMBase.extend() API
+       * current type definitions for the SpraypaintBase.extend() API
        * don't allow for declaring a typescript class based on a
        * class created from extend().  This was originally working,
        * but the type definitions were VERY complicated, and in
@@ -514,7 +514,7 @@ describe("Model", () => {
           jwtStorage: 'foobarJWT',
           jwt: "abc123",
         }
-        let MyModel : typeof JSORMBase
+        let MyModel : typeof SpraypaintBase
         let originalStore : StorageBackend
 
         beforeEach(() => {

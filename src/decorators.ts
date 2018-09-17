@@ -2,7 +2,7 @@ import { pluralize, underscore } from "inflected"
 
 import {
   applyModelConfig,
-  JSORMBase,
+  SpraypaintBase,
   ModelConfiguration,
   ModelConfigurationOptions,
   isModelClass,
@@ -22,24 +22,24 @@ import {
 import { config as envConfig, inBrowser } from "./util/env"
 import { logger } from "./logger"
 
-type ModelDecorator = <M extends typeof JSORMBase>(target: M) => M
+type ModelDecorator = <M extends typeof SpraypaintBase>(target: M) => M
 
 const ModelDecorator = (config?: ModelConfigurationOptions): ModelDecorator => {
-  return <M extends typeof JSORMBase>(target: M): M => {
+  return <M extends typeof SpraypaintBase>(target: M): M => {
     modelFactory(target, config)
     return target
   }
 }
 
 export const initModel = (
-  modelClass: typeof JSORMBase,
+  modelClass: typeof SpraypaintBase,
   config?: ModelConfigurationOptions
 ): void => {
   modelFactory(modelClass, config)
 }
 
-const modelFactory = <M extends typeof JSORMBase>(
-  ModelClass: typeof JSORMBase,
+const modelFactory = <M extends typeof SpraypaintBase>(
+  ModelClass: typeof SpraypaintBase,
   config?: ModelConfigurationOptions
 ): void => {
   ensureModelInheritance(ModelClass)
@@ -63,21 +63,21 @@ const modelFactory = <M extends typeof JSORMBase>(
 
 const AttrDecoratorFactory: {
   (config?: AttributeOptions): PropertyDecorator
-  (target: JSORMBase, propertyKey: string): void
+  (target: SpraypaintBase, propertyKey: string): void
   (
-    target: typeof JSORMBase,
+    target: typeof SpraypaintBase,
     propertyKey: string,
     config?: AttributeOptions
   ): void
 } = (
-  configOrTarget?: typeof JSORMBase | JSORMBase | AttributeOptions | undefined,
+  configOrTarget?: typeof SpraypaintBase | SpraypaintBase | AttributeOptions | undefined,
   propertyKey?: string,
   attrConfig?: AttributeOptions
 ): any => {
   let attrDefinition = new Attribute({ name: propertyKey })
 
   const attrFunction = (
-    ModelClass: typeof JSORMBase,
+    ModelClass: typeof SpraypaintBase,
     propKey: string | symbol
   ): PropertyDescriptor => {
     ensureModelInheritance(ModelClass)
@@ -112,23 +112,23 @@ const AttrDecoratorFactory: {
       attrDefinition = new Attribute(configOrTarget)
     }
 
-    return (target: JSORMBase, propKey: string | symbol) => {
+    return (target: SpraypaintBase, propKey: string | symbol) => {
       return attrFunction(<any>target.constructor, propKey)
     }
   }
 }
 
-const ensureModelInheritance = (ModelClass: typeof JSORMBase) => {
+const ensureModelInheritance = (ModelClass: typeof SpraypaintBase) => {
   if (ModelClass.currentClass !== ModelClass) {
     ModelClass.currentClass.inherited(ModelClass)
   }
 }
 
-type DecoratorFn = (target: JSORMBase, propertyKey: string) => void
-type DecoratorArgs<T extends JSORMBase> =
+type DecoratorFn = (target: SpraypaintBase, propertyKey: string) => void
+type DecoratorArgs<T extends SpraypaintBase> =
   | AssociationFactoryOpts<T>
   | string
-  | typeof JSORMBase
+  | typeof SpraypaintBase
 /*
  * Yup that's a super-Java-y method name.  Decorators in
  * ES7/TS are either of the form:
@@ -158,22 +158,22 @@ type DecoratorArgs<T extends JSORMBase> =
  *
  */
 
-const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(
+const AssociationDecoratorFactoryBuilder = <T extends SpraypaintBase>(
   AttrType: any
 ) => {
   const DecoratorFactory: {
     (optsOrType?: DecoratorArgs<T>): DecoratorFn
     (
-      target: typeof JSORMBase,
+      target: typeof SpraypaintBase,
       propertyKey: string,
       optsOrType?: AssociationFactoryOpts<T> | string
     ): void
   } = (
-    targetOrConfig?: typeof JSORMBase | DecoratorArgs<T>,
+    targetOrConfig?: typeof SpraypaintBase | DecoratorArgs<T>,
     propertyKey?: string,
     optsOrType?: DecoratorArgs<T>
   ): any => {
-    const extend = (ModelClass: typeof JSORMBase): typeof JSORMBase => {
+    const extend = (ModelClass: typeof SpraypaintBase): typeof SpraypaintBase => {
       ensureModelInheritance(ModelClass)
 
       return ModelClass
@@ -181,7 +181,7 @@ const AssociationDecoratorFactoryBuilder = <T extends JSORMBase>(
 
     let opts: AssociationRecord<T> | undefined
 
-    const factoryFn = (target: JSORMBase, propKey: string) => {
+    const factoryFn = (target: SpraypaintBase, propKey: string) => {
       if (optsOrType === undefined) {
         const inferredType = pluralize(underscore(propKey))
 

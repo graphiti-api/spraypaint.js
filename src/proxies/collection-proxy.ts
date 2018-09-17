@@ -1,8 +1,8 @@
-import { JSORMBase } from "../model"
+import { SpraypaintBase } from "../model"
 import { IResultProxy } from "./index"
 import { JsonapiResponseDoc } from "../jsonapi-spec"
 
-export class CollectionProxy<T extends JSORMBase> implements IResultProxy<T> {
+export class CollectionProxy<T extends SpraypaintBase> implements IResultProxy<T> {
   private _raw_json: JsonapiResponseDoc
   private _collection: T[]
 

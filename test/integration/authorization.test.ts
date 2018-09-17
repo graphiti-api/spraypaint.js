@@ -1,6 +1,6 @@
 import { sinon, expect, fetchMock } from "../test-helper"
 import { SinonSpy } from "sinon"
-import { JSORMBase, Model, Attr } from "../../src/index"
+import { SpraypaintBase, Model, Attr } from "../../src/index"
 import { StorageBackend, InMemoryStorageBackend } from "../../src/credential-storage"
 
 const authorResponse = {
@@ -17,8 +17,8 @@ const stubAll = {
   data: [authorResponse]
 }
 
-let ApplicationRecord: typeof JSORMBase
-let Author: typeof JSORMBase
+let ApplicationRecord: typeof SpraypaintBase
+let Author: typeof SpraypaintBase
 
 /*
  * This is annoying, but since mocha runs its `beforeEach` blocks from the outside in,
@@ -33,7 +33,7 @@ const buildModels = () => {
     baseUrl: "http://example.com",
     apiNamespace: "/api/v1/"
   })
-  class Base extends JSORMBase {}
+  class Base extends SpraypaintBase {}
   ApplicationRecord = Base
 
   @Model({

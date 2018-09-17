@@ -1,4 +1,4 @@
-import { JSORMBase } from "./model"
+import { SpraypaintBase } from "./model"
 import parameterize from "./util/parameterize"
 import {
   IncludeDirective,
@@ -37,7 +37,7 @@ export type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[]
 
 export type AnyRecord = Record<string, any>
 
-export class Scope<T extends typeof JSORMBase = typeof JSORMBase> {
+export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
   model: T
   private _associations: Record<string, Scope<any>> = {}
   private _pagination: { number?: number; size?: number } = {}

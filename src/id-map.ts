@@ -1,4 +1,4 @@
-import { JSORMBase } from "./model"
+import { SpraypaintBase } from "./model"
 import { Association } from "./associations"
 import { cloneDeep } from "./util/clonedeep"
 import { EventBus } from './event-bus'
@@ -10,13 +10,13 @@ export class IDMap {
     return Object.keys(this.data).length
   }
 
-  find(model: JSORMBase, key: string | null = null) {
+  find(model: SpraypaintBase, key: string | null = null) {
     if (!key) key = model.storeKey
     return this.data[key]
   }
 
-  findAll(models: JSORMBase[]) {
-    let records: JSORMBase[] = []
+  findAll(models: SpraypaintBase[]) {
+    let records: SpraypaintBase[] = []
     models.forEach((m) => {
       let found = this.find(m)
       if (found) {
@@ -26,13 +26,13 @@ export class IDMap {
     return records
   }
 
-  create(model: JSORMBase, key: string) {
+  create(model: SpraypaintBase, key: string) {
     model.storeKey = key
     model.stale = false
     this.data[key] = cloneDeep(model.attributes)
   }
 
-  updateOrCreate(model: JSORMBase) {
+  updateOrCreate(model: SpraypaintBase) {
     if (model.storeKey) {
       this.create(model, model.storeKey)
     } else {
@@ -43,12 +43,12 @@ export class IDMap {
     EventBus.dispatch(model.storeKey, {}, this.data[model.storeKey])
   }
 
-  destroy(model: JSORMBase) {
+  destroy(model: SpraypaintBase) {
     model.stale = true
     delete this.data[model.storeKey]
   }
 
-  private keyFor(model: JSORMBase) {
+  private keyFor(model: SpraypaintBase) {
     return `${model.klass.jsonapiType}-${model.id}`
   }
 }

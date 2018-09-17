@@ -1,5 +1,5 @@
 import { JsonapiTypeRegistry } from "../jsonapi-type-registry"
-import { JSORMBase } from "../model"
+import { SpraypaintBase } from "../model"
 import {
   IncludeDirective,
   IncludeScopeHash,
@@ -11,17 +11,17 @@ const deserialize = (
   registry: JsonapiTypeRegistry,
   datum: JsonapiResource,
   payload: JsonapiResponseDoc
-): JSORMBase => {
+): SpraypaintBase => {
   const deserializer = new Deserializer(registry, payload)
   return deserializer.deserialize(datum)
 }
 
 const deserializeInstance = (
-  instance: JSORMBase,
+  instance: SpraypaintBase,
   resource: JsonapiResource,
   payload: JsonapiResponseDoc,
   includeDirective: IncludeScopeHash = {}
-): JSORMBase => {
+): SpraypaintBase => {
   const deserializer = new Deserializer(instance.klass.typeRegistry, payload)
   return deserializer.deserializeInstance(instance, resource, includeDirective)
 }
@@ -29,7 +29,7 @@ const deserializeInstance = (
 class Deserializer {
   payload: JsonapiResponseDoc
   registry: JsonapiTypeRegistry
-  private _deserialized: JSORMBase[] = []
+  private _deserialized: SpraypaintBase[] = []
   private _resources: JsonapiResource[] = []
 
   constructor(registry: JsonapiTypeRegistry, payload: JsonapiResponseDoc) {
@@ -54,7 +54,7 @@ class Deserializer {
     }
   }
 
-  instanceFor(type: string): JSORMBase {
+  instanceFor(type: string): SpraypaintBase {
     const klass = this.registry.get(type)
 
     if (!klass) {
@@ -66,8 +66,8 @@ class Deserializer {
 
   relationshipInstanceFor(
     datum: JsonapiResource,
-    records: JSORMBase[]
-  ): JSORMBase {
+    records: SpraypaintBase[]
+  ): SpraypaintBase {
     let record = records.find(r => {
       return !!(
         r.klass.jsonapiType === datum.type &&
@@ -84,7 +84,7 @@ class Deserializer {
   }
 
   // todo null temp id
-  lookupAssociated(recordSet: JSORMBase[], record: JSORMBase) {
+  lookupAssociated(recordSet: SpraypaintBase[], record: SpraypaintBase) {
     return recordSet.find(r => {
       return !!(
         r.klass.jsonapiType === record.klass.jsonapiType &&
@@ -95,9 +95,9 @@ class Deserializer {
   }
 
   pushRelation(
-    model: JSORMBase,
+    model: SpraypaintBase,
     associationName: string,
-    record: JSORMBase
+    record: SpraypaintBase
   ): void {
     const modelIdx = model as any
     const associationRecords = modelIdx[associationName]
@@ -108,16 +108,16 @@ class Deserializer {
     }
   }
 
-  deserialize(datum: JsonapiResource): JSORMBase {
+  deserialize(datum: JsonapiResource): SpraypaintBase {
     const instance = this.instanceFor(datum.type)
     return this.deserializeInstance(instance, datum, {})
   }
 
   deserializeInstance(
-    instance: JSORMBase,
+    instance: SpraypaintBase,
     datum: JsonapiResource,
     includeDirective: IncludeScopeHash = {}
-  ): JSORMBase {
+  ): SpraypaintBase {
     const existing = this.alreadyDeserialized(datum)
     if (existing) {
       return existing
@@ -152,7 +152,7 @@ class Deserializer {
     return instance
   }
 
-  _removeDeletions(model: JSORMBase, includeDirective: IncludeScopeHash) {
+  _removeDeletions(model: SpraypaintBase, includeDirective: IncludeScopeHash) {
     Object.keys(includeDirective).forEach(key => {
       const modelIdx = model as any
       const relatedObjects = modelIdx[key]
@@ -182,7 +182,7 @@ class Deserializer {
   }
 
   _processRelationships(
-    instance: JSORMBase,
+    instance: SpraypaintBase,
     relationships: Record<string, JsonapiResponseDoc>,
     includeDirective: IncludeScopeHash
   ) {
@@ -229,7 +229,7 @@ class Deserializer {
   }
 
   _iterateValidRelationships(
-    instance: JSORMBase,
+    instance: SpraypaintBase,
     relationships: Record<string, JsonapiResponseDoc>,
     callback: (name: string, data: JsonapiResource[] | JsonapiResource) => void
   ) {

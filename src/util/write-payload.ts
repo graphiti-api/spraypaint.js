@@ -1,4 +1,4 @@
-import { JSORMBase, ModelRecord } from "../model"
+import { SpraypaintBase, ModelRecord } from "../model"
 import { IncludeDirective, IncludeScopeHash } from "./include-directive"
 import { IncludeScope } from "../scope"
 import { tempId } from "./temp-id"
@@ -9,7 +9,7 @@ import {
   JsonapiResource
 } from "../jsonapi-spec"
 
-export class WritePayload<T extends JSORMBase> {
+export class WritePayload<T extends SpraypaintBase> {
   model: T
   jsonapiType: string
   includeDirective: IncludeScopeHash

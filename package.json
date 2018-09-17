@@ -1,13 +1,13 @@
 {
-  "name": "jsorm",
-  "version": "1.3.11",
-  "description": "Javascript ORM",
+  "name": "spraypaint",
+  "version": "0.0.1",
+  "description": "Graphiti Client / Javascript ORM",
   "main": "lib/index.js",
   "module": "lib-esm/index.js",
   "types": "lib-esm/index.d.ts",
   "author": "Lee Richmond<richmolj@gmail.com> & Wade Tandy<wade.tandy@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/jsonapi-suite/jsorm",
+  "homepage": "https://github.com/graphiti-api/spraypaint",
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
     "prebuild": "yarn run clean && yarn test",

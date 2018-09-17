@@ -1,7 +1,7 @@
-import { JSORMBase } from "../model"
+import { SpraypaintBase } from "../model"
 
 export const refreshJWT = (
-  klass: typeof JSORMBase,
+  klass: typeof SpraypaintBase,
   serverResponse: Response
 ): void => {
   const jwt = serverResponse.headers.get("X-JWT")

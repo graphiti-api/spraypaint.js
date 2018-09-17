@@ -1,5 +1,5 @@
 import { expect, sinon } from "../test-helper"
-import { JSORMBase } from "../../src/model"
+import { SpraypaintBase } from "../../src/model"
 import {
   hasMany,
   hasOne,
@@ -10,11 +10,11 @@ import {
 } from "../../src/associations"
 import { Attribute } from "../../src/attribute"
 
-class Employee extends JSORMBase {
+class Employee extends SpraypaintBase {
   position = hasMany({ type: Positions })
 }
 
-class Positions extends JSORMBase {}
+class Positions extends SpraypaintBase {}
 
 describe("Associations", () => {
   const singleDecorators = [
@@ -41,16 +41,16 @@ describe("Associations", () => {
             expect(defaultAssoc).to.be.instanceOf(AssocClass)
           })
 
-          it("accepts a jsormbase class as type", () => {
-            class MyType extends JSORMBase {}
+          it("accepts a SpraypaintBase class as type", () => {
+            class MyType extends SpraypaintBase {}
 
             const typeAssoc = assoc({ type: MyType })
 
             expect(typeAssoc.type).to.eq(MyType)
           })
 
-          it("accepts a jsorm type string as type", () => {
-            class MyType extends JSORMBase {}
+          it("accepts a spraypaint type string as type", () => {
+            class MyType extends SpraypaintBase {}
 
             const jsonapiTypeAssoc = assoc({ type: "type_strings" })
 
@@ -58,8 +58,8 @@ describe("Associations", () => {
             it
           })
 
-          it("accepts a bare jsorm type string", () => {
-            class MyType extends JSORMBase {}
+          it("accepts a bare spraypaint type string", () => {
+            class MyType extends SpraypaintBase {}
 
             const jsonapiTypeAssoc = assoc("type_strings")
 

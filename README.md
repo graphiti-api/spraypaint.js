@@ -1,18 +1,18 @@
-# jsorm
+# Spraypaint
 
-This library provides an interface to APIs following the JSONAPI spec. Though we're not striving for 1:1 compatibility with Active Record, you'll see it's the same basic usage, from scopes to error handling.
+JS Client for [Graphiti](https://graphiti-api.github.io/graphiti) similar to ActiveRecord.
 
 Written in [Typescript](https://www.typescriptlang.org) but works in plain old ES5 as well. This library is isomorphic - use it from the browser, or from the server with NodeJS.
 
 ### Sample Usage
 
-Please see [our documentation page](https://jsonapi-suite.github.io/jsonapi_suite/js/home) for full usage. Below is a Typescript sample:
+Please see [our documentation page](https://graphiti-api.github.io/graphiti/js) for full usage. Below is a Typescript sample:
 
 ```ts
-import { JSORMBase, Model, Attr, HasMany } from "jsorm"
+import { SpraypaintBase, Model, Attr, HasMany } from "spraypaint"
 
 @Model()
-class ApplicationRecord extends JSORMBase {
+class ApplicationRecord extends SpraypaintBase {
   static baseUrl = "http://localhost:3000"
   static apiNamespace = "/api/v1"
 }
@@ -20,12 +20,12 @@ class ApplicationRecord extends JSORMBase {
 @Model()
 class Person extends ApplicationRecord {
   static jsonapiType = "people"
-    
-  @Attr() firstName: string 
+
+  @Attr() firstName: string
   @Attr() lastName: string
-  
+
   @HasMany() pets: Pet[]
-  
+
   get fullName() {
     return `${this.firstName} ${this.lastName}`
   }
@@ -34,7 +34,7 @@ class Person extends ApplicationRecord {
 @Model()
 class Pet extends ApplicationRecord {
   static jsonapiType = "pets"
-  
+
   @Attr() name: string
 }
 
@@ -44,7 +44,7 @@ let { data } = await Person
   .sort('name')
   .includes("pets")
   .all()
-  
+
 let names = data.map((p) => { return p.fullName })
 console.log(names) // ['Joe Blow', 'Joe DiMaggio', ...]
 

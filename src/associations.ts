@@ -1,29 +1,29 @@
 import { Attribute, AttrRecord, Attr } from "./attribute"
-import { JSORMBase } from "./model"
+import { SpraypaintBase } from "./model"
 import { JsonapiTypeRegistry } from "./jsonapi-type-registry"
 
-export interface AssociationRecord<T extends JSORMBase> extends AttrRecord<T> {
+export interface AssociationRecord<T extends SpraypaintBase> extends AttrRecord<T> {
   type?: Attr<T>
   jsonapiType?: string
 }
 
 export interface Association {
   isRelationship: true
-  readonly klass: typeof JSORMBase
+  readonly klass: typeof SpraypaintBase
   jsonapiType: string
 }
 
-const wasDestroyed = (model: JSORMBase) => {
+const wasDestroyed = (model: SpraypaintBase) => {
   if (!model.klass.sync) return false // not supported if idmap is off
   return (model.isPersisted || model.stale) && !model.stored
 }
 
-export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T>
+export class SingleAssociationBase<T extends SpraypaintBase> extends Attribute<T>
   implements Association {
   isRelationship: true = true
   jsonapiType!: string
   typeRegistry!: JsonapiTypeRegistry
-  private _klass!: typeof JSORMBase
+  private _klass!: typeof SpraypaintBase
 
   constructor(options: AssociationRecord<T>) {
     super(options)
@@ -37,24 +37,24 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T>
     }
   }
 
-  get klass(): typeof JSORMBase {
+  get klass(): typeof SpraypaintBase {
     if (!this._klass) {
       this._klass = modelForType(this, this.jsonapiType)
     }
     return this._klass
   }
 
-  getter(context: JSORMBase) {
-    let gotten = context.relationships[this.name] as JSORMBase | null
+  getter(context: SpraypaintBase) {
+    let gotten = context.relationships[this.name] as SpraypaintBase | null
     if (gotten && wasDestroyed(gotten)) {
       delete context.relationships[this.name]
     }
     return context.relationships[this.name]
   }
 
-  setter(context: JSORMBase, val: any): void {
+  setter(context: SpraypaintBase, val: any): void {
     if (val && !val.hasOwnProperty("isRelationship")) {
-      if (!(val instanceof JSORMBase) && !Array.isArray(val)) {
+      if (!(val instanceof SpraypaintBase) && !Array.isArray(val)) {
         val = new this.klass(val)
       }
       context.relationships[this.name] = val
@@ -64,12 +64,12 @@ export class SingleAssociationBase<T extends JSORMBase> extends Attribute<T>
   }
 }
 
-export class HasMany<T extends JSORMBase> extends Attribute<T[]>
+export class HasMany<T extends SpraypaintBase> extends Attribute<T[]>
   implements Association {
   isRelationship: true = true
   jsonapiType!: string
   typeRegistry!: JsonapiTypeRegistry
-  private _klass!: typeof JSORMBase
+  private _klass!: typeof SpraypaintBase
 
   constructor(options: AssociationRecord<T>) {
     super(options as any)
@@ -83,15 +83,15 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]>
     }
   }
 
-  get klass(): typeof JSORMBase {
+  get klass(): typeof SpraypaintBase {
     if (!this._klass) {
       this._klass = modelForType(this, this.jsonapiType)
     }
     return this._klass
   }
 
-  getter(context: JSORMBase) {
-    const gotten = context.relationships[this.name] as JSORMBase[]
+  getter(context: SpraypaintBase) {
+    const gotten = context.relationships[this.name] as SpraypaintBase[]
     if (!gotten) {
       this.setter(context, [])
       return context.relationships[this.name]
@@ -100,7 +100,7 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]>
     let index = gotten.length
     while (index--) {
       if (wasDestroyed(gotten[index])) {
-        let related = context.relationships[this.name] as JSORMBase[]
+        let related = context.relationships[this.name] as SpraypaintBase[]
         gotten.splice(index, 1)
       }
     }
@@ -108,9 +108,9 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]>
     return context.relationships[this.name]
   }
 
-  setter(context: JSORMBase, val: any): void {
+  setter(context: SpraypaintBase, val: any): void {
     if (val && !val.hasOwnProperty("isRelationship")) {
-      if (!(val instanceof JSORMBase) && !Array.isArray(val)) {
+      if (!(val instanceof SpraypaintBase) && !Array.isArray(val)) {
         val = new this.klass(val)
       }
       context.relationships[this.name] = val
@@ -120,21 +120,21 @@ export class HasMany<T extends JSORMBase> extends Attribute<T[]>
   }
 }
 
-export class HasOne<T extends JSORMBase> extends SingleAssociationBase<T> {}
+export class HasOne<T extends SpraypaintBase> extends SingleAssociationBase<T> {}
 
-export class BelongsTo<T extends JSORMBase> extends SingleAssociationBase<T> {}
+export class BelongsTo<T extends SpraypaintBase> extends SingleAssociationBase<T> {}
 
-export interface AssociationFactoryOpts<T extends JSORMBase> {
+export interface AssociationFactoryOpts<T extends SpraypaintBase> {
   type?: string | Attr<T>
   persist?: boolean
   name?: string
 }
 
-export type AssociationFactoryArgs<T extends JSORMBase> =
+export type AssociationFactoryArgs<T extends SpraypaintBase> =
   | AssociationFactoryOpts<T>
   | string
 
-export const hasOne = <T extends JSORMBase>(
+export const hasOne = <T extends SpraypaintBase>(
   options?: AssociationFactoryOpts<T>
 ): HasOne<T> => {
   const opts = extractAssocOpts(options)
@@ -142,7 +142,7 @@ export const hasOne = <T extends JSORMBase>(
   return new HasOne(opts)
 }
 
-export const belongsTo = <T extends JSORMBase>(
+export const belongsTo = <T extends SpraypaintBase>(
   options?: AssociationFactoryArgs<T>
 ): BelongsTo<T> => {
   const opts = extractAssocOpts(options)
@@ -150,7 +150,7 @@ export const belongsTo = <T extends JSORMBase>(
   return new BelongsTo(opts)
 }
 
-export const hasMany = <T extends JSORMBase>(
+export const hasMany = <T extends SpraypaintBase>(
   options?: AssociationFactoryArgs<T>
 ): HasMany<T> => {
   const opts = extractAssocOpts(options)
@@ -158,7 +158,7 @@ export const hasMany = <T extends JSORMBase>(
   return new HasMany(opts)
 }
 
-const extractAssocOpts = <T extends JSORMBase>(
+const extractAssocOpts = <T extends SpraypaintBase>(
   options?: AssociationFactoryArgs<T> | string
 ) => {
   let associationOpts: AssociationRecord<T> = {}
@@ -186,13 +186,13 @@ const extractAssocOpts = <T extends JSORMBase>(
 }
 
 interface ModelAssoc {
-  owner: typeof JSORMBase
+  owner: typeof SpraypaintBase
 }
 
 const modelForType = (
   association: ModelAssoc,
   jsonapiType: string
-): typeof JSORMBase => {
+): typeof SpraypaintBase => {
   const klass = association.owner.typeRegistry.get(jsonapiType)
 
   if (klass) {

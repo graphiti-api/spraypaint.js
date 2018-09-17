@@ -1,4 +1,4 @@
-import { JSORMBase } from "../model"
+import { SpraypaintBase } from "../model"
 import {
   JsonapiResponseDoc,
   JsonapiError,
@@ -6,8 +6,8 @@ import {
 } from "../jsonapi-spec"
 import { ValidationErrors, ValidationError } from "../validation-errors"
 
-export class ValidationErrorBuilder<T extends JSORMBase> {
-  static apply<T extends JSORMBase>(
+export class ValidationErrorBuilder<T extends SpraypaintBase> {
+  static apply<T extends SpraypaintBase>(
     model: T,
     payload: JsonapiResponseDoc
   ): void {
@@ -44,7 +44,7 @@ export class ValidationErrorBuilder<T extends JSORMBase> {
     this.model.errors = errorsAccumulator
   }
 
-  private _processResource<R extends JSORMBase=T>(
+  private _processResource<R extends SpraypaintBase=T>(
     errorsAccumulator: ValidationErrors<R>,
     meta: JsonapiErrorMeta,
     error: JsonapiError
@@ -60,7 +60,7 @@ export class ValidationErrorBuilder<T extends JSORMBase> {
     }
   }
 
-  private _processRelationship<R extends JSORMBase>(
+  private _processRelationship<R extends SpraypaintBase>(
     model: T,
     meta: JsonapiErrorMeta,
     err: JsonapiError

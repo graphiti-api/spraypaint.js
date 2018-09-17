@@ -1,5 +1,5 @@
 import { expect } from "../test-helper"
-import { JSORMBase, Model, Scope, attr } from "../../src/index"
+import { SpraypaintBase, Model, Scope, attr } from "../../src/index"
 import {
   WhereClause,
   SortScope,
@@ -16,16 +16,16 @@ import { CollectionProxy } from "../../src/proxies/collection-proxy"
  * This test file isn't going to assert anything. Instead,
  * it is going to be assigning strict typescript expectations
  * in order to verify that both typescript classes and
- * the `JSORMBase.extend()` apis expose the same static
+ * the `SpraypaintBase.extend()` apis expose the same static
  * class methods on their type definitions.  This will not
  * cause the tests to fail, but it will prevent the type
  * checks from succeeding.
  * 
  */
 @Model()
-class ClassBasedRoot extends JSORMBase {}
+class ClassBasedRoot extends SpraypaintBase {}
 
-const ExtendBasedRoot = JSORMBase.extend({
+const ExtendBasedRoot = SpraypaintBase.extend({
   attrs: {
     stringProp: attr({ type: String })
   }
@@ -80,10 +80,10 @@ describe("Model Class static attributes typings", () => {
         })
 
         it("understands the scope finder methods", () => {
-          const first: () => Promise<RecordProxy<JSORMBase>> = RootClass.first
-          const find: (id: string | number) => Promise<RecordProxy<JSORMBase>> =
+          const first: () => Promise<RecordProxy<SpraypaintBase>> = RootClass.first
+          const find: (id: string | number) => Promise<RecordProxy<SpraypaintBase>> =
             RootClass.find
-          const all: () => Promise<CollectionProxy<JSORMBase>> = RootClass.all
+          const all: () => Promise<CollectionProxy<SpraypaintBase>> = RootClass.all
 
           const result = new ExtendBasedRoot()
 

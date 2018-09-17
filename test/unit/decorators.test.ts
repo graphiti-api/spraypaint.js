@@ -8,7 +8,7 @@ import {
   initModel
 } from "../../src/decorators"
 import { Association } from "../../src/associations"
-import { JSORMBase } from "../../src/model"
+import { SpraypaintBase } from "../../src/model"
 
 describe("Decorators", () => {
   describe("@Model", () => {
@@ -19,12 +19,12 @@ describe("Decorators", () => {
     }
 
     describe("class options", () => {
-      let TestModel: typeof JSORMBase
-      let BaseModel: typeof JSORMBase
+      let TestModel: typeof SpraypaintBase
+      let BaseModel: typeof SpraypaintBase
 
       beforeEach(() => {
         @Model()
-        class MyBase extends JSORMBase {}
+        class MyBase extends SpraypaintBase {}
 
         @Model(config)
         class MyModel extends MyBase {}
@@ -56,8 +56,8 @@ describe("Decorators", () => {
     })
 
     describe("non-decorator syntax", () => {
-      it("exports an initializer that can be applied directly to a JSORMBase-extended class", () => {
-        class TestBase extends JSORMBase {}
+      it("exports an initializer that can be applied directly to a SpraypaintBase-extended class", () => {
+        class TestBase extends SpraypaintBase {}
         initModel(TestBase)
 
         class Person extends TestBase {}
@@ -69,7 +69,7 @@ describe("Decorators", () => {
       })
 
       it("accepts config options", () => {
-        class TestBase extends JSORMBase {}
+        class TestBase extends SpraypaintBase {}
         initModel(TestBase)
 
         class Person extends TestBase {}
@@ -86,11 +86,11 @@ describe("Decorators", () => {
   })
 
   describe("@Attr", () => {
-    let BaseModel: typeof JSORMBase
+    let BaseModel: typeof SpraypaintBase
 
     beforeEach(() => {
       @Model()
-      class MyBase extends JSORMBase {}
+      class MyBase extends SpraypaintBase {}
       BaseModel = MyBase
     })
 
@@ -165,12 +165,12 @@ describe("Decorators", () => {
 
   singleDecorators.forEach(({ Assoc, Name }) => {
     describe(Name, () => {
-      let BaseModel: typeof JSORMBase
-      let AssociationModel: typeof JSORMBase
+      let BaseModel: typeof SpraypaintBase
+      let AssociationModel: typeof SpraypaintBase
 
       beforeEach(() => {
         @Model()
-        class MyBase extends JSORMBase {}
+        class MyBase extends SpraypaintBase {}
         BaseModel = MyBase
 
         @Model({ jsonapiType: "test_associations" })
@@ -267,7 +267,7 @@ describe("Decorators", () => {
       //import { tracked } from '@glimmer/component'
       //let trackedAttr = decoratorFactory(tracked)
       @Model()
-      class BaseModel extends JSORMBase {}
+      class BaseModel extends SpraypaintBase {}
 
       @Model()
       class TestClass extends BaseModel {

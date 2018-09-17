@@ -6,7 +6,7 @@ import * as sinon from "sinon"
 import * as fetchMock from "fetch-mock"
 import "mocha"
 
-import { JSORMBase } from "../src/index"
+import { SpraypaintBase } from "../src/index"
 import { config as envConfig } from "../src/util/env"
 envConfig.productionTip = false
 
@@ -20,8 +20,8 @@ const sinonChai = require("sinon-chai")
 chai.use(chaiThings)
 chai.use(sinonChai)
 
-JSORMBase.logger = winston
-JSORMBase.logger.level = "warn"
+SpraypaintBase.logger = winston
+SpraypaintBase.logger.level = "warn"
 
 let expect = chai.expect
 

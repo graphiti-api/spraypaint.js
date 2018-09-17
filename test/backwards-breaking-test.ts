@@ -1,6 +1,6 @@
 import { sinon, expect } from "./test-helper"
 import { Person, Author } from "./fixtures"
-import { JSORMBase, Model, Attr } from "../src/index"
+import { SpraypaintBase, Model, Attr } from "../src/index"
 
 describe("Breaking changes", () => {
   describe(".extend() API", () => {
@@ -36,7 +36,7 @@ describe("Breaking changes", () => {
 
   describe("Model Methods", () => {
     @Model()
-    class BaseClass extends JSORMBase {}
+    class BaseClass extends SpraypaintBase {}
 
     @Model()
     class TestClass extends BaseClass {

@@ -1,9 +1,9 @@
-import { JSORMBase, ModelRecord, ModelAttributeChangeSet } from "../model"
+import { SpraypaintBase, ModelRecord, ModelAttributeChangeSet } from "../model"
 import { IncludeDirective, IncludeScopeHash } from "./include-directive"
 import { IncludeScope } from "../scope"
 import { JsonapiResourceIdentifier } from "../jsonapi-spec"
 
-class DirtyChecker<T extends JSORMBase> {
+class DirtyChecker<T extends SpraypaintBase> {
   model: T
 
   constructor(model: T) {
@@ -13,7 +13,7 @@ class DirtyChecker<T extends JSORMBase> {
   // Check if we are switching persisted objects. Either:
   // * adding a new already-persisted object to a hasMany array
   // * switching an existing persisted hasOne/belongsTo object
-  checkRelation(relationName: string, relatedModel: JSORMBase): boolean {
+  checkRelation(relationName: string, relatedModel: SpraypaintBase): boolean {
     let dirty = false
 
     if (relatedModel.isPersisted) {
@@ -104,11 +104,11 @@ class DirtyChecker<T extends JSORMBase> {
 
   private _eachRelatedObject(
     includeHash: IncludeScopeHash,
-    callback: (key: string, object: JSORMBase, nested: IncludeScopeHash) => void
+    callback: (key: string, object: SpraypaintBase, nested: IncludeScopeHash) => void
   ): void {
     Object.keys(includeHash).forEach(key => {
       const nested = includeHash[key]
-      let relatedObjects: JSORMBase[] | JSORMBase = (<any>this.model)[key]
+      let relatedObjects: SpraypaintBase[] | SpraypaintBase = (<any>this.model)[key]
 
       if (!Array.isArray(relatedObjects)) {
         relatedObjects = [relatedObjects]

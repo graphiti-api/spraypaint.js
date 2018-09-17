@@ -64,7 +64,7 @@ export type ModelConfigurationOptions = Partial<ModelConfiguration>
 
 export type ModelIdFields = "id" | "temp_id"
 
-export type ModelAttrs<K extends keyof T, T extends JSORMBase> = {
+export type ModelAttrs<K extends keyof T, T extends SpraypaintBase> = {
   [P in K]?: T[P]
 } &
   Partial<Record<ModelIdFields, string>>
@@ -72,13 +72,13 @@ export type ModelAttrs<K extends keyof T, T extends JSORMBase> = {
 export type ModelAttrChanges<T> = { [P in keyof T]?: T[P][] } &
   Partial<Record<ModelIdFields, string[]>>
 
-export type ModelRecord<T extends JSORMBase> = ModelAttrs<
-  keyof (Omit<T, keyof JSORMBase>),
+export type ModelRecord<T extends SpraypaintBase> = ModelAttrs<
+  keyof (Omit<T, keyof SpraypaintBase>),
   T
 >
 
-export type ModelAttributeChangeSet<T extends JSORMBase> = ModelAttrChanges<
-  Omit<T, keyof JSORMBase>
+export type ModelAttributeChangeSet<T extends SpraypaintBase> = ModelAttrChanges<
+  Omit<T, keyof SpraypaintBase>
 >
 
 export interface SaveOptions {
@@ -86,7 +86,7 @@ export interface SaveOptions {
 }
 
 export type ExtendedModel<
-  Superclass extends typeof JSORMBase,
+  Superclass extends typeof SpraypaintBase,
   Attributes,
   Methods,
   Prototype = Superclass["prototype"] & Attributes & Methods
@@ -112,7 +112,7 @@ export interface ExtendOptions<
   methods?: ThisType<M & Attributes & Methods> & Methods
 }
 
-export const applyModelConfig = <T extends typeof JSORMBase>(
+export const applyModelConfig = <T extends typeof SpraypaintBase>(
   ModelClass: T,
   config: ModelConfigurationOptions
 ): void => {
@@ -151,7 +151,7 @@ export const applyModelConfig = <T extends typeof JSORMBase>(
   }
 }
 
-export class JSORMBase {
+export class SpraypaintBase {
   static baseUrl = "http://please-set-a-base-url.com"
   static apiNamespace = "/"
   static jsonapiType?: string
@@ -164,8 +164,8 @@ export class JSORMBase {
 
   static attributeList: Record<string, Attribute> = {}
   static extendOptions: any
-  static parentClass: typeof JSORMBase
-  static currentClass: typeof JSORMBase = JSORMBase
+  static parentClass: typeof SpraypaintBase
+  static currentClass: typeof SpraypaintBase = SpraypaintBase
   static beforeFetch: BeforeFilter | undefined
   static afterFetch: AfterFilter | undefined
 
@@ -221,15 +221,15 @@ export class JSORMBase {
    * this for use around the codebase. For example, if you have a function:
    *
    * ``` typescript
-   * function(arg : typeof JSORMBase | { foo : string }) {
-   *   if(arg.isJSORMModel) {
-   *     let modelClass : typeof JSORMBase = arg
+   * function(arg : typeof SpraypaintBase | { foo : string }) {
+   *   if(arg.isSpraypaintModel) {
+   *     let modelClass : typeof SpraypaintBase = arg
    *   }
    * }
    * ```
    *
    */
-  static readonly isJSORMModel: boolean = true
+  static readonly isSpraypaintModel: boolean = true
 
   static fromJsonapi(
     resource: JsonapiResource,
@@ -238,7 +238,7 @@ export class JSORMBase {
     return deserialize(this.typeRegistry, resource, payload)
   }
 
-  static inherited(subclass: typeof JSORMBase): void {
+  static inherited(subclass: typeof SpraypaintBase): void {
     subclass.parentClass = this
     subclass.currentClass = subclass
     subclass.prototype.klass = subclass
@@ -262,7 +262,7 @@ export class JSORMBase {
     }
   }
 
-  static isSubclassOf(maybeSuper: typeof JSORMBase): boolean {
+  static isSubclassOf(maybeSuper: typeof SpraypaintBase): boolean {
     let current = this.currentClass
 
     while (current) {
@@ -333,7 +333,7 @@ export class JSORMBase {
   }
 
   static extend<
-    T extends typeof JSORMBase,
+    T extends typeof SpraypaintBase,
     ExtendedAttrs,
     Methods,
     SuperType = T
@@ -341,7 +341,7 @@ export class JSORMBase {
     this: T,
     options: ExtendOptions<T, ExtendedAttrs, Methods>
   ): ExtendedModel<T, ExtendedAttrs, Methods> {
-    class Subclass extends (<ExtendedModel<typeof JSORMBase, {}, {}>>this) {}
+    class Subclass extends (<ExtendedModel<typeof SpraypaintBase, {}, {}>>this) {}
 
     this.inherited(<any>Subclass)
 
@@ -385,8 +385,8 @@ export class JSORMBase {
   storeKey: string = ""
 
   @nonenumerable afterSync?: (diff: Record<string, any>) => any | undefined
-  @nonenumerable relationships: Record<string, JSORMBase | JSORMBase[]> = {}
-  @nonenumerable klass!: typeof JSORMBase
+  @nonenumerable relationships: Record<string, SpraypaintBase | SpraypaintBase[]> = {}
+  @nonenumerable klass!: typeof SpraypaintBase
 
   @nonenumerable private _persisted: boolean = false
   @nonenumerable private _markedForDestruction: boolean = false
@@ -441,7 +441,7 @@ export class JSORMBase {
       "isMarkedForDisassociation"
     ].forEach(property => {
       const descriptor = Object.getOwnPropertyDescriptor(
-        JSORMBase.prototype,
+        SpraypaintBase.prototype,
         property
       )
 
@@ -569,7 +569,7 @@ export class JSORMBase {
     return this._attributes
   }
 
-  relationship(name: string): JSORMBase[] | JSORMBase | undefined {
+  relationship(name: string): SpraypaintBase[] | SpraypaintBase | undefined {
     return this.relationships[name]
   }
 
@@ -647,7 +647,7 @@ export class JSORMBase {
     return dc.dirtyAttributes()
   }
 
-  hasDirtyRelation(relationName: string, relatedModel: JSORMBase): boolean {
+  hasDirtyRelation(relationName: string, relatedModel: SpraypaintBase): boolean {
     const dc = new DirtyChecker(this)
     return dc.checkRelation(relationName, relatedModel)
   }
@@ -717,7 +717,7 @@ export class JSORMBase {
         return stack
       }
     } else {
-      // Shouldn't ever get here, as this should only happen on JSORMBase
+      // Shouldn't ever get here, as this should only happen on SpraypaintBase
       return new MiddlewareStack()
     }
   }
@@ -726,62 +726,62 @@ export class JSORMBase {
     this._middlewareStack = stack
   }
 
-  static scope<I extends typeof JSORMBase>(this: I): Scope<I> {
+  static scope<I extends typeof SpraypaintBase>(this: I): Scope<I> {
     return new Scope(this)
   }
 
-  static first<I extends typeof JSORMBase>(this: I) {
+  static first<I extends typeof SpraypaintBase>(this: I) {
     return this.scope().first()
   }
 
-  static all<I extends typeof JSORMBase>(this: I) {
+  static all<I extends typeof SpraypaintBase>(this: I) {
     return this.scope().all()
   }
 
-  static find<I extends typeof JSORMBase>(this: I, id: string | number) {
+  static find<I extends typeof SpraypaintBase>(this: I, id: string | number) {
     return this.scope().find(id)
   }
 
-  static where<I extends typeof JSORMBase>(this: I, clause: WhereClause) {
+  static where<I extends typeof SpraypaintBase>(this: I, clause: WhereClause) {
     return this.scope().where(clause)
   }
 
-  static page<I extends typeof JSORMBase>(this: I, pageNum: number) {
+  static page<I extends typeof SpraypaintBase>(this: I, pageNum: number) {
     return this.scope().page(pageNum)
   }
 
-  static per<I extends typeof JSORMBase>(this: I, size: number) {
+  static per<I extends typeof SpraypaintBase>(this: I, size: number) {
     return this.scope().per(size)
   }
 
-  static extraParams<I extends typeof JSORMBase>(this: I, clause: any) {
+  static extraParams<I extends typeof SpraypaintBase>(this: I, clause: any) {
     return this.scope().extraParams(clause)
   }
 
-  static order<I extends typeof JSORMBase>(
+  static order<I extends typeof SpraypaintBase>(
     this: I,
     clause: SortScope | string
   ) {
     return this.scope().order(clause)
   }
 
-  static select<I extends typeof JSORMBase>(this: I, clause: FieldArg) {
+  static select<I extends typeof SpraypaintBase>(this: I, clause: FieldArg) {
     return this.scope().select(clause)
   }
 
-  static selectExtra<I extends typeof JSORMBase>(this: I, clause: FieldArg) {
+  static selectExtra<I extends typeof SpraypaintBase>(this: I, clause: FieldArg) {
     return this.scope().selectExtra(clause)
   }
 
-  static stats<I extends typeof JSORMBase>(this: I, clause: StatsScope) {
+  static stats<I extends typeof SpraypaintBase>(this: I, clause: StatsScope) {
     return this.scope().stats(clause)
   }
 
-  static includes<I extends typeof JSORMBase>(this: I, clause: IncludeScope) {
+  static includes<I extends typeof SpraypaintBase>(this: I, clause: IncludeScope) {
     return this.scope().includes(clause)
   }
 
-  static merge<I extends typeof JSORMBase>(
+  static merge<I extends typeof SpraypaintBase>(
     this: I,
     obj: Record<string, Scope>
   ) {
@@ -803,9 +803,9 @@ export class JSORMBase {
     return `Token token="${jwt}"`
   }
 
-  static getJWTOwner(): typeof JSORMBase | undefined {
+  static getJWTOwner(): typeof SpraypaintBase | undefined {
     this.logger.warn(
-      "JSORMBase#getJWTOwner() is deprecated. Use #baseClass property instead"
+      "SpraypaintBase#getJWTOwner() is deprecated. Use #baseClass property instead"
     )
 
     return this.baseClass
@@ -851,7 +851,7 @@ export class JSORMBase {
       throw err
     }
 
-    let base = this.klass.baseClass as typeof JSORMBase
+    let base = this.klass.baseClass as typeof SpraypaintBase
     base.store.destroy(this)
 
     return await this._handleResponse(response, () => {
@@ -926,17 +926,17 @@ export class JSORMBase {
   }
 }
 
-;(<any>JSORMBase.prototype).klass = JSORMBase
-JSORMBase.initializeCredentialStorage()
+;(<any>SpraypaintBase.prototype).klass = SpraypaintBase
+SpraypaintBase.initializeCredentialStorage()
 
-export const isModelClass = (arg: any): arg is typeof JSORMBase => {
+export const isModelClass = (arg: any): arg is typeof SpraypaintBase => {
   if (!arg) {
     return false
   }
-  return arg.currentClass && arg.currentClass.isJSORMModel
+  return arg.currentClass && arg.currentClass.isSpraypaintModel
 }
 
-export const isModelInstance = (arg: any): arg is JSORMBase => {
+export const isModelInstance = (arg: any): arg is SpraypaintBase => {
   if (!arg) {
     return false
   }

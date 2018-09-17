@@ -1,7 +1,7 @@
 import { expect, sinon, fetchMock } from "../test-helper"
 import { Author, Book, Genre } from "../fixtures"
 import { tempId } from "../../src/util/temp-id"
-import { JSORMBase, ModelRecord } from "../../src/model"
+import { SpraypaintBase, ModelRecord } from "../../src/model"
 import { ValidationError } from "../../src/validation-errors"
 
 const mockErrors = {

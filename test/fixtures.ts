@@ -1,5 +1,5 @@
 import {
-  JSORMBase,
+  SpraypaintBase,
   Model,
   attr,
   hasMany,
@@ -13,7 +13,7 @@ import { Attr, BelongsTo, HasMany, HasOne } from "../src/decorators"
   baseUrl: "http://example.com",
   apiNamespace: "/api"
 })
-export class ApplicationRecord extends JSORMBase {}
+export class ApplicationRecord extends SpraypaintBase {}
 
 @Model()
 export class Person extends ApplicationRecord {
@@ -114,4 +114,4 @@ export class MultiWord extends ApplicationRecord {
 
 export const TestJWTSubclass = ApplicationRecord.extend({})
 
-export const NonJWTOwner = JSORMBase.extend({})
+export const NonJWTOwner = SpraypaintBase.extend({})

@@ -1,4 +1,4 @@
-import { JSORMBase } from "../model"
+import { SpraypaintBase } from "../model"
 import { JsonapiResourceIdentifier } from "../jsonapi-spec"
 
 // Build a hash like
@@ -9,7 +9,7 @@ import { JsonapiResourceIdentifier } from "../jsonapi-spec"
 // Will be array regardless of relationship type
 // This will only contain persisted objects
 // Used for dirty tracking associations
-export default (model: JSORMBase, relationNames: string[]) => {
+export default (model: SpraypaintBase, relationNames: string[]) => {
   const identifiers: Record<string, JsonapiResourceIdentifier[]> = {}
   relationNames.forEach(relationName => {
     let relatedObjects = model.relationship(relationName)

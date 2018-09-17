@@ -1,4 +1,4 @@
-export { JSORMBase } from "./model"
+export { SpraypaintBase } from "./model"
 
 export { Attribute, attr } from "./attribute"
 

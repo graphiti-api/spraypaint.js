@@ -1,4 +1,4 @@
-import { JSORMBase } from "./model"
+import { SpraypaintBase } from "./model"
 
 export type Attr<T> = (() => T) | { new (...args: any[]): T & object }
 
@@ -33,7 +33,7 @@ export class Attribute<T = any> {
   name!: string | symbol
   type?: T = undefined
   persist: boolean = true
-  owner!: typeof JSORMBase
+  owner!: typeof SpraypaintBase
 
   constructor(options: AttrRecord<T>) {
     if (!options) {
@@ -53,18 +53,18 @@ export class Attribute<T = any> {
     }
   }
 
-  apply(ModelClass: typeof JSORMBase): void {
+  apply(ModelClass: typeof SpraypaintBase): void {
     Object.defineProperty(ModelClass.prototype, this.name, this.descriptor())
   }
 
   // The model calls this setter
-  setter(context: JSORMBase, val: any): void {
+  setter(context: SpraypaintBase, val: any): void {
     const privateContext: any = context
     privateContext._attributes[this.name] = val
   }
 
   // The model calls this getter
-  getter(context: JSORMBase): any {
+  getter(context: SpraypaintBase): any {
     return context.attributes[this.name]
   }
 
@@ -75,11 +75,11 @@ export class Attribute<T = any> {
     return {
       configurable: true,
       enumerable: true,
-      get(this: JSORMBase): any {
+      get(this: SpraypaintBase): any {
         return attrDef.getter(this)
       },
 
-      set(this: JSORMBase, value): void {
+      set(this: SpraypaintBase, value): void {
         attrDef.setter(this, value)
       }
     }
