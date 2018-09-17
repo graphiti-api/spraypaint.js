@@ -7,7 +7,7 @@
   "types": "lib-esm/index.d.ts",
   "author": "Lee Richmond<richmolj@gmail.com> & Wade Tandy<wade.tandy@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/graphiti-api/spraypaint",
+  "homepage": "https://github.com/graphiti-api/spraypaint.js",
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
     "prebuild": "yarn run clean && yarn test",
