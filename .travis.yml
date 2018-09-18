@@ -15,4 +15,4 @@ deploy:
   on:
     tags: true
     node: node # Only publish with latest node version
-    repo: graphiti-api/spraypaint
+    repo: graphiti-api/spraypaint.js
