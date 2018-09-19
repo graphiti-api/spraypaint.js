@@ -1,4 +1,5 @@
 require("ts-node").register({
+  typeCheck: true,
   compilerOptions: {
     module: "commonjs"
   }

@@ -1,5 +1,6 @@
 import { expect } from "../test-helper"
 import { SpraypaintBase, Model, Scope, attr } from "../../src/index"
+import { KeyCase } from "../../src/model"
 import {
   WhereClause,
   SortScope,
@@ -8,8 +9,7 @@ import {
   IncludeScope,
   StatsScope
 } from "../../src/scope"
-import { RecordProxy } from "../../src/proxies/record-proxy"
-import { CollectionProxy } from "../../src/proxies/collection-proxy"
+import { NullProxy, CollectionProxy, RecordProxy } from '../../src/proxies';
 
 /*
  *
@@ -20,7 +20,7 @@ import { CollectionProxy } from "../../src/proxies/collection-proxy"
  * class methods on their type definitions.  This will not
  * cause the tests to fail, but it will prevent the type
  * checks from succeeding.
- * 
+ *
  */
 @Model()
 class ClassBasedRoot extends SpraypaintBase {}
@@ -44,7 +44,6 @@ describe("Model Class static attributes typings", () => {
           const jsonapiType: string | undefined = RootClass.jsonapiType
           const endpoint: string = RootClass.endpoint
           const jwt: string | undefined = RootClass.jwt
-          const jwtLocalStorage: string | false = RootClass.jwtLocalStorage
           const keyCase: KeyCase = RootClass.keyCase
           const strictAttributes: boolean = RootClass.strictAttributes
         })
@@ -80,7 +79,7 @@ describe("Model Class static attributes typings", () => {
         })
 
         it("understands the scope finder methods", () => {
-          const first: () => Promise<RecordProxy<SpraypaintBase>> = RootClass.first
+          const first: () => Promise<RecordProxy<SpraypaintBase> | NullProxy> = RootClass.first
           const find: (id: string | number) => Promise<RecordProxy<SpraypaintBase>> =
             RootClass.find
           const all: () => Promise<CollectionProxy<SpraypaintBase>> = RootClass.all

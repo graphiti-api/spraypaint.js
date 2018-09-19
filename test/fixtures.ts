@@ -20,19 +20,19 @@ export class Person extends ApplicationRecord {
   static endpoint = "/v1/people"
   static jsonapiType = "people"
 
-  @Attr firstName: string | null
-  @Attr lastName: string | null
+  @Attr firstName!: string | null
+  @Attr lastName!: string | null
 }
 
 @Model()
 export class PersonWithExtraAttr extends Person {
   @Attr({ persist: false })
-  extraThing: string
+  extraThing!: string
 }
 
 @Model({ keyCase: { server: "snake", client: "snake" } })
 export class PersonWithoutCamelizedKeys extends Person {
-  @Attr first_name: string
+  @Attr first_name!: string
 }
 
 @Model({ keyCase: { server: "dash", client: "camel" } })
@@ -43,25 +43,25 @@ export class PersonWithDasherizedKeys extends Person {}
   jsonapiType: "authors"
 })
 export class Author extends Person {
-  @Attr nilly: string
+  @Attr nilly!: string
   @HasMany({ type: "multi_words" })
-  multiWords: MultiWord[]
-  @HasMany("books") specialBooks: Book[]
-  @HasMany() books: Book[]
-  @HasMany() tags: Tag[]
+  multiWords!: MultiWord[]
+  @HasMany("books") specialBooks!: Book[]
+  @HasMany() books!: Book[]
+  @HasMany() tags!: Tag[]
   @BelongsTo({ type: "genres" })
-  genre: Genre
-  @HasOne("bios") bio: Bio
+  genre!: Genre
+  @HasOne("bios") bio!: Bio
 }
 
 @Model()
 export class Book extends ApplicationRecord {
   static jsonapiType = "books"
 
-  @Attr title: string
+  @Attr title!: string
 
   @BelongsTo({ type: "genres" })
-  genre: Genre
+  genre!: Genre
   @HasOne({ type: Author })
   author: any
 }
@@ -89,7 +89,7 @@ export const NonFictionAuthor = Author.extend({
 export class Genre extends ApplicationRecord {
   static jsonapiType = "genres"
 
-  @Attr name: string
+  @Attr name!: string
   @HasMany("authors") authors: any
 }
 
@@ -97,14 +97,14 @@ export class Genre extends ApplicationRecord {
 export class Bio extends ApplicationRecord {
   static jsonapiType = "bios"
 
-  @Attr description: string
+  @Attr description!: string
 }
 
 @Model()
 export class Tag extends ApplicationRecord {
   static jsonapiType = "tags"
 
-  @Attr name: string
+  @Attr name!: string
 }
 
 @Model()

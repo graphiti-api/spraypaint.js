@@ -226,9 +226,9 @@ describe("Model", () => {
 
       @Model()
       class Post extends BaseModel {
-        @Attr title: string
+        @Attr title!: string
         @BelongsTo({ type: Person })
-        author: Person
+        author!: Person
 
         screamTitle(exclamationPoints: number): string {
           let loudness: string = ""
@@ -299,7 +299,7 @@ describe("Model", () => {
       describe("model inheritence", () => {
         @Model()
         class FrontPagePost extends Post {
-          @Attr() pageOrder: number
+          @Attr() pageOrder!: number
 
           isFirst() {
             return this.pageOrder === 1
@@ -484,7 +484,7 @@ describe("Model", () => {
       describe("inheritance with class-based declaration", () => {
         class ExtendedPost extends (<any>Post) {
           // @Attr pageOrder : number
-          pageOrder: number
+          pageOrder!: number
 
           isFirst() {
             return this.pageOrder === 1
@@ -1258,10 +1258,11 @@ describe("Model", () => {
   describe("#unlisten()", () => {
     let author: Author
     let book: Book
+    let removeListenerSpy: SinonSpy
 
     beforeEach(() => {
       ApplicationRecord.sync = true
-      sinon.spy(EventBus, "removeEventListener")
+      removeListenerSpy = sinon.spy(EventBus, "removeEventListener")
       book = new Book({ id: 1 })
       book.isPersisted = true
       author = new Author({ id: 1, books: [book] })
@@ -1269,12 +1270,12 @@ describe("Model", () => {
     })
 
     afterEach(() => {
-      EventBus.removeEventListener.restore()
+      (removeListenerSpy).restore()
     })
 
     it("removes event listener from self + relationships", () => {
       author.unlisten()
-      expect(EventBus.removeEventListener.callCount).to.eq(2)
+      sinon.assert.callCount(removeListenerSpy, 2)
     })
 
     describe("when sync option is false", () => {
@@ -1285,27 +1286,28 @@ describe("Model", () => {
 
       it("does nothing", () => {
         author.unlisten()
-        expect(EventBus.removeEventListener.callCount).to.eq(0)
+        sinon.assert.callCount(removeListenerSpy, 0)
       })
     })
   })
 
   describe("#listen()", () => {
     let author: Author
+    let addListenerSpy: SinonSpy
 
     beforeEach(() => {
       ApplicationRecord.sync = true
-      sinon.spy(EventBus, "addEventListener")
+      addListenerSpy = sinon.spy(EventBus, "addEventListener")
       author = new Author()
     })
 
     afterEach(() => {
-      EventBus.addEventListener.restore()
+      addListenerSpy.restore()
     })
 
     it("adds event listener", () => {
       author.listen()
-      expect(EventBus.addEventListener.callCount).to.eq(1)
+      sinon.assert.callCount(addListenerSpy, 1)
     })
 
     describe("when sync option is false", () => {
@@ -1316,7 +1318,7 @@ describe("Model", () => {
 
       it("does nothing", () => {
         author.listen()
-        expect(EventBus.addEventListener.callCount).to.eq(0)
+        sinon.assert.callCount(addListenerSpy, 0)
       })
     })
   })
@@ -1325,11 +1327,11 @@ describe("Model", () => {
     @Model()
     class RelationGraph extends ApplicationRecord {
       @BelongsTo({ type: Author })
-      author: Author
+      author!: Author
       @HasMany({ type: Book })
-      books: Book
+      books!: Book
       @HasOne({ type: Bio })
-      bio: Bio
+      bio!: Bio
     }
 
     let instance: RelationGraph
