@@ -78,7 +78,7 @@ const AttrDecoratorFactory: {
 
   const attrFunction = (
     ModelClass: typeof SpraypaintBase,
-    propKey: string | symbol
+    propKey: string
   ): PropertyDescriptor => {
     ensureModelInheritance(ModelClass)
 
@@ -112,7 +112,7 @@ const AttrDecoratorFactory: {
       attrDefinition = new Attribute(configOrTarget)
     }
 
-    return (target: SpraypaintBase, propKey: string | symbol) => {
+    return (target: SpraypaintBase, propKey: string) => {
       return attrFunction(<any>target.constructor, propKey)
     }
   }

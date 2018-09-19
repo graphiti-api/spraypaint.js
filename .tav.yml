@@ -1,0 +1,3 @@
+typescript:
+  versions: ">= 2.8.0"
+  commands: yarn test
