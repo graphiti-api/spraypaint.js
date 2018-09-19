@@ -99,7 +99,7 @@ describe("Decorators", () => {
         @Model()
         class TestClass extends BaseModel {
           @Attr({ type: String })
-          testField: string
+          testField!: string
         }
 
         expect(TestClass.attributeList.testField).to.include({
@@ -113,7 +113,7 @@ describe("Decorators", () => {
         @Model()
         class TestClass extends BaseModel {
           @Attr({ type: String })
-          testField: string
+          testField!: string
         }
 
         expect(TestClass.attributeList.testField).to.include({
@@ -128,7 +128,7 @@ describe("Decorators", () => {
       it("sets up the attribute correctly", () => {
         @Model()
         class TestClass extends BaseModel {
-          @Attr testField: string
+          @Attr testField!: string
         }
 
         expect(TestClass.attributeList.testField).to.include({

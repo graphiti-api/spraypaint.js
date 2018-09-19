@@ -22,6 +22,7 @@
     "coverage": "yarn build:coverage && node --harmony ./node_modules/istanbul/lib/cli.js cover --root ./build/src --report lcov --report text ./node_modules/mocha/bin/_mocha ./build/test/**/*.test.js",
     "test": "NODE_ENV=test mocha --opts test/mocha.opts",
     "test:watch": "yarn run test --watch",
+    "test:all-versions": "yarn tav",
     "lint": "yarn lint:tslint",
     "lint:tslint": "tslint -p .",
     "lint:prettier": "prettier \"{src,test}/**/*.{ts,js}\" --list-different",
@@ -65,17 +66,18 @@
     "rollup-plugin-uglify": "2.0.1",
     "sinon": "^4.0.2",
     "sinon-chai": "2.14.0",
+    "test-all-versions": "3.3.3",
     "ts-node": "4.0.1",
     "tslint": "5.9.0",
     "tslint-config-prettier": "1.6.0",
-    "typescript": "2.8.3",
+    "typescript": "3.0.3",
     "winston": "^2.3.1"
   },
   "dependencies": {
     "eventbusjs": "0.2.0",
     "inflected": "2.0.3",
-    "lodash": "4.17.4",
-    "lodash-es": "4.17.4",
+    "lodash": "^4.17.5",
+    "lodash-es": "^4.17.5",
     "tslib": "1.8.1"
   }
 }

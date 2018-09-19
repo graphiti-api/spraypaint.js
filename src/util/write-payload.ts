@@ -241,7 +241,7 @@ export class WritePayload<T extends SpraypaintBase> {
     return false
   }
 
-  private _eachAttribute<K extends keyof T>(callback: (key: K, val: T[K]) => void): void {
+  private _eachAttribute<K extends Extract<keyof T, string>>(callback: (key: K, val: T[K]) => void): void {
     const modelAttrs = this.model.typedAttributes
 
     Object.keys(modelAttrs).forEach(key => {

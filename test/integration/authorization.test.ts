@@ -22,7 +22,7 @@ let Author: typeof SpraypaintBase
 
 /*
  * This is annoying, but since mocha runs its `beforeEach` blocks from the outside in,
- * there are a couple tests we need to be able to reinstantiate the model classes from 
+ * there are a couple tests we need to be able to reinstantiate the model classes from
  * scratch for.  This is because loading JWT from localStorage happens when the model
  * class is created. This means we need to create those classes AFTER the localStorage
  * stubbing has happened. In those tests we will re-run the model instantiation after
@@ -41,7 +41,7 @@ const buildModels = () => {
     jsonapiType: "people"
   })
   class A extends ApplicationRecord {
-    @Attr nilly: string
+    @Attr nilly!: string
   }
   Author = A
 

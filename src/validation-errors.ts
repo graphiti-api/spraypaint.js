@@ -46,5 +46,3 @@ export type ErrorAttrs<T extends SpraypaintBase, K extends keyof T> = {
    */
   [key: string] : IValidationError<T> | undefined
 }
-
-let f = new SpraypaintBase()

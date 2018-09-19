@@ -4,6 +4,9 @@ node_js:
 - lts/*
 - node
 
+script:
+  - yarn run test:all-versions
+
 before_deploy:
   - npm run build
 

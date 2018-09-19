@@ -266,7 +266,7 @@ describe("Model persistence", () => {
 
         fetchMock.mock({
           matcher: "http://example.com/api/v1/people/1",
-          response: new Response({ status: 204 })
+          response: new Response({ status: 204 } as any)
         })
       })
 
@@ -288,7 +288,7 @@ describe("Model persistence", () => {
 
         fetchMock.mock({
           matcher: "http://example.com/api/v1/people/1",
-          response: new Response({ status: 202 })
+          response: new Response({ status: 202 } as any)
         })
       })
 

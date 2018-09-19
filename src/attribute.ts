@@ -5,7 +5,7 @@ export type Attr<T> = (() => T) | { new (...args: any[]): T & object }
 export type AttrType<T> = Attr<T>
 
 export interface AttrRecord<T> {
-  name?: string | symbol
+  name?: string
   type?: AttrType<T>
   persist?: boolean
 }
@@ -23,14 +23,14 @@ export type AttributeValue<Attributes> = {
 }
 
 export type AttributeOptions = Partial<{
-  name: string | symbol
+  name: string
   type: () => any
   persist: boolean
 }>
 
 export class Attribute<T = any> {
   isRelationship = false
-  name!: string | symbol
+  name!: string
   type?: T = undefined
   persist: boolean = true
   owner!: typeof SpraypaintBase
