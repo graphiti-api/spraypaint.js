@@ -76,8 +76,8 @@
   "dependencies": {
     "eventbusjs": "0.2.0",
     "inflected": "2.0.3",
-    "lodash": "4.17.4",
-    "lodash-es": "4.17.4",
+    "lodash": "^4.17.5",
+    "lodash-es": "^4.17.5",
     "tslib": "1.8.1"
   }
 }
