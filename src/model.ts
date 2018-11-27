@@ -161,6 +161,7 @@ export class SpraypaintBase {
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
   static sync: boolean = false
+  static clientApplication: string | null = null
 
   static attributeList: Record<string, Attribute> = {}
   static extendOptions: any
@@ -674,6 +675,10 @@ export class SpraypaintBase {
         Accept: "application/json",
         ["Content-Type"]: "application/json"
       } as any
+    }
+
+    if (this.clientApplication) {
+      options.headers['Client-Application'] = this.clientApplication
     }
 
     const jwt = this.getJWT()
