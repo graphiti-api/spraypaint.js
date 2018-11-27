@@ -1466,6 +1466,27 @@ describe("Model", () => {
   })
 
   describe("#fetchOptions", () => {
+    context("clientApplication is set", () => {
+      beforeEach(() => {
+        Author.clientApplication = 'test-app'
+      })
+
+      afterEach(() => {
+        Author.clientApplication = null
+      })
+
+      it("sets the client application in headers", () => {
+        expect((<any>Author.fetchOptions().headers)['Client-Application']).to.eq('test-app')
+      })
+    })
+
+    context("clientApplication is NOT set", () => {
+      it("does not set client application in headers", () => {
+        let keys = Object.keys(<any>Author.fetchOptions().headers)
+        expect(keys).to.not.contain('Client-Application')
+      })
+    })
+
     context("jwt is set", () => {
       let stub : SinonStub
 

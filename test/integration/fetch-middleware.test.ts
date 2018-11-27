@@ -140,6 +140,22 @@ describe("fetch middleware", () => {
   })
 
   describe("reads", () => {
+    describe("when clientApplication is set", () => {
+      beforeEach(() => {
+        Author.clientApplication = 'test-app'
+      })
+
+      afterEach(() => {
+        Author.clientApplication = null
+      })
+
+      it("is passed in headers", () => {
+        return Author.all().then(({ data }) => {
+          expect(before.options.headers['Client-Application']).to.eq('test-app')
+        })
+      })
+    })
+
     describe("on successful response", () => {
       it("correctly resolves the promise", async () => {
         const { data } = await Author.all()
@@ -295,6 +311,23 @@ describe("fetch middleware", () => {
   })
 
   describe("writes", () => {
+    describe("when clientApplication is set", () => {
+      beforeEach(() => {
+        Author.clientApplication = 'test-app'
+      })
+
+      afterEach(() => {
+        Author.clientApplication = null
+      })
+
+      it("is passed in headers", () => {
+        const author = new Author()
+        return author.save().then(() => {
+          expect(before.options.headers['Client-Application']).to.eq('test-app')
+        })
+      })
+    })
+
     describe("on successful response", () => {
       it("correctly resolves the promise", () => {
         const author = new Author()
