@@ -672,8 +672,8 @@ export class SpraypaintBase {
   static fetchOptions(): RequestInit {
     const options = {
       headers: {
-        Accept: "application/json",
-        ["Content-Type"]: "application/json"
+        Accept: "application/vnd.api+json",
+        ["Content-Type"]: "application/vnd.api+json"
       } as any
     }
 

@@ -168,8 +168,8 @@ describe("fetch middleware", () => {
           expect(before.url).to.eq("http://example.com/api/v1/authors")
           expect(before.options).to.deep.eq({
             headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
+              Accept: "application/vnd.api+json",
+              "Content-Type": "application/vnd.api+json",
               "CUSTOM-HEADER": "whatever"
             },
             method: "GET"
@@ -342,9 +342,9 @@ describe("fetch middleware", () => {
           expect(before.url).to.eq("http://example.com/api/v1/authors")
           expect(before.options).to.deep.eq({
             headers: {
-              Accept: "application/json",
+              Accept: "application/vnd.api+json",
               "CUSTOM-HEADER": "whatever",
-              "Content-Type": "application/json"
+              "Content-Type": "application/vnd.api+json"
             },
             body: JSON.stringify({ data: { type: "authors" } }),
             method: "POST"
