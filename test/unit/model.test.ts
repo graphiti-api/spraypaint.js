@@ -1508,8 +1508,8 @@ describe("Model", () => {
 
     it("includes the content headers", () => {
       const headers: any = Author.fetchOptions().headers
-      expect(headers.Accept).to.eq("application/json")
-      expect(headers["Content-Type"]).to.eq("application/json")
+      expect(headers.Accept).to.eq("application/vnd.api+json")
+      expect(headers["Content-Type"]).to.eq("application/vnd.api+json")
     })
   })
 })
