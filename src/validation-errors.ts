@@ -39,10 +39,10 @@ export type ErrorAttrs<T extends SpraypaintBase, K extends keyof T> = {
   /*
    * Index is necessary for typescript 2.8 compatibility. If we don't have
    * this, the `@Model()` decorator doesn't work.  The error is that subclasses
-   * of SpraypaintBase with additional fields aren't compabible since their error
+   * of SpraypaintBase with additional fields aren't compatible since their error
    * objects aren't compatible. This is because ErrorAttrs<SpraypaintBase> doesn't
    * have a key like e.g. "title", whereas ErrorAttrs<Post> will. Adding an
-   * index allowing undefined values will make these compatbile.
+   * index allowing undefined values will make these compatible.
    */
-  [key: string] : IValidationError<T> | undefined
+  [key: string]: IValidationError<T> | undefined
 }

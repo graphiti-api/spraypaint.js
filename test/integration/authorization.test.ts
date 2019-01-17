@@ -1,7 +1,10 @@
 import { sinon, expect, fetchMock } from "../test-helper"
 import { SinonSpy } from "sinon"
 import { SpraypaintBase, Model, Attr } from "../../src/index"
-import { StorageBackend, InMemoryStorageBackend } from "../../src/credential-storage"
+import {
+  StorageBackend,
+  InMemoryStorageBackend
+} from "../../src/credential-storage"
 
 const authorResponse = {
   id: "1",
@@ -199,9 +202,7 @@ describe("authorization headers", () => {
         it("sends it in initial request", async () => {
           fetchMock.mock(
             (url: string, opts: any) => {
-              expect(opts.headers.Authorization).to.eq(
-                'Token token="myt0k3n"'
-              )
+              expect(opts.headers.Authorization).to.eq('Token token="myt0k3n"')
               return true
             },
             { status: 200, body: stubFind, sendAsJson: true }
@@ -211,7 +212,7 @@ describe("authorization headers", () => {
         })
 
         describe("when JWT is update from outside the model classes", () => {
-          it('uses the new token in requests', async () => {
+          it("uses the new token in requests", async () => {
             ApplicationRecord.credentialStorage.setJWT("newToken")
             fetchMock.mock(
               (url: string, opts: any) => {

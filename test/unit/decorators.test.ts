@@ -50,7 +50,7 @@ describe("Decorators", () => {
         expect(BaseModel.jsonapiType).not.to.eq(config.jsonapiType)
       })
 
-      it("Overrides the parent class JWT",() => {
+      it("Overrides the parent class JWT", () => {
         expect(BaseModel.jwt).to.eq(config.jwt)
       })
     })

@@ -1,5 +1,9 @@
-export function flipEnumerable(instance: any, props: string[], to: boolean) : void {
-  props.forEach((propName) => {
+export function flipEnumerable(
+  instance: any,
+  props: string[],
+  to: boolean
+): void {
+  props.forEach(propName => {
     let descriptor = Object.getOwnPropertyDescriptor(instance, propName)
     if (descriptor) {
       descriptor.enumerable = to
@@ -8,9 +12,9 @@ export function flipEnumerable(instance: any, props: string[], to: boolean) : vo
   })
 }
 
-export function getNonEnumerables(instance: any) : string[] {
+export function getNonEnumerables(instance: any): string[] {
   let nonEnums = [] as string[]
-  Object.getOwnPropertyNames(instance).forEach((propName) => {
+  Object.getOwnPropertyNames(instance).forEach(propName => {
     let descriptor = Object.getOwnPropertyDescriptor(instance, propName)
     if (descriptor && !descriptor.enumerable) {
       nonEnums.push(propName)

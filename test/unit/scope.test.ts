@@ -265,17 +265,17 @@ describe("Scope", () => {
     describe("when arbitrary query params added", () => {
       it("adds to the param string", () => {
         scope = scope.extraParams({ foo: "bar", bar: "baz" })
-        expect((<string>scope.toQueryParams())).to.eq("foo=bar&bar=baz")
+        expect(<string>scope.toQueryParams()).to.eq("foo=bar&bar=baz")
       })
 
       it("casts arrays correctly", () => {
         scope = scope.extraParams({ foo: "bar,baz" })
-        expect((<string>scope.toQueryParams())).to.eq("foo=bar,baz")
+        expect(<string>scope.toQueryParams()).to.eq("foo=bar,baz")
       })
 
       it("casts objects correctly", () => {
         scope = scope.extraParams({ foo: { bar: "baz" } })
-        expect((<string>scope.toQueryParams())).to.eq("foo[bar]=baz")
+        expect(<string>scope.toQueryParams()).to.eq("foo[bar]=baz")
       })
     })
   })

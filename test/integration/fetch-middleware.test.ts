@@ -142,7 +142,7 @@ describe("fetch middleware", () => {
   describe("reads", () => {
     describe("when clientApplication is set", () => {
       beforeEach(() => {
-        Author.clientApplication = 'test-app'
+        Author.clientApplication = "test-app"
       })
 
       afterEach(() => {
@@ -151,7 +151,7 @@ describe("fetch middleware", () => {
 
       it("is passed in headers", () => {
         return Author.all().then(({ data }) => {
-          expect(before.options.headers['Client-Application']).to.eq('test-app')
+          expect(before.options.headers["Client-Application"]).to.eq("test-app")
         })
       })
     })
@@ -313,7 +313,7 @@ describe("fetch middleware", () => {
   describe("writes", () => {
     describe("when clientApplication is set", () => {
       beforeEach(() => {
-        Author.clientApplication = 'test-app'
+        Author.clientApplication = "test-app"
       })
 
       afterEach(() => {
@@ -323,7 +323,7 @@ describe("fetch middleware", () => {
       it("is passed in headers", () => {
         const author = new Author()
         return author.save().then(() => {
-          expect(before.options.headers['Client-Application']).to.eq('test-app')
+          expect(before.options.headers["Client-Application"]).to.eq("test-app")
         })
       })
     })

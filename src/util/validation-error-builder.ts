@@ -44,7 +44,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
     this.model.errors = errorsAccumulator
   }
 
-  private _processResource<R extends SpraypaintBase=T>(
+  private _processResource<R extends SpraypaintBase = T>(
     errorsAccumulator: ValidationErrors<R>,
     meta: JsonapiErrorMeta,
     error: JsonapiError
@@ -56,7 +56,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
       attribute: meta.attribute,
       message: meta.message,
       fullMessage: attribute === "base" ? meta.message : error.detail,
-      rawPayload: error,
+      rawPayload: error
     }
   }
 

@@ -222,7 +222,7 @@ export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
 
     this._mergeAssociationQueryParams(qp, this._associations)
 
-    Object.keys(this._extraParams).forEach((k) => {
+    Object.keys(this._extraParams).forEach(k => {
       qp[k] = this._extraParams[k]
     })
 
@@ -259,7 +259,10 @@ export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
         queryParams.stats[key] = associationQueryParams.stats
 
         Object.assign(queryParams.fields, associationQueryParams.fields)
-        Object.assign(queryParams.extra_fields, associationQueryParams.extra_fields)
+        Object.assign(
+          queryParams.extra_fields,
+          associationQueryParams.extra_fields
+        )
 
         associationQueryParams.sort.forEach(s => {
           const transformed = this._transformAssociationSortParam(key, s)

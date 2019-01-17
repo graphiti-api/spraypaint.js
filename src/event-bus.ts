@@ -10,6 +10,6 @@ export interface IEventBus {
   dispatch: IDispatch
 }
 
-import * as EventBusAny from 'eventbusjs'
+import * as EventBusAny from "eventbusjs"
 const EventBus: IEventBus = EventBusAny
 export { EventBus }

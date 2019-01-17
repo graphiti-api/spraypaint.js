@@ -18,7 +18,7 @@ export default {
   plugins: [
     isProduction ? uglify({}) : {},
     resolve(),
-    commonjs({ include: "./node_modules/**" })
+    commonjs({ include: "./node_modules/**" }),
   ],
   banner: banner,
   sourceMap: false,
@@ -26,7 +26,7 @@ export default {
   output: [
     {
       file: `./dist/${pkg.name}.${isProduction ? "min.js" : "js"}`,
-      format: "umd"
-    }
-  ]
+      format: "umd",
+    },
+  ],
 }

@@ -2,7 +2,8 @@ import { Attribute, AttrRecord, Attr } from "./attribute"
 import { SpraypaintBase } from "./model"
 import { JsonapiTypeRegistry } from "./jsonapi-type-registry"
 
-export interface AssociationRecord<T extends SpraypaintBase> extends AttrRecord<T> {
+export interface AssociationRecord<T extends SpraypaintBase>
+  extends AttrRecord<T> {
   type?: Attr<T>
   jsonapiType?: string
 }
@@ -18,7 +19,8 @@ const wasDestroyed = (model: SpraypaintBase) => {
   return (model.isPersisted || model.stale) && !model.stored
 }
 
-export class SingleAssociationBase<T extends SpraypaintBase> extends Attribute<T>
+export class SingleAssociationBase<T extends SpraypaintBase>
+  extends Attribute<T>
   implements Association {
   isRelationship: true = true
   jsonapiType!: string
@@ -120,9 +122,13 @@ export class HasMany<T extends SpraypaintBase> extends Attribute<T[]>
   }
 }
 
-export class HasOne<T extends SpraypaintBase> extends SingleAssociationBase<T> {}
+export class HasOne<T extends SpraypaintBase> extends SingleAssociationBase<
+  T
+> {}
 
-export class BelongsTo<T extends SpraypaintBase> extends SingleAssociationBase<T> {}
+export class BelongsTo<T extends SpraypaintBase> extends SingleAssociationBase<
+  T
+> {}
 
 export interface AssociationFactoryOpts<T extends SpraypaintBase> {
   type?: string | Attr<T>

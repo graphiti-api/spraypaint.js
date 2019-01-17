@@ -104,11 +104,17 @@ class DirtyChecker<T extends SpraypaintBase> {
 
   private _eachRelatedObject(
     includeHash: IncludeScopeHash,
-    callback: (key: string, object: SpraypaintBase, nested: IncludeScopeHash) => void
+    callback: (
+      key: string,
+      object: SpraypaintBase,
+      nested: IncludeScopeHash
+    ) => void
   ): void {
     Object.keys(includeHash).forEach(key => {
       const nested = includeHash[key]
-      let relatedObjects: SpraypaintBase[] | SpraypaintBase = (<any>this.model)[key]
+      let relatedObjects: SpraypaintBase[] | SpraypaintBase = (<any>this.model)[
+        key
+      ]
 
       if (!Array.isArray(relatedObjects)) {
         relatedObjects = [relatedObjects]

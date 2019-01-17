@@ -9,7 +9,7 @@ import {
   IncludeScope,
   StatsScope
 } from "../../src/scope"
-import { NullProxy, CollectionProxy, RecordProxy } from '../../src/proxies';
+import { NullProxy, CollectionProxy, RecordProxy } from "../../src/proxies"
 
 /*
  *
@@ -72,17 +72,19 @@ describe("Model Class static attributes typings", () => {
             RootClass.includes
           const merge: (
             opts: Record<string, Scope>
-          ) => Scope<typeof RootClass> =
-            RootClass.merge
+          ) => Scope<typeof RootClass> = RootClass.merge
           const stats: (opts: StatsScope) => Scope<typeof RootClass> =
             RootClass.stats
         })
 
         it("understands the scope finder methods", () => {
-          const first: () => Promise<RecordProxy<SpraypaintBase> | NullProxy> = RootClass.first
-          const find: (id: string | number) => Promise<RecordProxy<SpraypaintBase>> =
-            RootClass.find
-          const all: () => Promise<CollectionProxy<SpraypaintBase>> = RootClass.all
+          const first: () => Promise<RecordProxy<SpraypaintBase> | NullProxy> =
+            RootClass.first
+          const find: (
+            id: string | number
+          ) => Promise<RecordProxy<SpraypaintBase>> = RootClass.find
+          const all: () => Promise<CollectionProxy<SpraypaintBase>> =
+            RootClass.all
 
           const result = new ExtendBasedRoot()
 

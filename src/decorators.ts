@@ -70,7 +70,11 @@ const AttrDecoratorFactory: {
     config?: AttributeOptions
   ): void
 } = (
-  configOrTarget?: typeof SpraypaintBase | SpraypaintBase | AttributeOptions | undefined,
+  configOrTarget?:
+    | typeof SpraypaintBase
+    | SpraypaintBase
+    | AttributeOptions
+    | undefined,
   propertyKey?: string,
   attrConfig?: AttributeOptions
 ): any => {
@@ -173,7 +177,9 @@ const AssociationDecoratorFactoryBuilder = <T extends SpraypaintBase>(
     propertyKey?: string,
     optsOrType?: DecoratorArgs<T>
   ): any => {
-    const extend = (ModelClass: typeof SpraypaintBase): typeof SpraypaintBase => {
+    const extend = (
+      ModelClass: typeof SpraypaintBase
+    ): typeof SpraypaintBase => {
       ensureModelInheritance(ModelClass)
 
       return ModelClass
