@@ -1,8 +1,9 @@
 import { expect, sinon } from "../test-helper"
 import { Scope } from "../../src/scope"
-import { Author } from "../fixtures"
+import { Author, Book } from "../fixtures"
+import { SpraypaintBase } from "../../src"
 
-let scope: Scope<typeof Author>
+let scope: Scope<Author>
 
 beforeEach(() => {
   const model = sinon.stub() as any
@@ -298,6 +299,13 @@ describe("Scope", () => {
 
       expect(original._sort).not.to.eq(copy._sort)
       expect(original._sort).to.deep.eq(copy._sort)
+    })
+  })
+
+  describe("typings", () => {
+    it("correctly compiles the types", () => {
+      let authorScope: Scope<Author> = Author.scope()
+      let genericScope: Scope<SpraypaintBase> = Author.scope()
     })
   })
 })

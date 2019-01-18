@@ -81,7 +81,7 @@ export type ModelAttributeChangeSet<
   T extends SpraypaintBase
 > = ModelAttrChanges<Omit<T, keyof SpraypaintBase>>
 
-export interface SaveOptions<T extends typeof SpraypaintBase> {
+export interface SaveOptions<T extends SpraypaintBase> {
   with?: IncludeScope
   returnScope?: Scope<T>
 }
@@ -742,7 +742,9 @@ export class SpraypaintBase {
     this._middlewareStack = stack
   }
 
-  static scope<I extends typeof SpraypaintBase>(this: I): Scope<I> {
+  static scope<I extends typeof SpraypaintBase>(
+    this: I
+  ): Scope<I["prototype"]> {
     return new Scope(this)
   }
 
@@ -887,7 +889,7 @@ export class SpraypaintBase {
 
   async save<I extends SpraypaintBase>(
     this: I,
-    options: SaveOptions<I["klass"]> = {}
+    options: SaveOptions<I> = {}
   ): Promise<boolean> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"

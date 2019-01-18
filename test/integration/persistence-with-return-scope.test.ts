@@ -1,6 +1,5 @@
 import { expect, fetchMock } from "../test-helper"
-import { Author, Book } from "../fixtures"
-import { JsonapiRequestDoc, JsonapiResponseDoc } from "../../src/index"
+import { Author } from "../fixtures"
 
 const resetMocks = () => {
   fetchMock.restore()
