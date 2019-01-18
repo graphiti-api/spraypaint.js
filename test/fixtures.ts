@@ -26,8 +26,7 @@ export class Person extends ApplicationRecord {
 
 @Model()
 export class PersonWithExtraAttr extends Person {
-  @Attr({ persist: false })
-  extraThing!: string
+  @Attr({ persist: false }) extraThing!: string
 }
 
 @Model({ keyCase: { server: "snake", client: "snake" } })
@@ -44,13 +43,11 @@ export class PersonWithDasherizedKeys extends Person {}
 })
 export class Author extends Person {
   @Attr nilly!: string
-  @HasMany({ type: "multi_words" })
-  multiWords!: MultiWord[]
+  @HasMany({ type: "multi_words" }) multiWords!: MultiWord[]
   @HasMany("books") specialBooks!: Book[]
   @HasMany() books!: Book[]
   @HasMany() tags!: Tag[]
-  @BelongsTo({ type: "genres" })
-  genre!: Genre
+  @BelongsTo({ type: "genres" }) genre!: Genre
   @HasOne("bios") bio!: Bio
 }
 

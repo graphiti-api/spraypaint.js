@@ -81,8 +81,9 @@ export type ModelAttributeChangeSet<
   T extends SpraypaintBase
 > = ModelAttrChanges<Omit<T, keyof SpraypaintBase>>
 
-export interface SaveOptions {
+export interface SaveOptions<T extends typeof SpraypaintBase> {
   with?: IncludeScope
+  returnScope?: Scope<T>
 }
 
 export type ExtendedModel<
@@ -884,7 +885,10 @@ export class SpraypaintBase {
     })
   }
 
-  async save(options: SaveOptions = {}): Promise<boolean> {
+  async save<I extends SpraypaintBase>(
+    this: I,
+    options: SaveOptions<I["klass"]> = {}
+  ): Promise<boolean> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
     const request = new Request(this._middleware(), this.klass.logger)
@@ -894,6 +898,10 @@ export class SpraypaintBase {
     if (this.isPersisted) {
       url = this.klass.url(this.id)
       verb = "patch"
+    }
+
+    if (options.returnScope) {
+      url = `${url}?${options.returnScope.toQueryParams()}`
     }
 
     this.clearErrors()
