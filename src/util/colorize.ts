@@ -18,8 +18,9 @@ export default (color: ColorKey, text: string): string => {
 const supportsColor = (): boolean => {
   if (typeof window === undefined) {
     if (
-      /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(<any>process.env
-        .TERM)
+      /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(<any>(
+        process.env.TERM
+      ))
     ) {
       return true
     } else {

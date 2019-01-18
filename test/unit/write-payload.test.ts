@@ -18,7 +18,7 @@ describe("WritePayload", () => {
 
   it("dasherizes attributes", () => {
     let person = new PersonWithDasherizedKeys({ first_name: "Joe" })
-    let payload = new WritePayload(person,)
+    let payload = new WritePayload(person)
     expect(payload.asJSON()).to.deep.equal({
       data: {
         type: "people",

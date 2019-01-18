@@ -4,7 +4,11 @@ import { SpraypaintBase } from "../../src/model"
 import { hasOne } from "../../src/associations"
 import { attr } from "../../src/attribute"
 import { JsonapiTypeRegistry } from "../../src/jsonapi-type-registry"
-import { StorageBackend, InMemoryStorageBackend, CredentialStorage } from "../../src/credential-storage"
+import {
+  StorageBackend,
+  InMemoryStorageBackend,
+  CredentialStorage
+} from "../../src/credential-storage"
 import { JsonapiResource, JsonapiResponseDoc } from "../../src/index"
 import { EventBus } from "../../src/event-bus"
 
@@ -18,7 +22,7 @@ import {
 } from "../fixtures"
 
 import { Model, Attr, HasOne, HasMany, BelongsTo } from "../../src/decorators"
-import { eq } from 'lodash-es';
+import { eq } from "lodash-es"
 
 // Accessing private property in unit tests so we need a type-loose conversion function
 const modelAttrs = (model: SpraypaintBase): Record<string, any> =>
@@ -59,8 +63,8 @@ describe("Model", () => {
           expect(SubClass.baseClass).to.eq(BaseClass)
         })
 
-        describe('#credentialStorage', () => {
-          let originalStore : CredentialStorage
+        describe("#credentialStorage", () => {
+          let originalStore: CredentialStorage
 
           beforeEach(() => {
             originalStore = (SpraypaintBase as any)._credentialStorage
@@ -70,22 +74,22 @@ describe("Model", () => {
             ;(SpraypaintBase as any)._credentialStorage = originalStore
           })
 
-          context('localStorage API is present', () => {
+          context("localStorage API is present", () => {
             let localStorageStub: {
               getItem: SinonSpy
               setItem: SinonSpy
               removeItem: SinonSpy
             }
-            let originalStorage : any
+            let originalStorage: any
 
             beforeEach(() => {
               localStorageStub = {
                 getItem: sinon.spy(),
                 setItem: sinon.spy(),
-                removeItem: sinon.spy(),
+                removeItem: sinon.spy()
               }
 
-              if (typeof localStorage !== 'undefined') {
+              if (typeof localStorage !== "undefined") {
                 originalStorage = localStorage
               }
               ;(global as any).localStorage = localStorageStub
@@ -97,16 +101,18 @@ describe("Model", () => {
               SpraypaintBase.initializeCredentialStorage()
             })
 
-            it('defaults to use localStorage', () => {
-              expect(SpraypaintBase.credentialStorageBackend).to.eq(localStorageStub)
+            it("defaults to use localStorage", () => {
+              expect(SpraypaintBase.credentialStorageBackend).to.eq(
+                localStorageStub
+              )
             })
           })
 
-          context('localStorage API is not defined', () => {
-            let originalStorage : any
+          context("localStorage API is not defined", () => {
+            let originalStorage: any
 
             beforeEach(() => {
-              if (typeof localStorage !== 'undefined') {
+              if (typeof localStorage !== "undefined") {
                 originalStorage = localStorage
                 ;(localStorage as any) = undefined
               }
@@ -118,24 +124,28 @@ describe("Model", () => {
               }
             })
 
-            it('defaults an in-memory store', () => {
+            it("defaults an in-memory store", () => {
               SpraypaintBase.initializeCredentialStorage()
-              expect(SpraypaintBase.credentialStorageBackend).to.be.instanceOf(InMemoryStorageBackend)
+              expect(SpraypaintBase.credentialStorageBackend).to.be.instanceOf(
+                InMemoryStorageBackend
+              )
             })
           })
 
-          describe('Assigning credential storage backend', () => {
-            it('re-initializes the credential store with the new backend', () => {
+          describe("Assigning credential storage backend", () => {
+            it("re-initializes the credential store with the new backend", () => {
               let backend = {} as any
               SpraypaintBase.credentialStorageBackend = backend
 
               expect(SpraypaintBase.credentialStorage).not.to.eq(originalStore)
-              expect((SpraypaintBase.credentialStorage as any)._backend).to.eq(backend)
+              expect((SpraypaintBase.credentialStorage as any)._backend).to.eq(
+                backend
+              )
             })
           })
         })
 
-        describe('JWT Persistence', () => {
+        describe("JWT Persistence", () => {
           beforeEach(() => {
             BaseClass.credentialStorageBackend = new InMemoryStorageBackend()
           })
@@ -171,7 +181,7 @@ describe("Model", () => {
               const buildModel = () => {
                 // need new class for this since it needs initialization to have the jwt config set
                 @Model({
-                  jwtStorage: "MyJWT",
+                  jwtStorage: "MyJWT"
                 })
                 class Base extends SpraypaintBase {}
                 BaseClass = Base
@@ -188,13 +198,13 @@ describe("Model", () => {
 
                 it("adds to credentialStorage", () => {
                   BaseClass.setJWT("n3wt0k3n")
-                  expect(backend.getItem('MyJWT')).to.eq("n3wt0k3n")
+                  expect(backend.getItem("MyJWT")).to.eq("n3wt0k3n")
                 })
 
                 context("when new token is undefined", () => {
                   it("correctly clears the token", () => {
                     BaseClass.setJWT(undefined)
-                    expect(backend.getItem('MyJWT')).be.null
+                    expect(backend.getItem("MyJWT")).be.null
                   })
                 })
               })
@@ -202,7 +212,7 @@ describe("Model", () => {
               describe("JWT Initialization", () => {
                 beforeEach(() => {
                   backend = new InMemoryStorageBackend()
-                  backend.setItem('MyJWT', "or!g!nalt0k3n")
+                  backend.setItem("MyJWT", "or!g!nalt0k3n")
 
                   buildModel()
                 })
@@ -511,11 +521,11 @@ describe("Model", () => {
       describe("class options", () => {
         const config = {
           apiNamespace: "api/v1",
-          jwtStorage: 'foobarJWT',
-          jwt: "abc123",
+          jwtStorage: "foobarJWT",
+          jwt: "abc123"
         }
-        let MyModel : typeof SpraypaintBase
-        let originalStore : StorageBackend
+        let MyModel: typeof SpraypaintBase
+        let originalStore: StorageBackend
 
         beforeEach(() => {
           originalStore = BaseModel.credentialStorage.backend
@@ -1270,7 +1280,7 @@ describe("Model", () => {
     })
 
     afterEach(() => {
-      (removeListenerSpy).restore()
+      removeListenerSpy.restore()
     })
 
     it("removes event listener from self + relationships", () => {
@@ -1413,7 +1423,7 @@ describe("Model", () => {
 
   describe("#dup()", () => {
     it("returns a new instance of the same object", () => {
-      let author = new Author({ id: '1', firstName: "Stephen" })
+      let author = new Author({ id: "1", firstName: "Stephen" })
       author.isPersisted = true
       author.isMarkedForDestruction = true
       author.isMarkedForDisassociation = true
@@ -1440,9 +1450,15 @@ describe("Model", () => {
       let author = new Author({ firstName: "Stephen" })
       let duped = author.dup()
 
-      let descriptor = Object.getOwnPropertyDescriptor(author, 'relationships') as PropertyDescriptor
+      let descriptor = Object.getOwnPropertyDescriptor(
+        author,
+        "relationships"
+      ) as PropertyDescriptor
       expect(descriptor.enumerable).to.eq(false)
-      descriptor = Object.getOwnPropertyDescriptor(duped, 'relationships') as PropertyDescriptor
+      descriptor = Object.getOwnPropertyDescriptor(
+        duped,
+        "relationships"
+      ) as PropertyDescriptor
       expect(descriptor.enumerable).to.eq(false)
     })
 
@@ -1451,7 +1467,7 @@ describe("Model", () => {
       it("still works", () => {
         let author = new Author({ firstName: "Stephen" })
         author.isPersisted = true
-        let genre = new Genre({ name: 'Horror' })
+        let genre = new Genre({ name: "Horror" })
         genre.isPersisted = true
         let book1 = new Book({ genre })
         book1.isPersisted = true
@@ -1468,7 +1484,7 @@ describe("Model", () => {
   describe("#fetchOptions", () => {
     context("clientApplication is set", () => {
       beforeEach(() => {
-        Author.clientApplication = 'test-app'
+        Author.clientApplication = "test-app"
       })
 
       afterEach(() => {
@@ -1476,23 +1492,25 @@ describe("Model", () => {
       })
 
       it("sets the client application in headers", () => {
-        expect((<any>Author.fetchOptions().headers)['Client-Application']).to.eq('test-app')
+        expect(
+          (<any>Author.fetchOptions().headers)["Client-Application"]
+        ).to.eq("test-app")
       })
     })
 
     context("clientApplication is NOT set", () => {
       it("does not set client application in headers", () => {
         let keys = Object.keys(<any>Author.fetchOptions().headers)
-        expect(keys).to.not.contain('Client-Application')
+        expect(keys).to.not.contain("Client-Application")
       })
     })
 
     context("jwt is set", () => {
-      let stub : SinonStub
+      let stub: SinonStub
 
       beforeEach(() => {
-        stub = sinon.stub(ApplicationRecord, 'getJWT')
-        stub.returns('g3tm3')
+        stub = sinon.stub(ApplicationRecord, "getJWT")
+        stub.returns("g3tm3")
       })
 
       afterEach(() => {

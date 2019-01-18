@@ -53,7 +53,7 @@ export interface ModelConfiguration {
   apiNamespace: string
   jsonapiType: string
   endpoint: string
-  credentialStorageBackend: StorageBackend,
+  credentialStorageBackend: StorageBackend
   jwt: string
   jwtStorage: string | false
   keyCase: KeyCase
@@ -77,9 +77,9 @@ export type ModelRecord<T extends SpraypaintBase> = ModelAttrs<
   T
 >
 
-export type ModelAttributeChangeSet<T extends SpraypaintBase> = ModelAttrChanges<
-  Omit<T, keyof SpraypaintBase>
->
+export type ModelAttributeChangeSet<
+  T extends SpraypaintBase
+> = ModelAttrChanges<Omit<T, keyof SpraypaintBase>>
 
 export interface SaveOptions {
   with?: IncludeScope
@@ -181,14 +181,14 @@ export class SpraypaintBase {
     return this._credentialStorage
   }
 
-  static set jwtStorage(val : string | false) {
+  static set jwtStorage(val: string | false) {
     if (val !== this._jwtStorage) {
       this._jwtStorage = val
       this.credentialStorageBackend = this._credentialStorageBackend
     }
   }
 
-  static get jwtStorage() : string | false {
+  static get jwtStorage(): string | false {
     return this._jwtStorage
   }
 
@@ -196,12 +196,12 @@ export class SpraypaintBase {
     this._credentialStorageBackend = backend
 
     this._credentialStorage = new CredentialStorage(
-      this.jwtStorage || 'jwt',
+      this.jwtStorage || "jwt",
       this._credentialStorageBackend
     )
   }
 
-  static get credentialStorageBackend() : StorageBackend {
+  static get credentialStorageBackend(): StorageBackend {
     return this._credentialStorageBackend
   }
 
@@ -287,6 +287,8 @@ export class SpraypaintBase {
 
       current = current.parentClass
     }
+
+    return undefined
   }
 
   static get store(): IDMap {
@@ -342,7 +344,9 @@ export class SpraypaintBase {
     this: T,
     options: ExtendOptions<T, ExtendedAttrs, Methods>
   ): ExtendedModel<T, ExtendedAttrs, Methods> {
-    class Subclass extends (<ExtendedModel<typeof SpraypaintBase, {}, {}>>this) {}
+    class Subclass extends (<ExtendedModel<typeof SpraypaintBase, {}, {}>>(
+      this
+    )) {}
 
     this.inherited(<any>Subclass)
 
@@ -386,7 +390,10 @@ export class SpraypaintBase {
   storeKey: string = ""
 
   @nonenumerable afterSync?: (diff: Record<string, any>) => any | undefined
-  @nonenumerable relationships: Record<string, SpraypaintBase | SpraypaintBase[]> = {}
+  @nonenumerable relationships: Record<
+    string,
+    SpraypaintBase | SpraypaintBase[]
+  > = {}
   @nonenumerable klass!: typeof SpraypaintBase
 
   @nonenumerable private _persisted: boolean = false
@@ -461,7 +468,7 @@ export class SpraypaintBase {
   }
   set isPersisted(val: boolean) {
     this._persisted = val
-    if (!!val) this.reset()
+    if (val) this.reset()
   }
 
   _onStoreChange?: (event: any, attrs: any) => void
@@ -648,7 +655,10 @@ export class SpraypaintBase {
     return dc.dirtyAttributes()
   }
 
-  hasDirtyRelation(relationName: string, relatedModel: SpraypaintBase): boolean {
+  hasDirtyRelation(
+    relationName: string,
+    relatedModel: SpraypaintBase
+  ): boolean {
     const dc = new DirtyChecker(this)
     return dc.checkRelation(relationName, relatedModel)
   }
@@ -678,7 +688,7 @@ export class SpraypaintBase {
     }
 
     if (this.clientApplication) {
-      options.headers['Client-Application'] = this.clientApplication
+      options.headers["Client-Application"] = this.clientApplication
     }
 
     const jwt = this.getJWT()
@@ -774,7 +784,10 @@ export class SpraypaintBase {
     return this.scope().select(clause)
   }
 
-  static selectExtra<I extends typeof SpraypaintBase>(this: I, clause: FieldArg) {
+  static selectExtra<I extends typeof SpraypaintBase>(
+    this: I,
+    clause: FieldArg
+  ) {
     return this.scope().selectExtra(clause)
   }
 
@@ -782,7 +795,10 @@ export class SpraypaintBase {
     return this.scope().stats(clause)
   }
 
-  static includes<I extends typeof SpraypaintBase>(this: I, clause: IncludeScope) {
+  static includes<I extends typeof SpraypaintBase>(
+    this: I,
+    clause: IncludeScope
+  ) {
     return this.scope().includes(clause)
   }
 
@@ -801,8 +817,12 @@ export class SpraypaintBase {
     return this.credentialStorage.getJWT()
   }
 
-  static get jwt(): string | undefined { return this.getJWT() }
-  static set jwt(token: string | undefined) { this.setJWT(token) }
+  static get jwt(): string | undefined {
+    return this.getJWT()
+  }
+  static set jwt(token: string | undefined) {
+    this.setJWT(token)
+  }
 
   static generateAuthHeader(jwt: string): string {
     return `Token token="${jwt}"`

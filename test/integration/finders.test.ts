@@ -275,15 +275,12 @@ describe("Model finders", () => {
     describe("when value is an array", () => {
       beforeEach(() => {
         fetchMock.reset()
-        fetchMock.get(
-          "http://example.com/api/v1/people?filter[id]=1,2,3",
-          {
-            data: [{ id: "2", type: "people" }]
-          }
-        )
+        fetchMock.get("http://example.com/api/v1/people?filter[id]=1,2,3", {
+          data: [{ id: "2", type: "people" }]
+        })
       })
 
-      it('converts to comma-delimited string', async () => {
+      it("converts to comma-delimited string", async () => {
         const { data } = await Person.where({ id: [1, 2, 3] }).all()
         expect(data.length).to.eq(1)
       })
@@ -405,8 +402,8 @@ describe("Model finders", () => {
         })
 
         it("queries correctly", async () => {
-          const books = Book.select(['title', 'foo'])
-          const personScope = Person.select(['first_name']).merge({ books })
+          const books = Book.select(["title", "foo"])
+          const personScope = Person.select(["first_name"]).merge({ books })
           const { data } = await personScope.all()
 
           expect(data.length).to.eq(1)
@@ -426,7 +423,7 @@ describe("Model finders", () => {
         })
 
         it("queries correctly", async () => {
-          const books = Book.select(['title', 'foo'])
+          const books = Book.select(["title", "foo"])
           const personScope = Person.merge({ books })
           const { data } = await personScope.all()
 
@@ -470,8 +467,10 @@ describe("Model finders", () => {
         })
 
         it("queries correctly", async () => {
-          const books = Book.selectExtra(['title', 'foo'])
-          const personScope = Person.selectExtra(['first_name']).merge({ books })
+          const books = Book.selectExtra(["title", "foo"])
+          const personScope = Person.selectExtra(["first_name"]).merge({
+            books
+          })
           const { data } = await personScope.all()
 
           expect(data.length).to.eq(1)
@@ -491,7 +490,7 @@ describe("Model finders", () => {
         })
 
         it("queries correctly", async () => {
-          const books = Book.selectExtra(['title', 'foo'])
+          const books = Book.selectExtra(["title", "foo"])
           const personScope = Person.merge({ books })
           const { data } = await personScope.all()
 

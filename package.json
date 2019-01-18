@@ -10,7 +10,7 @@
   "homepage": "https://github.com/graphiti-api/spraypaint.js",
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
-    "prebuild": "yarn run clean && yarn test",
+    "prebuild": "yarn run clean && yarn test && yarn lint:ci",
     "build": "npm-run-all build:node build:es6 build:copy_shims build:umd build:umd:min",
     "build:node": "yarn run tsc -p ./tsconfig.node.json",
     "build:es6": "yarn run tsc -p ./tsconfig.lib.json",
@@ -23,14 +23,36 @@
     "test": "NODE_ENV=test mocha --opts test/mocha.opts",
     "test:watch": "yarn run test --watch",
     "test:all-versions": "yarn tav",
-    "lint": "yarn lint:tslint",
-    "lint:tslint": "tslint -p .",
-    "lint:prettier": "prettier \"{src,test}/**/*.{ts,js}\" --list-different",
+    "lint": "yarn run lint:ci --fix",
+    "lint:ci": "yarn run eslint {src,test}{,/**}/*.ts",
     "update:dependencies": "ncu -u",
     "prettier": "pretty-quick --staged"
   },
-  "prettier": {
-    "semi": false
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.json": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.ts": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "eventbusjs": "^0.2.0",
+    "inflected": "^2.0.3",
+    "lodash": "^4.17.5",
+    "lodash-es": "^4.17.5",
+    "tslib": "^1.8.1"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -50,14 +72,19 @@
     "chai": "^4.1.2",
     "chai-things": "^0.2.0",
     "es6-promise": "4.2.4",
+    "eslint": "5.12.0",
+    "eslint-config-prettier": "3.5.0",
+    "eslint-plugin-prettier": "3.0.1",
+    "eslint-plugin-typescript": "0.14.0",
     "fetch-mock": "^5.10.0",
-    "husky": "0.14.3",
+    "husky": "1.3.1",
     "isomorphic-fetch": "^2.2.1",
     "istanbul": "0.4.5",
+    "lint-staged": "8.1.0",
     "mocha": "^4.0.1",
     "npm-check-updates": "^2.13.0",
     "npm-run-all": "4.1.2",
-    "prettier": "1.10.1",
+    "prettier": "1.15.3",
     "pretty-quick": "1.2.0",
     "rimraf": "2.6.2",
     "rollup": "0.52.1",
@@ -68,16 +95,8 @@
     "sinon-chai": "2.14.0",
     "test-all-versions": "3.3.3",
     "ts-node": "4.0.1",
-    "tslint": "5.9.0",
-    "tslint-config-prettier": "1.6.0",
     "typescript": "3.0.3",
+    "typescript-eslint-parser": "21.0.2",
     "winston": "^2.3.1"
-  },
-  "dependencies": {
-    "eventbusjs": "^0.2.0",
-    "inflected": "^2.0.3",
-    "lodash": "^4.17.5",
-    "lodash-es": "^4.17.5",
-    "tslib": "^1.8.1"
   }
 }

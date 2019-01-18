@@ -81,7 +81,7 @@ const resetMocks = () => {
 
   let errors = []
 
-  for(let key in mockErrors) {
+  for (let key in mockErrors) {
     errors.push(mockErrors[key])
   }
 
@@ -133,7 +133,7 @@ describe("validations", () => {
         fullMessage: "First Name cannot be blank",
         message: "cannot be blank",
         title: "Validation Error",
-        rawPayload: mockErrors.firstName,
+        rawPayload: mockErrors.firstName
       },
       lastName: {
         attribute: "last-name",
@@ -141,7 +141,7 @@ describe("validations", () => {
         fullMessage: "Last Name cannot be blank",
         message: "cannot be blank",
         title: "Validation Error",
-        rawPayload: mockErrors.lastName,
+        rawPayload: mockErrors.lastName
       }
     })
   })
@@ -165,7 +165,7 @@ describe("validations", () => {
           fullMessage: "First Name cannot be blank",
           message: "cannot be blank",
           title: "Validation Error",
-          rawPayload: mockErrors.firstName,
+          rawPayload: mockErrors.firstName
         },
         last_name: {
           attribute: "last-name",
@@ -173,7 +173,7 @@ describe("validations", () => {
           fullMessage: "Last Name cannot be blank",
           message: "cannot be blank",
           title: "Validation Error",
-          rawPayload: mockErrors.lastName,
+          rawPayload: mockErrors.lastName
         }
       })
     })
@@ -212,7 +212,7 @@ describe("validations", () => {
         code: "required",
         message: "is required",
         fullMessage: "Nilly is required",
-        rawPayload: { foo: 'bar' }
+        rawPayload: { foo: "bar" }
       }
     }
 
@@ -247,7 +247,7 @@ describe("validations", () => {
         code: "unprocessable_entity",
         message: "cannot be blank",
         fullMessage: "Title cannot be blank",
-        rawPayload: mockErrors.bookTitle,
+        rawPayload: mockErrors.bookTitle
       }
     })
   })
@@ -266,7 +266,7 @@ describe("validations", () => {
         code: "unprocessable_entity",
         fullMessage: "Name cannot be blank",
         message: "cannot be blank",
-        rawPayload: mockErrors.bookGenreName,
+        rawPayload: mockErrors.bookGenreName
       },
       base: {
         title: "Validation Error",
@@ -274,7 +274,7 @@ describe("validations", () => {
         code: "unprocessable_entity",
         fullMessage: "some error",
         message: "some error",
-        rawPayload: mockErrors.bookGenreBase,
+        rawPayload: mockErrors.bookGenreBase
       }
     })
   })

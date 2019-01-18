@@ -261,15 +261,17 @@ class Deserializer {
   }
 
   findResource(resourceIdentifier: JsonapiResource) {
-    const found = this._resources.find((r): boolean => {
-      return !!(
-        r.type === resourceIdentifier.type &&
-        ((r.id && resourceIdentifier.id && r.id === resourceIdentifier.id) ||
-          (r["temp-id"] &&
-            resourceIdentifier["temp-id"] &&
-            r["temp-id"] === resourceIdentifier["temp-id"]))
-      )
-    })
+    const found = this._resources.find(
+      (r): boolean => {
+        return !!(
+          r.type === resourceIdentifier.type &&
+          ((r.id && resourceIdentifier.id && r.id === resourceIdentifier.id) ||
+            (r["temp-id"] &&
+              resourceIdentifier["temp-id"] &&
+              r["temp-id"] === resourceIdentifier["temp-id"]))
+        )
+      }
+    )
 
     return found || resourceIdentifier
   }

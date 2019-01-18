@@ -1,8 +1,8 @@
 require("ts-node").register({
   typeCheck: true,
   compilerOptions: {
-    module: "commonjs"
-  }
+    module: "commonjs",
+  },
 })
 
 process.on("unhandledRejection", (reason, p) => {

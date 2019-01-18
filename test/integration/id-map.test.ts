@@ -108,7 +108,7 @@ describe("ID Map", () => {
     })
 
     describe("when implementing afterSync hook", () => {
-      it("fires after sync, passing changes as an argument", async() => {
+      it("fires after sync, passing changes as an argument", async () => {
         let author1 = (await Author.find(1)).data
         author1.afterSync = sinon.spy()
 
@@ -119,12 +119,13 @@ describe("ID Map", () => {
         )
 
         let author2 = (await Author.find(1)).data
-        expect(author1.afterSync).to
-          .have.been.calledWith({ firstName: ["John", "Jane"] })
+        expect(author1.afterSync).to.have.been.calledWith({
+          firstName: ["John", "Jane"]
+        })
       })
 
       describe("when store updates, but no changes", () => {
-        it("does not fire the hook", async() => {
+        it("does not fire the hook", async () => {
           let author1 = (await Author.find(1)).data
           author1.afterSync = sinon.spy()
           let author2 = (await Author.find(1)).data
@@ -388,7 +389,7 @@ describe("ID Map", () => {
         book = new Book({ id: 1, author })
         book.isPersisted = true
         author.isMarkedForDisassociation = true
-        ;(await book.save({ with: "author" }))
+        await book.save({ with: "author" })
       })
 
       it("is still in the store, but removed from the relation", async () => {

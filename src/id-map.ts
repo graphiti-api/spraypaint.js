@@ -1,7 +1,7 @@
 import { SpraypaintBase } from "./model"
 import { Association } from "./associations"
 import { cloneDeep } from "./util/clonedeep"
-import { EventBus } from './event-bus'
+import { EventBus } from "./event-bus"
 
 export class IDMap {
   data: Record<string, any> = {}
@@ -17,7 +17,7 @@ export class IDMap {
 
   findAll(models: SpraypaintBase[]) {
     let records: SpraypaintBase[] = []
-    models.forEach((m) => {
+    models.forEach(m => {
       let found = this.find(m)
       if (found) {
         records.push(found)
