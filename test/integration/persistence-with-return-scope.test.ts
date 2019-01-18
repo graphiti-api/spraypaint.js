@@ -1,5 +1,5 @@
-import { expect, fetchMock } from "../test-helper"
-import { Author } from "../fixtures"
+import { expect, fetchMock, sinon } from "../test-helper"
+import { Author, Person } from "../fixtures"
 
 const resetMocks = () => {
   fetchMock.restore()
@@ -78,6 +78,23 @@ describe("Lookup additional data during persistence operation", () => {
         expect(author.nilly).to.eq("Foobar")
         expect(author.books.length).to.eq(2)
         expect(author.books[0].title).to.eq("The Shining")
+      })
+
+      it.only("raises an error if a scope for a different model is passed", async () => {
+        let person = new Person({
+          firstName: "Steven"
+        })
+
+        let returnScope = Author.includes("books").selectExtra(["nilly"])
+
+        try {
+          await person.save({ returnScope })
+          expect(true).to.eq(false)
+        } catch (err) {
+          expect(err.message).to.match(
+            /returnScope must be a scope of type Scope<Person>/
+          )
+        }
       })
     })
 

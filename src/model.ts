@@ -903,7 +903,15 @@ export class SpraypaintBase {
     }
 
     if (options.returnScope) {
-      url = `${url}?${options.returnScope.toQueryParams()}`
+      let scope = options.returnScope
+
+      if (scope.model !== this.klass) {
+        throw new Error(
+          `returnScope must be a scope of type Scope<${this.klass.name}>`
+        )
+      }
+
+      url = `${url}?${scope.toQueryParams()}`
     }
 
     this.clearErrors()
