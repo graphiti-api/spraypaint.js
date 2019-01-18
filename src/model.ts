@@ -81,8 +81,9 @@ export type ModelAttributeChangeSet<
   T extends SpraypaintBase
 > = ModelAttrChanges<Omit<T, keyof SpraypaintBase>>
 
-export interface SaveOptions {
+export interface SaveOptions<T extends SpraypaintBase> {
   with?: IncludeScope
+  returnScope?: Scope<T>
 }
 
 export type ExtendedModel<
@@ -741,7 +742,9 @@ export class SpraypaintBase {
     this._middlewareStack = stack
   }
 
-  static scope<I extends typeof SpraypaintBase>(this: I): Scope<I> {
+  static scope<I extends typeof SpraypaintBase>(
+    this: I
+  ): Scope<I["prototype"]> {
     return new Scope(this)
   }
 
@@ -884,7 +887,10 @@ export class SpraypaintBase {
     })
   }
 
-  async save(options: SaveOptions = {}): Promise<boolean> {
+  async save<I extends SpraypaintBase>(
+    this: I,
+    options: SaveOptions<I> = {}
+  ): Promise<boolean> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
     const request = new Request(this._middleware(), this.klass.logger)
@@ -894,6 +900,18 @@ export class SpraypaintBase {
     if (this.isPersisted) {
       url = this.klass.url(this.id)
       verb = "patch"
+    }
+
+    if (options.returnScope) {
+      let scope = options.returnScope
+
+      if (scope.model !== this.klass) {
+        throw new Error(
+          `returnScope must be a scope of type Scope<${this.klass.name}>`
+        )
+      }
+
+      url = `${url}?${scope.toQueryParams()}`
     }
 
     this.clearErrors()

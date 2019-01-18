@@ -286,6 +286,27 @@ describe("Model finders", () => {
       })
     })
 
+    describe("when value is a nested hash", () => {
+      beforeEach(() => {
+        fetchMock.reset()
+        fetchMock.get(
+          "http://example.com/api/v1/people?filter[id][not_eq]=1,2,3",
+          {
+            data: [{ id: "2", type: "people" }]
+          }
+        )
+      })
+
+      it("converts to comma-delimited string", async () => {
+        const { data } = await Person.where({
+          id: {
+            not_eq: [1, 2, 3]
+          }
+        }).all()
+        expect(data.length).to.eq(1)
+      })
+    })
+
     describe("when value is false", () => {
       beforeEach(() => {
         fetchMock.reset()

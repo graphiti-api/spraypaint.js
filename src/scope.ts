@@ -37,8 +37,11 @@ export type IncludeScope = string | IncludeArgHash | (string | IncludeArgHash)[]
 
 export type AnyRecord = Record<string, any>
 
-export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
-  model: T
+export interface Constructor<T> {
+  new (...args: any[]): T
+}
+export class Scope<T extends SpraypaintBase = SpraypaintBase> {
+  model: typeof SpraypaintBase
   private _associations: Record<string, Scope<any>> = {}
   private _pagination: { number?: number; size?: number } = {}
   private _filter: WhereClause = {}
@@ -49,11 +52,11 @@ export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
   private _stats: StatsScope = {}
   private _extraParams: any = {}
 
-  constructor(model: T) {
-    this.model = model
+  constructor(model: Constructor<T> | typeof SpraypaintBase) {
+    this.model = (model as any) as typeof SpraypaintBase
   }
 
-  async all(): Promise<CollectionProxy<T["prototype"]>> {
+  async all(): Promise<CollectionProxy<T>> {
     const response = (await this._fetch(
       this.model.url()
     )) as JsonapiCollectionDoc
@@ -61,13 +64,13 @@ export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
     return this._buildCollectionResult(response)
   }
 
-  async find(id: string | number): Promise<RecordProxy<T["prototype"]>> {
+  async find(id: string | number): Promise<RecordProxy<T>> {
     const json = (await this._fetch(this.model.url(id))) as JsonapiResourceDoc
 
     return this._buildRecordResult(json)
   }
 
-  async first(): Promise<RecordProxy<T["prototype"]> | NullProxy> {
+  async first(): Promise<RecordProxy<T> | NullProxy> {
     const newScope = this.per(1)
     let rawResult
 
@@ -314,14 +317,12 @@ export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
     return response.jsonPayload
   }
 
-  private _buildRecordResult(
-    jsonResult: JsonapiResourceDoc
-  ): RecordProxy<T["prototype"]>
+  private _buildRecordResult(jsonResult: JsonapiResourceDoc): RecordProxy<T>
   private _buildRecordResult(
     jsonResult: JsonapiCollectionDoc
-  ): RecordProxy<T["prototype"]> | NullProxy
+  ): RecordProxy<T> | NullProxy
   private _buildRecordResult(jsonResult: JsonapiSuccessDoc) {
-    let record: T["prototype"]
+    let record: T
 
     let rawRecord: JsonapiResource
     if (jsonResult.data instanceof Array) {
@@ -339,7 +340,7 @@ export class Scope<T extends typeof SpraypaintBase = typeof SpraypaintBase> {
   }
 
   private _buildCollectionResult(jsonResult: JsonapiCollectionDoc) {
-    const recordArray: T["prototype"][] = []
+    const recordArray: T[] = []
 
     jsonResult.data.forEach(record => {
       recordArray.push(this.model.fromJsonapi(record, jsonResult))
