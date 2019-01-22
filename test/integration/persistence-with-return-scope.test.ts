@@ -80,7 +80,7 @@ describe("Lookup additional data during persistence operation", () => {
         expect(author.books[0].title).to.eq("The Shining")
       })
 
-      it.only("raises an error if a scope for a different model is passed", async () => {
+      it("raises an error if a scope for a different model is passed", async () => {
         let person = new Person({
           firstName: "Steven"
         })
