@@ -5,7 +5,8 @@ node_js:
 - node
 
 script:
-  - yarn run test:all-versions
+  - yarn lint:ci
+  - yarn test:ci
 
 before_deploy:
   - yarn run release
