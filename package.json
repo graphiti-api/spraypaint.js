@@ -13,7 +13,7 @@
     "prebuild": "yarn run clean && yarn test && yarn lint:ci",
     "build": "npm-run-all build:node build:es6 build:copy_shims build:umd build:umd:min",
     "build:node": "yarn run tsc -p ./tsconfig.node.json",
-    "build:es6": "yarn run tsc -p ./tsconfig.lib.json",
+    "build:es6": "yarn run tsc -p ./tsconfig.lib.json && yarn test:es6-compatibility",
     "build:umd": "yarn run rollup -c",
     "build:umd:min": "NODE_ENV=production yarn build:umd",
     "build:watch": "NODE_ENV=watch yarn build:es6 --watch",
@@ -23,6 +23,7 @@
     "test": "NODE_ENV=test mocha --opts test/mocha.opts",
     "test:watch": "yarn run test --watch",
     "test:all-versions": "yarn tav",
+    "test:es6-compatibility": "mocha --opts test/es6-compatibility/mocha.opts",
     "lint": "yarn run lint:ci --fix",
     "lint:ci": "yarn run eslint {src,test}{,/**}/*.ts",
     "update:dependencies": "ncu -u",
@@ -55,6 +56,13 @@
     "tslib": "^1.8.1"
   },
   "devDependencies": {
+    "@babel/cli": "7.2.3",
+    "@babel/core": "7.2.2",
+    "@babel/plugin-proposal-class-properties": "7.3.0",
+    "@babel/plugin-proposal-decorators": "7.3.0",
+    "@babel/plugin-transform-modules-commonjs": "7.2.0",
+    "@babel/preset-env": "7.3.1",
+    "@babel/register": "7.0.0",
     "@types/chai": "^4.0.4",
     "@types/chai-as-promised": "^7.1.0",
     "@types/chai-things": "^0.0.32",
@@ -95,7 +103,7 @@
     "sinon-chai": "2.14.0",
     "test-all-versions": "3.3.3",
     "ts-node": "4.0.1",
-    "typescript": "3.0.3",
+    "typescript": "3.2.4",
     "typescript-eslint-parser": "21.0.2",
     "winston": "^2.3.1"
   }
