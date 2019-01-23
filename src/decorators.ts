@@ -19,16 +19,51 @@ import {
   BelongsTo
 } from "./associations"
 
-import { config as envConfig, inBrowser } from "./util/env"
+import { config as envConfig, inBrowser, config } from "./util/env"
 import { logger } from "./logger"
+
+type DecoratorPlacement = "static" | "prototype" | "own"
+interface EcmaDecoratorDescriptor {
+  kind: "class" | "method" | "field"
+  key: string
+  placement: DecoratorPlacement
+}
+
+interface FieldDecoratorDescriptor extends EcmaDecoratorDescriptor {
+  kind: "field"
+}
+
+type DecoratorDescriptor<T> = T | EcmaDecoratorDescriptor
+
+function shimDecoratorProposalCompatibility<Decorator, T extends Function>(
+  finisher: T
+): T {
+  return (function(descriptor: DecoratorDescriptor<Decorator>) {
+    if (isModernDecoratorDescriptor(descriptor)) {
+      return Object.assign(descriptor, {
+        finisher
+      })
+    } else {
+      return finisher(descriptor)
+    }
+  } as any) as T
+}
+
+const isModernDecoratorDescriptor = (
+  obj: any
+): obj is EcmaDecoratorDescriptor => {
+  return obj && obj.kind !== undefined
+}
 
 type ModelDecorator = <M extends typeof SpraypaintBase>(target: M) => M
 
 const ModelDecorator = (config?: ModelConfigurationOptions): ModelDecorator => {
-  return <M extends typeof SpraypaintBase>(target: M): M => {
-    modelFactory(target, config)
-    return target
-  }
+  return shimDecoratorProposalCompatibility(
+    <M extends typeof SpraypaintBase>(target: M): M => {
+      modelFactory(target, config)
+      return target
+    }
+  )
 }
 
 export const initModel = (
@@ -69,11 +104,13 @@ const AttrDecoratorFactory: {
     propertyKey: string,
     config?: AttributeOptions
   ): void
+  (fieldDetails: FieldDecoratorDescriptor): void
 } = (
   configOrTarget?:
     | typeof SpraypaintBase
     | SpraypaintBase
     | AttributeOptions
+    | FieldDecoratorDescriptor
     | undefined,
   propertyKey?: string,
   attrConfig?: AttributeOptions
@@ -95,7 +132,13 @@ const AttrDecoratorFactory: {
     return attrDefinition.descriptor()
   }
 
-  if (isModelClass(configOrTarget) || isModelInstance(configOrTarget)) {
+  if (isModernDecoratorDescriptor(configOrTarget)) {
+    return Object.assign(configOrTarget, {
+      finisher(Model: typeof SpraypaintBase) {
+        attrFunction(Model, configOrTarget.key)
+      }
+    })
+  } else if (isModelClass(configOrTarget) || isModelInstance(configOrTarget)) {
     // For type checking. Can't have a model AND no property key
     if (!propertyKey) {
       throw new Error("Must provide a propertyKey")
@@ -171,9 +214,13 @@ const AssociationDecoratorFactoryBuilder = <T extends SpraypaintBase>(
       target: typeof SpraypaintBase,
       propertyKey: string,
       optsOrType?: AssociationFactoryOpts<T> | string
-    ): void
+    ): DecoratorFn
+    (decoratorDescriptor: FieldDecoratorDescriptor): FieldDecoratorDescriptor
   } = (
-    targetOrConfig?: typeof SpraypaintBase | DecoratorArgs<T>,
+    targetOrConfig?:
+      | typeof SpraypaintBase
+      | DecoratorArgs<T>
+      | FieldDecoratorDescriptor,
     propertyKey?: string,
     optsOrType?: DecoratorArgs<T>
   ): any => {
@@ -229,13 +276,36 @@ const AssociationDecoratorFactoryBuilder = <T extends SpraypaintBase>(
       return attrDefinition.descriptor()
     }
 
-    if (isModelClass(targetOrConfig) && propertyKey) {
+    if (isModernDecoratorDescriptor(targetOrConfig)) {
+      return Object.assign(targetOrConfig, {
+        finisher(ModelClass: typeof SpraypaintBase) {
+          factoryFn(ModelClass.prototype, targetOrConfig.key)
+        }
+      })
+    } else if (isModelClass(targetOrConfig) && propertyKey) {
       const target = targetOrConfig
 
       factoryFn(target.prototype, propertyKey)
     } else {
-      optsOrType = targetOrConfig
-      return factoryFn
+      const fn: {
+        (target: SpraypaintBase, propKey: string): void
+        (descriptor: FieldDecoratorDescriptor): void
+      } = (
+        targetOrDescriptor: SpraypaintBase | FieldDecoratorDescriptor,
+        propKey?: string
+      ) => {
+        if (isModernDecoratorDescriptor(targetOrDescriptor)) {
+          return Object.assign(targetOrDescriptor, {
+            finisher(ModelClass: typeof SpraypaintBase) {
+              factoryFn(ModelClass.prototype, targetOrDescriptor.key)
+            }
+          })
+        } else {
+          optsOrType = targetOrConfig
+          return factoryFn(targetOrDescriptor, propKey as string)
+        }
+      }
+      return fn
     }
   }
 
