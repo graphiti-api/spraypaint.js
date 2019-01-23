@@ -1,6 +1,5 @@
 {
   "name": "spraypaint",
-  "version": "0.3.2",
   "description": "Graphiti Client / Javascript ORM",
   "main": "lib/index.js",
   "module": "lib-esm/index.js",
