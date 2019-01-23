@@ -8,7 +8,7 @@ script:
   - yarn run test:all-versions
 
 before_deploy:
-  - npm run build
+  - yarn run release
 
 deploy:
   provider: npm

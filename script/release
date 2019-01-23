@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+yarn run build
+
+TAG=$TRAVIS_TAG
+
+SEMVER_REGEX="^v?([0-9]+\.[0-9]+\.[0-9]+[^[:space:]]*)"
+
+if [[ $TAG =~ $SEMVER_REGEX ]]; then
+  version="${BASH_REMATCH[1]}"
+else
+  echo "Invalid semver tag: $TAG"
+  exit 1
+fi
+
+yarn version --no-git-tag-version --new-version $version

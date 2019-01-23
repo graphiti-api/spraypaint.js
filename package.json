@@ -9,10 +9,10 @@
   "homepage": "https://github.com/graphiti-api/spraypaint.js",
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
-    "prebuild": "yarn run clean && yarn test && yarn lint:ci",
+    "prebuild": "yarn run clean && yarn test:ci && yarn lint:ci",
     "build": "npm-run-all build:node build:es6 build:copy_shims build:umd build:umd:min",
     "build:node": "yarn run tsc -p ./tsconfig.node.json",
-    "build:es6": "yarn run tsc -p ./tsconfig.lib.json && yarn test:es6-compatibility",
+    "build:es6": "yarn run tsc -p ./tsconfig.lib.json",
     "build:umd": "yarn run rollup -c",
     "build:umd:min": "NODE_ENV=production yarn build:umd",
     "build:watch": "NODE_ENV=watch yarn build:es6 --watch",
@@ -22,11 +22,12 @@
     "test": "NODE_ENV=test mocha --opts test/mocha.opts",
     "test:watch": "yarn run test --watch",
     "test:all-versions": "yarn tav",
-    "test:es6-compatibility": "mocha --opts test/es6-compatibility/mocha.opts",
+    "test:es6-compatibility": "yarn build:es6 && mocha --opts test/es6-compatibility/mocha.opts",
+    "test:ci": "yarn test:all-versions && yarn test:es6-compatibility",
     "lint": "yarn run lint:ci --fix",
     "lint:ci": "yarn run eslint {src,test}{,/**}/*.ts",
-    "update:dependencies": "ncu -u",
-    "prettier": "pretty-quick --staged"
+    "release": "script/release",
+    "update:dependencies": "ncu -u"
   },
   "husky": {
     "hooks": {
@@ -92,7 +93,6 @@
     "npm-check-updates": "^2.13.0",
     "npm-run-all": "4.1.2",
     "prettier": "1.15.3",
-    "pretty-quick": "1.2.0",
     "rimraf": "2.6.2",
     "rollup": "0.52.1",
     "rollup-plugin-commonjs": "8.2.6",
