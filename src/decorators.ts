@@ -22,14 +22,14 @@ import {
 import { config as envConfig, inBrowser, config } from "./util/env"
 import { logger } from "./logger"
 
-type DecoratorPlacement = "static" | "prototype" | "own"
-interface EcmaDecoratorDescriptor {
+export type DecoratorPlacement = "static" | "prototype" | "own"
+export interface EcmaDecoratorDescriptor {
   kind: "class" | "method" | "field"
   key: string
   placement: DecoratorPlacement
 }
 
-interface FieldDecoratorDescriptor extends EcmaDecoratorDescriptor {
+export interface FieldDecoratorDescriptor extends EcmaDecoratorDescriptor {
   kind: "field"
 }
 
