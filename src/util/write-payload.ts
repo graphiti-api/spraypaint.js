@@ -8,6 +8,7 @@ import {
   JsonapiResourceMethod,
   JsonapiResource
 } from "../jsonapi-spec"
+import { Attribute } from "../attribute"
 
 export class WritePayload<T extends SpraypaintBase> {
   model: T
@@ -31,9 +32,15 @@ export class WritePayload<T extends SpraypaintBase> {
   attributes() {
     const attrs: ModelRecord<T> = {}
 
-    this._eachAttribute((key, value) => {
+    this._eachAttribute((key, value, attrDef) => {
       if (!this.model.isPersisted || (<any>this.model.changes())[key]) {
-        attrs[this.model.klass.serializeKey(key)] = value
+        let writeKey = this.model.klass.serializeKey(key)
+
+        if (attrDef.type === Number && (value as any) === "") {
+          attrs[writeKey] = null
+        } else {
+          attrs[writeKey] = value
+        }
       }
     })
 
@@ -242,14 +249,15 @@ export class WritePayload<T extends SpraypaintBase> {
   }
 
   private _eachAttribute<K extends Extract<keyof T, string>>(
-    callback: (key: K, val: T[K]) => void
+    callback: (key: K, val: T[K], attrDef: Attribute) => void
   ): void {
     const modelAttrs = this.model.typedAttributes
 
     Object.keys(modelAttrs).forEach(key => {
-      if (this.model.klass.attributeList[key].persist) {
+      let attrDef = this.model.klass.attributeList[key]
+      if (attrDef.persist) {
         const value = modelAttrs[key]
-        callback(key as K, value)
+        callback(key as K, value, attrDef)
       }
     })
   }

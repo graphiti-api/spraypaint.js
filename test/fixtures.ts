@@ -22,6 +22,7 @@ export class Person extends ApplicationRecord {
 
   @Attr firstName!: string | null
   @Attr lastName!: string | null
+  @Attr({ type: Number }) age!: number | null
 }
 
 @Model()
