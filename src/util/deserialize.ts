@@ -130,6 +130,9 @@ class Deserializer {
     // assign attrs
     instance.assignAttributes(datum.attributes)
 
+    // assign links
+    instance.assignLinks(datum.links)
+
     // assign meta
     instance.setMeta(datum.meta)
 

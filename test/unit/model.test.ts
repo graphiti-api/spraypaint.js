@@ -1557,5 +1557,32 @@ describe("Model", () => {
       expect(author.links.webView).to.eq("/person/1")
       expect(author.links.undeclared).to.be.undefined
     })
+
+    describe("deserialize from payload correctly", () => {
+      const doc = {
+        data: {
+          id: "1",
+          type: "people_with_links",
+          attributes: { firstName: "Donald Budge" },
+          links: {
+            self: "/api/person/1",
+            web_view: "/person/1"
+          }
+        }
+      }
+
+      it("from instance", () => {
+        const person = new PersonWithLinks({ id: "1", firstName: "Stephen" })
+        person.fromJsonapi(doc.data, doc)
+        expect(person.links.self).to.eq("/api/person/1")
+        expect(person.links.webView).to.eq("/person/1")
+      })
+
+      it("from class", () => {
+        const person = PersonWithLinks.fromJsonapi(doc.data, doc)
+        expect(person.links.self).to.eq("/api/person/1")
+        expect(person.links.webView).to.eq("/person/1")
+      })
+    })
   })
 })

@@ -32,6 +32,9 @@ export class PersonWithExtraAttr extends Person {
 
 @Model()
 export class PersonWithLinks extends Person {
+  static endpoint = "/v1/people_with_links"
+  static jsonapiType = "people_with_links"
+
   @Link() self!: string
   @Link() webView!: string
 }
