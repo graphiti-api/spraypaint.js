@@ -165,6 +165,14 @@ const AttrDecoratorFactory: {
   }
 }
 
+const LinkDecoratorFactory = function(): any {
+  return (target: SpraypaintBase, propKey: string) => {
+    const ModelClass = <any>target.constructor
+    ensureModelInheritance(ModelClass)
+    ModelClass.linkList.push(propKey)
+  }
+}
+
 const ensureModelInheritance = (ModelClass: typeof SpraypaintBase) => {
   if (ModelClass.currentClass !== ModelClass) {
     ModelClass.currentClass.inherited(ModelClass)
@@ -319,6 +327,7 @@ const BelongsToDecoratorFactory = AssociationDecoratorFactoryBuilder(BelongsTo)
 export {
   ModelDecorator as Model,
   AttrDecoratorFactory as Attr,
+  LinkDecoratorFactory as Link,
   HasManyDecoratorFactory as HasMany,
   HasOneDecoratorFactory as HasOne,
   BelongsToDecoratorFactory as BelongsTo

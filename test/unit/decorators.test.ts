@@ -5,6 +5,7 @@ import {
   HasOne,
   HasMany,
   BelongsTo,
+  Link,
   initModel
 } from "../../src/decorators"
 import { Association } from "../../src/associations"
@@ -155,6 +156,39 @@ describe("Decorators", () => {
         })
       }
     )
+  })
+
+  describe("@Link", () => {
+    let BaseModel: typeof SpraypaintBase
+
+    beforeEach(() => {
+      @Model()
+      class MyBase extends SpraypaintBase {}
+      BaseModel = MyBase
+    })
+
+    it("adds to the link list", () => {
+      @Model()
+      class TestClass extends BaseModel {
+        @Link() link1!: string
+      }
+
+      expect(TestClass.linkList).to.include("link1")
+    })
+
+    it("child class adds to the link list of parent", () => {
+      @Model()
+      class TestClass extends BaseModel {
+        @Link() link1!: string
+      }
+
+      class ChildTestClass extends TestClass {
+        @Link() link2!: string
+      }
+
+      expect(ChildTestClass.linkList).to.include("link1")
+      expect(ChildTestClass.linkList).to.include("link2")
+    })
   })
 
   const singleDecorators = [

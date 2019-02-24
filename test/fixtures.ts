@@ -7,7 +7,7 @@ import {
   hasOne
 } from "../src/index"
 
-import { Attr, BelongsTo, HasMany, HasOne } from "../src/decorators"
+import { Attr, BelongsTo, HasMany, HasOne, Link } from "../src/decorators"
 
 @Model({
   baseUrl: "http://example.com",
@@ -28,6 +28,12 @@ export class Person extends ApplicationRecord {
 @Model()
 export class PersonWithExtraAttr extends Person {
   @Attr({ persist: false }) extraThing!: string
+}
+
+@Model()
+export class PersonWithLinks extends Person {
+  @Link() self!: string
+  @Link() webView!: string
 }
 
 @Model({ keyCase: { server: "snake", client: "snake" } })
