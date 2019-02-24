@@ -1565,23 +1565,30 @@ describe("Model", () => {
           type: "people_with_links",
           attributes: { firstName: "Donald Budge" },
           links: {
-            self: "/api/person/1",
+            self: { href: "/api/person/1", meta: { count: 10 } },
             web_view: "/person/1"
           }
         }
       }
 
+      function assertPersonIsCorrect(person: PersonWithLinks) {
+        expect(person.links.self).to.deep.equal({
+          href: "/api/person/1",
+          meta: { count: 10 }
+        })
+        expect(person.links.webView).to.eq("/person/1")
+        expect(person.links.comments).to
+      }
+
       it("from instance", () => {
         const person = new PersonWithLinks({ id: "1", firstName: "Stephen" })
         person.fromJsonapi(doc.data, doc)
-        expect(person.links.self).to.eq("/api/person/1")
-        expect(person.links.webView).to.eq("/person/1")
+        assertPersonIsCorrect(person)
       })
 
       it("from class", () => {
         const person = PersonWithLinks.fromJsonapi(doc.data, doc)
-        expect(person.links.self).to.eq("/api/person/1")
-        expect(person.links.webView).to.eq("/person/1")
+        assertPersonIsCorrect(person)
       })
     })
   })
