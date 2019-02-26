@@ -243,7 +243,7 @@ describe("nested persistence", () => {
     // todo test unique includes/circular relationshio
     it("sends the correct payload", async () => {
       await instance.save({ with: { books: "genre", specialBooks: {} } })
-
+      
       expect(payloads[0]).to.deep.equal(expectedCreatePayload)
     })
 
@@ -281,6 +281,30 @@ describe("nested persistence", () => {
       it("should not be sent in the payload", async () => {
         await instance.save({ with: { books: "genre" } })
         expect((<any>payloads)[0].data.relationships).to.eq(undefined)
+      })
+    })
+
+    describe("when a belongsTo relationship has unpersisted members that are marked for destruction", () => {
+      beforeEach(() => {
+        instance.books[0].genre.isMarkedForDestruction = true
+      })
+
+      it("should not be sent in the payload", async () => {
+        await instance.save({ with: { books: "genre" } })
+        expect((<any>payloads)[0].included.some((i: any) => i['types'] === 'genre')).to.be.false
+      })
+    })
+
+    describe("when a hasMany relationship has unpersisted members that are marked for destruction", () => {
+      beforeEach(() => {
+        instance.books[0] = new Book()
+        instance.books[0].isMarkedForDestruction = true
+      })
+
+      it("should not be sent in the payload", async () => {
+        await instance.save({ with: { books: "genre" } })
+        expect((<any>payloads)[0].data.relationships).to.eq(undefined)
+        expect((<any>payloads)[0].data.included).to.eq(undefined)
       })
     })
   })

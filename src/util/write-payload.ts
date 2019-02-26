@@ -104,9 +104,10 @@ export class WritePayload<T extends SpraypaintBase> {
           data = []
           relatedModels.forEach(relatedModel => {
             if (
-              idOnly ||
+              !this._isNewAndMarkedForDestruction(relatedModel) &&
+              (idOnly ||
               this.model.hasDirtyRelation(key, relatedModel) ||
-              relatedModel.isDirty(nested)
+              relatedModel.isDirty(nested))
             ) {
               data.push(this._processRelatedModel(relatedModel, nested, idOnly))
             }
@@ -118,9 +119,10 @@ export class WritePayload<T extends SpraypaintBase> {
           // Either the related model is dirty, or it's a dirty relation
           // (maybe the "department" is not dirty, but the employee changed departments
           if (
-            idOnly ||
+            !this._isNewAndMarkedForDestruction(relatedModels) &&
+            (idOnly ||
             this.model.hasDirtyRelation(key, relatedModels) ||
-            relatedModels.isDirty(nested)
+            relatedModels.isDirty(nested))
           ) {
             data = this._processRelatedModel(relatedModels, nested, idOnly)
           }
@@ -171,6 +173,10 @@ export class WritePayload<T extends SpraypaintBase> {
 
   // private
 
+  private _isNewAndMarkedForDestruction(model: any): boolean {
+    return !model.isPersisted && model.isMarkedForDestruction
+  }
+
   private _processRelatedModel(
     model: T,
     nested: IncludeScopeHash,
@@ -185,10 +191,14 @@ export class WritePayload<T extends SpraypaintBase> {
     const wp = new WritePayload(model, nested, idOnly)
     const relatedJSON = wp.asJSON().data
 
-    this._pushInclude(relatedJSON)
+    if(!this._isNewAndMarkedForDestruction(model)) {
+      this._pushInclude(relatedJSON)
+    }
 
     wp.included.forEach(incl => {
-      this._pushInclude(incl)
+      if(!this._isNewAndMarkedForDestruction(model)) {
+        this._pushInclude(incl)
+      }
     })
 
     const resourceIdentifier = this._resourceIdentifierFor(model)
