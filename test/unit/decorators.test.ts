@@ -188,6 +188,7 @@ describe("Decorators", () => {
 
       expect(ChildTestClass.linkList).to.include("link1")
       expect(ChildTestClass.linkList).to.include("link2")
+      expect(TestClass.linkList).to.not.include("link2")
     })
   })
 
