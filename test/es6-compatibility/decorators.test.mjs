@@ -4,7 +4,8 @@ import {
   Attr,
   HasMany,
   HasOne,
-  BelongsTo
+  BelongsTo,
+  Link
 } from "../../lib-esm"
 import { expect } from "chai"
 
@@ -27,6 +28,12 @@ describe("Decorators work with ES6/Babel", () => {
         @BelongsTo author
       }
 
+      @Model({ jsonapiType: "users_with_link" })
+      class UserWithLink extends ApplicationRecord {
+        @Attr name
+        @Link self
+      }
+
       expect(ApplicationRecord.parentClass).to.eq(SpraypaintBase)
       expect(ApplicationRecord.typeRegistry.get("users")).to.eq(User)
       expect(Object.keys(User.attributeList)).to.deep.eq([
@@ -35,6 +42,7 @@ describe("Decorators work with ES6/Babel", () => {
         "supervisor"
       ])
       expect(Object.keys(Post.attributeList)).to.deep.eq(["title", "author"])
+      expect(UserWithLink.linkList).to.deep.eq(["self"])
     })
   })
 })
