@@ -165,6 +165,7 @@ export class SpraypaintBase {
   static clientApplication: string | null = null
 
   static attributeList: Record<string, Attribute> = {}
+  static linkList: Array<string> = []
   static extendOptions: any
   static parentClass: typeof SpraypaintBase
   static currentClass: typeof SpraypaintBase = SpraypaintBase
@@ -245,6 +246,7 @@ export class SpraypaintBase {
     subclass.currentClass = subclass
     subclass.prototype.klass = subclass
     subclass.attributeList = cloneDeep(subclass.attributeList)
+    subclass.linkList = cloneDeep(subclass.linkList)
   }
 
   static setAsBase(): void {
@@ -369,6 +371,7 @@ export class SpraypaintBase {
     }
 
     Subclass.attributeList = Object.assign({}, Subclass.attributeList, attrs)
+    Subclass.linkList = Subclass.linkList.slice()
 
     applyModelConfig(Subclass, options.static || {})
 
@@ -407,13 +410,17 @@ export class SpraypaintBase {
   > = {}
   @nonenumerable private _attributes!: ModelRecord<this>
   @nonenumerable private _originalAttributes: ModelRecord<this>
+  @nonenumerable private _links!: ModelRecord<this>
+  @nonenumerable private _originalLinks!: ModelRecord<this>
   @nonenumerable private __meta__: any
   @nonenumerable private _errors: ValidationErrors<this> = {}
 
   constructor(attrs?: Record<string, any>) {
     this._initializeAttributes()
+    this._initializeLinks()
     this.assignAttributes(attrs)
     this._originalAttributes = cloneDeep(this._attributes)
+    this._originalLinks = cloneDeep(this._links)
     this._originalRelationships = this.relationshipResourceIdentifiers(
       Object.keys(this.relationships)
     )
@@ -422,6 +429,10 @@ export class SpraypaintBase {
   private _initializeAttributes() {
     this._attributes = {}
     this._copyPrototypeDescriptors()
+  }
+
+  private _initializeLinks() {
+    this._links = {}
   }
 
   /*
@@ -672,6 +683,7 @@ export class SpraypaintBase {
     cloned.isMarkedForDestruction = this.isMarkedForDestruction
     cloned.isMarkedForDisassociation = this.isMarkedForDisassociation
     cloned.errors = Object.assign({}, this.errors)
+    cloned.links = Object.assign({}, this.links)
     return cloned
   }
 
@@ -966,6 +978,25 @@ export class SpraypaintBase {
     this._originalRelationships = this.relationshipResourceIdentifiers(
       Object.keys(includeDirective)
     )
+  }
+
+  get links(): Record<string, any> {
+    return this._links
+  }
+
+  set links(links: Record<string, any>) {
+    this._links = {}
+    this.assignLinks(links)
+  }
+
+  assignLinks(links?: Record<string, any>): void {
+    if (!links) return
+    for (const key in links) {
+      const attributeName = this.klass.deserializeKey(key)
+      if (this.klass.linkList.indexOf(attributeName) > -1) {
+        this._links[attributeName] = links[key]
+      }
+    }
   }
 }
 

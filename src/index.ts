@@ -4,7 +4,7 @@ export { Attribute, attr } from "./attribute"
 
 export { hasMany, hasOne, belongsTo } from "./associations"
 
-export { Model, Attr, HasMany, HasOne, BelongsTo } from "./decorators"
+export { Model, Attr, HasMany, HasOne, BelongsTo, Link } from "./decorators"
 
 export { MiddlewareStack } from "./middleware-stack"
 

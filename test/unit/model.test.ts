@@ -15,6 +15,7 @@ import { EventBus } from "../../src/event-bus"
 import {
   ApplicationRecord,
   Person,
+  PersonWithLinks,
   Book,
   Author,
   Genre,
@@ -1528,6 +1529,67 @@ describe("Model", () => {
       const headers: any = Author.fetchOptions().headers
       expect(headers.Accept).to.eq("application/vnd.api+json")
       expect(headers["Content-Type"]).to.eq("application/vnd.api+json")
+    })
+  })
+
+  describe("links", () => {
+    it("duplicates the links when object is duplicated", () => {
+      let author = new PersonWithLinks({ id: "1", firstName: "Stephen" })
+      author.assignLinks({ self: "/api/person/1", web_view: "/person/1" })
+
+      let duped = author.dup()
+      duped.assignLinks({ self: "/api/humans/1" })
+
+      expect(author.links.self).to.eq("/api/person/1")
+      expect(author.links.webView).to.eq("/person/1")
+      expect(duped.links.self).to.eq("/api/humans/1")
+      expect(duped.links.webView).to.eq("/person/1")
+    })
+
+    it("discard links that are undeclared but included in payload", () => {
+      let author = new PersonWithLinks({ id: "1", firstName: "Stephen" })
+      author.assignLinks({
+        self: "/api/person/1",
+        web_view: "/person/1",
+        undeclared: "/something"
+      })
+      expect(author.links.self).to.eq("/api/person/1")
+      expect(author.links.webView).to.eq("/person/1")
+      expect(author.links.undeclared).to.be.undefined
+    })
+
+    describe("deserialize from payload correctly", () => {
+      const doc = {
+        data: {
+          id: "1",
+          type: "people_with_links",
+          attributes: { firstName: "Donald Budge" },
+          links: {
+            self: { href: "/api/person/1", meta: { count: 10 } },
+            web_view: "/person/1"
+          }
+        }
+      }
+
+      function assertPersonIsCorrect(person: PersonWithLinks) {
+        expect(person.links.self).to.deep.equal({
+          href: "/api/person/1",
+          meta: { count: 10 }
+        })
+        expect(person.links.webView).to.eq("/person/1")
+        expect(person.links.comments).to
+      }
+
+      it("from instance", () => {
+        const person = new PersonWithLinks({ id: "1", firstName: "Stephen" })
+        person.fromJsonapi(doc.data, doc)
+        assertPersonIsCorrect(person)
+      })
+
+      it("from class", () => {
+        const person = PersonWithLinks.fromJsonapi(doc.data, doc)
+        assertPersonIsCorrect(person)
+      })
     })
   })
 })

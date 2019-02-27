@@ -165,6 +165,27 @@ const AttrDecoratorFactory: {
   }
 }
 
+const LinkDecoratorFactory = function(
+  fieldDetail?: FieldDecoratorDescriptor
+): any {
+  const trackLink = (Model: typeof SpraypaintBase, propKey: string) => {
+    ensureModelInheritance(Model)
+    Model.linkList.push(propKey)
+  }
+
+  if (isModernDecoratorDescriptor(fieldDetail)) {
+    return Object.assign(fieldDetail, {
+      finisher: (Model: typeof SpraypaintBase) => {
+        trackLink(Model, fieldDetail.key)
+      }
+    })
+  } else {
+    return (target: SpraypaintBase, propKey: string) => {
+      trackLink(<any>target.constructor, propKey)
+    }
+  }
+}
+
 const ensureModelInheritance = (ModelClass: typeof SpraypaintBase) => {
   if (ModelClass.currentClass !== ModelClass) {
     ModelClass.currentClass.inherited(ModelClass)
@@ -319,6 +340,7 @@ const BelongsToDecoratorFactory = AssociationDecoratorFactoryBuilder(BelongsTo)
 export {
   ModelDecorator as Model,
   AttrDecoratorFactory as Attr,
+  LinkDecoratorFactory as Link,
   HasManyDecoratorFactory as HasMany,
   HasOneDecoratorFactory as HasOne,
   BelongsToDecoratorFactory as BelongsTo
