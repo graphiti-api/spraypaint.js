@@ -143,6 +143,18 @@ describe("ID Map", () => {
         let author2 = (await Author.find(1)).data
         expect(author1.firstName).to.eq("updated")
       })
+
+      it("no longer sync on manual relationship sync", async () => {
+        let author1 = (await Author.find(1)).data
+        let book1 = new Book()
+        author1.books = [book1]
+        author1.unlisten()
+        let author2 = (await Author.find(1)).data
+        let book2 = new Book()
+        author2.books = [book2]
+        author2.syncRelationships()
+        expect(author1.books).to.eql([book1])
+      })
     })
 
     // A good way to think about this test:
@@ -183,6 +195,20 @@ describe("ID Map", () => {
       // now back to unsynced
       author1.firstName = "updated again"
       expect(author2.firstName).to.eq("updated")
+    })
+  })
+
+  describe("when manually syncing relationships", () => {
+    it("works", async () => {
+      let book1 = new Book()
+      let book2 = new Book()
+      let author1 = new Author({ id: 1, books: [book1] })
+      author1.isPersisted = true
+      let author2 = new Author({ id: 2, books: [book2] })
+      author2.isPersisted = true
+
+      author2.syncRelationships()
+      expect(author1.books).to.eql([book2])
     })
   })
 

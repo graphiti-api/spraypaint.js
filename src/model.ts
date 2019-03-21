@@ -483,6 +483,15 @@ export class SpraypaintBase {
     if (val) this.reset()
   }
 
+  _onSyncRelationships?: (event: any, relationships: any) => void
+  private onSyncRelationships() {
+    if (this._onSyncRelationships) return this._onSyncRelationships
+    this._onSyncRelationships = (event, relationships) => {
+      this.relationships = relationships
+    }
+    return this._onSyncRelationships
+  }
+
   _onStoreChange?: (event: any, attrs: any) => void
   private onStoreChange() {
     if (this._onStoreChange) return this._onStoreChange
@@ -514,6 +523,10 @@ export class SpraypaintBase {
     if (!this.klass.sync) return
     if (this.storeKey) {
       EventBus.removeEventListener(this.storeKey, this.onStoreChange())
+      EventBus.removeEventListener(
+        `${this.storeKey}-sync-relationships`,
+        this.onSyncRelationships()
+      )
     }
 
     Object.keys(this.relationships).forEach(k => {
@@ -534,7 +547,19 @@ export class SpraypaintBase {
     if (!this._onStoreChange) {
       // not already registered
       EventBus.addEventListener(this.storeKey, this.onStoreChange())
+      EventBus.addEventListener(
+        `${this.storeKey}-sync-relationships`,
+        this.onSyncRelationships()
+      )
     }
+  }
+
+  syncRelationships(): void {
+    EventBus.dispatch(
+      `${this.storeKey}-sync-relationships`,
+      {},
+      this.relationships
+    )
   }
 
   reset(): void {
