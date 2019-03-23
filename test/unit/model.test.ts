@@ -1286,7 +1286,7 @@ describe("Model", () => {
 
     it("removes event listener from self + relationships", () => {
       author.unlisten()
-      sinon.assert.callCount(removeListenerSpy, 2)
+      sinon.assert.callCount(removeListenerSpy, 4)
     })
 
     describe("when sync option is false", () => {
@@ -1318,7 +1318,7 @@ describe("Model", () => {
 
     it("adds event listener", () => {
       author.listen()
-      sinon.assert.callCount(addListenerSpy, 1)
+      sinon.assert.callCount(addListenerSpy, 2)
     })
 
     describe("when sync option is false", () => {
