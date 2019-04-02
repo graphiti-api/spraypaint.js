@@ -573,6 +573,10 @@ export class SpraypaintBase {
     )
   }
 
+  rollback(): void {
+    this._attributes = cloneDeep(this._originalAttributes)
+  }
+
   get isMarkedForDestruction(): boolean {
     return this._markedForDestruction
   }
