@@ -239,6 +239,49 @@ describe("Model persistence", () => {
         })
       })
     })
+
+    describe("when the server returns 202 accepted", () => {
+      beforeEach(() => {
+        fetchMock.restore()
+        fetchMock.post("http://example.com/api/v1/people", { status: 202 })
+      })
+
+      afterEach(() => {
+        resetMocks()
+      })
+
+      it("does not blow up", async () => {
+        expect(instance.isPersisted).to.eq(false)
+        const success = await instance.save()
+
+        expect(success).to.be.true
+        expect(instance.isPersisted).to.eq(false)
+      })
+    })
+
+    describe("when the server returns 202 and a background job object", () => {
+      beforeEach(() => {
+        fetchMock.restore()
+
+        fetchMock.post("http://example.com/api/v1/people", {
+          status: 202,
+          body: { data: { id: "23", type: "background_jobs", attributes: {} } }
+        })
+      })
+
+      afterEach(() => {
+        resetMocks()
+      })
+
+      it("deserialize the response and return the job object", async () => {
+        expect(instance.isPersisted).to.eq(false)
+        const job = await instance.save()
+
+        expect(instance.isPersisted).to.eq(false)
+        expect(job.id).to.eq("23")
+        expect(job.klass).to.eq(BackgroundJob)
+      })
+    })
   })
 
   describe("#destroy", () => {

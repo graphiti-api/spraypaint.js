@@ -931,7 +931,7 @@ export class SpraypaintBase {
   async save<I extends SpraypaintBase>(
     this: I,
     options: SaveOptions<I> = {}
-  ): Promise<boolean> {
+  ): Promise<any> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
     const request = new Request(this._middleware(), this.klass.logger)
@@ -963,6 +963,10 @@ export class SpraypaintBase {
       response = await request[verb](url, json, this._fetchOptions())
     } catch (err) {
       throw err
+    }
+
+    if (response.status === 202) {
+      return await this._handleAcceptedResponse(response)
     }
 
     return await this._handleResponse(response, () => {
