@@ -904,7 +904,7 @@ export class SpraypaintBase {
     }
   }
 
-  async destroy(): Promise<boolean> {
+  async destroy(): Promise<any> {
     const url = this.klass.url(this.id)
     const verb = "delete"
     const request = new Request(this._middleware(), this.klass.logger)
@@ -914,6 +914,10 @@ export class SpraypaintBase {
       response = await request.delete(url, this._fetchOptions())
     } catch (err) {
       throw err
+    }
+
+    if (response.status === 202) {
+      return await this._handleAcceptedResponse(response)
     }
 
     let base = this.klass.baseClass as typeof SpraypaintBase
@@ -969,6 +973,17 @@ export class SpraypaintBase {
       )
       payload.postProcess()
     })
+  }
+
+  private async _handleAcceptedResponse(response: any): Promise<any> {
+    let returnValue = await this._handleResponse(response, () => {})
+    if (response.jsonPayload) {
+      returnValue = this.klass.fromJsonapi(
+        response.jsonPayload.data,
+        response.jsonPayload
+      )
+    }
+    return returnValue
   }
 
   private async _handleResponse(

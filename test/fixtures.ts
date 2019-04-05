@@ -119,6 +119,11 @@ export class MultiWord extends ApplicationRecord {
   static jsonapiType = "multi_words"
 }
 
+@Model()
+export class BackgroundJob extends ApplicationRecord {
+  static jsonapiType = "background_jobs"
+}
+
 export const TestJWTSubclass = ApplicationRecord.extend({})
 
 export const NonJWTOwner = SpraypaintBase.extend({})
