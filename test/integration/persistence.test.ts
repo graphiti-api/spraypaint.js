@@ -34,6 +34,12 @@ const resetMocks = () => {
     return serverResponse
   })
 
+  // patchAsPost
+  fetchMock.post("http://example.com/api/v1/people/1", (url, payload: any) => {
+    payloads.push(JSON.parse(payload.body))
+    return serverResponse
+  })
+
   fetchMock.patch("http://example.com/api/v1/people/1", (url, payload: any) => {
     patchPayloads.push(JSON.parse(payload.body))
     return serverResponse
@@ -93,6 +99,35 @@ describe("Model persistence", () => {
         expect(bool).to.eq(true)
         expect(instance.id).to.eq("1")
         expect(instance.isPersisted).to.eq(true)
+      })
+
+      describe("when patchAsPost == true", () => {
+        let original: boolean
+
+        beforeEach(() => {
+          original = instance.klass.patchAsPost
+          instance.klass.patchAsPost = true
+        })
+
+        afterEach(() => {
+          instance.klass.patchAsPost = original
+        })
+
+        it("sends POST with _method override", async () => {
+          const bool = await instance.save()
+
+          expect(bool).to.eq(true)
+          let options = fetchMock.lastOptions()
+          let headers = options.headers as any
+          expect(options.method).to.eq("POST")
+          expect(headers["X-HTTP-Method-Override"]).to.eq("PATCH")
+          expect(payloads[0]).to.deep.equal({
+            data: {
+              id: "1",
+              type: "people"
+            }
+          })
+        })
       })
 
       describe("when no dirty attributes", () => {

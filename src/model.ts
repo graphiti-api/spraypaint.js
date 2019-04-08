@@ -163,6 +163,7 @@ export class SpraypaintBase {
   static logger: ILogger = defaultLogger
   static sync: boolean = false
   static clientApplication: string | null = null
+  static patchAsPost: boolean = false
 
   static attributeList: Record<string, Attribute> = {}
   static linkList: Array<string> = []
@@ -930,7 +931,9 @@ export class SpraypaintBase {
   ): Promise<boolean> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
-    const request = new Request(this._middleware(), this.klass.logger)
+    const request = new Request(this._middleware(), this.klass.logger, {
+      patchAsPost: this.klass.patchAsPost
+    })
     const payload = new WritePayload(this, options.with)
     let response: any
 

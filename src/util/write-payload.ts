@@ -106,8 +106,8 @@ export class WritePayload<T extends SpraypaintBase> {
             if (
               !this._isNewAndMarkedForDestruction(relatedModel) &&
               (idOnly ||
-              this.model.hasDirtyRelation(key, relatedModel) ||
-              relatedModel.isDirty(nested))
+                this.model.hasDirtyRelation(key, relatedModel) ||
+                relatedModel.isDirty(nested))
             ) {
               data.push(this._processRelatedModel(relatedModel, nested, idOnly))
             }
@@ -121,8 +121,8 @@ export class WritePayload<T extends SpraypaintBase> {
           if (
             !this._isNewAndMarkedForDestruction(relatedModels) &&
             (idOnly ||
-            this.model.hasDirtyRelation(key, relatedModels) ||
-            relatedModels.isDirty(nested))
+              this.model.hasDirtyRelation(key, relatedModels) ||
+              relatedModels.isDirty(nested))
           ) {
             data = this._processRelatedModel(relatedModels, nested, idOnly)
           }
@@ -191,12 +191,12 @@ export class WritePayload<T extends SpraypaintBase> {
     const wp = new WritePayload(model, nested, idOnly)
     const relatedJSON = wp.asJSON().data
 
-    if(!this._isNewAndMarkedForDestruction(model)) {
+    if (!this._isNewAndMarkedForDestruction(model)) {
       this._pushInclude(relatedJSON)
     }
 
     wp.included.forEach(incl => {
-      if(!this._isNewAndMarkedForDestruction(model)) {
+      if (!this._isNewAndMarkedForDestruction(model)) {
         this._pushInclude(incl)
       }
     })

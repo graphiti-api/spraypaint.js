@@ -9,13 +9,23 @@ export interface JsonapiResponse extends Response {
   jsonPayload: JsonapiResponseDoc
 }
 
+export interface RequestConfig {
+  patchAsPost: boolean
+}
+
 export class Request {
   middleware: MiddlewareStack
+  config: RequestConfig
   private logger: ILogger
 
-  constructor(middleware: MiddlewareStack, logger: ILogger) {
+  constructor(
+    middleware: MiddlewareStack,
+    logger: ILogger,
+    config?: RequestConfig
+  ) {
     this.middleware = middleware
     this.logger = logger
+    this.config = Object.assign({ patchAsPost: false }, config)
   }
 
   get(url: string, options: RequestInit): Promise<any> {
@@ -39,7 +49,13 @@ export class Request {
     payload: JsonapiRequestDoc,
     options: RequestInit
   ): Promise<any> {
-    options.method = "PATCH"
+    if (this.config.patchAsPost) {
+      options.method = "POST"
+      if (!options.headers) options.headers = {}
+      options.headers["X-HTTP-Method-Override"] = "PATCH"
+    } else {
+      options.method = "PATCH"
+    }
     options.body = JSON.stringify(payload)
 
     return this._fetchWithLogging(url, options)
