@@ -274,8 +274,13 @@ describe("Model persistence", () => {
       })
 
       it("deserialize the response and return the job object", async () => {
+        let job: BackgroundJob = new BackgroundJob()
+        let populateJobOnResponse = (response: any) => {
+          job = response
+        }
+        instance.onDeferredUpdate = populateJobOnResponse
         expect(instance.isPersisted).to.eq(false)
-        const job = await instance.save()
+        await instance.save()
 
         expect(instance.isPersisted).to.eq(false)
         expect(job.id).to.eq("23")
@@ -360,8 +365,13 @@ describe("Model persistence", () => {
       })
 
       it("deserialize the response and return the job object", async () => {
+        let job: BackgroundJob = new BackgroundJob()
+        let populateJobOnResponse = (response: any) => {
+          job = response
+        }
+        instance.onDeferredDestroy = populateJobOnResponse
         expect(instance.isPersisted).to.eq(true)
-        const job = await instance.destroy()
+        await instance.destroy()
 
         expect(instance.isPersisted).to.eq(true)
         expect(job.id).to.eq("23")

@@ -40,6 +40,7 @@ import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
 import { ValidationErrors } from "./validation-errors"
+import { DeferredActionCallback } from "./deferred-action-callback"
 
 export type KeyCaseValue = "dash" | "camel" | "snake"
 
@@ -392,6 +393,8 @@ export class SpraypaintBase {
   temp_id?: string
   stale: boolean = false
   storeKey: string = ""
+  onDeferredDestroy?: DeferredActionCallback
+  onDeferredUpdate?: DeferredActionCallback
 
   @nonenumerable afterSync?: (diff: Record<string, any>) => any | undefined
   @nonenumerable relationships: Record<
@@ -904,7 +907,7 @@ export class SpraypaintBase {
     }
   }
 
-  async destroy(): Promise<any> {
+  async destroy(): Promise<boolean> {
     const url = this.klass.url(this.id)
     const verb = "delete"
     const request = new Request(this._middleware(), this.klass.logger)
@@ -917,7 +920,10 @@ export class SpraypaintBase {
     }
 
     if (response.status === 202) {
-      return await this._handleAcceptedResponse(response)
+      return await this._handleAcceptedResponse(
+        response,
+        this.onDeferredDestroy
+      )
     }
 
     let base = this.klass.baseClass as typeof SpraypaintBase
@@ -931,7 +937,7 @@ export class SpraypaintBase {
   async save<I extends SpraypaintBase>(
     this: I,
     options: SaveOptions<I> = {}
-  ): Promise<any> {
+  ): Promise<boolean> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
     const request = new Request(this._middleware(), this.klass.logger)
@@ -966,7 +972,7 @@ export class SpraypaintBase {
     }
 
     if (response.status === 202) {
-      return await this._handleAcceptedResponse(response)
+      return await this._handleAcceptedResponse(response, this.onDeferredUpdate)
     }
 
     return await this._handleResponse(response, () => {
@@ -979,15 +985,18 @@ export class SpraypaintBase {
     })
   }
 
-  private async _handleAcceptedResponse(response: any): Promise<any> {
-    let returnValue = await this._handleResponse(response, () => {})
-    if (response.jsonPayload) {
-      returnValue = this.klass.fromJsonapi(
+  private async _handleAcceptedResponse(
+    response: any,
+    callback: DeferredActionCallback | undefined
+  ): Promise<boolean> {
+    if (response.jsonPayload && callback) {
+      const responseObject = this.klass.fromJsonapi(
         response.jsonPayload.data,
         response.jsonPayload
       )
+      callback(responseObject)
     }
-    return returnValue
+    return await this._handleResponse(response, () => {})
   }
 
   private async _handleResponse(
