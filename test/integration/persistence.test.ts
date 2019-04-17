@@ -1,5 +1,5 @@
 import { expect, fetchMock } from "../test-helper"
-import { Person, PersonWithExtraAttr } from "../fixtures"
+import { Person, PersonWithExtraAttr, BackgroundJob } from "../fixtures"
 import { JsonapiRequestDoc, JsonapiResponseDoc } from "../../src/index"
 
 after(() => {
@@ -274,6 +274,54 @@ describe("Model persistence", () => {
         })
       })
     })
+
+    describe("when the server returns 202 accepted", () => {
+      beforeEach(() => {
+        fetchMock.restore()
+        fetchMock.post("http://example.com/api/v1/people", { status: 202 })
+      })
+
+      afterEach(() => {
+        resetMocks()
+      })
+
+      it("does not blow up", async () => {
+        expect(instance.isPersisted).to.eq(false)
+        const success = await instance.save()
+
+        expect(success).to.be.true
+        expect(instance.isPersisted).to.eq(false)
+      })
+    })
+
+    describe("when the server returns 202 and a background job object", () => {
+      beforeEach(() => {
+        fetchMock.restore()
+
+        fetchMock.post("http://example.com/api/v1/people", {
+          status: 202,
+          body: { data: { id: "23", type: "background_jobs", attributes: {} } }
+        })
+      })
+
+      afterEach(() => {
+        resetMocks()
+      })
+
+      it("deserialize the response and return the job object", async () => {
+        let job: BackgroundJob = new BackgroundJob()
+        let populateJobOnResponse = (response: any) => {
+          job = response
+        }
+        instance.onDeferredUpdate = populateJobOnResponse
+        expect(instance.isPersisted).to.eq(false)
+        await instance.save()
+
+        expect(instance.isPersisted).to.eq(false)
+        expect(job.id).to.eq("23")
+        expect(job.klass).to.eq(BackgroundJob)
+      })
+    })
   })
 
   describe("#destroy", () => {
@@ -321,10 +369,7 @@ describe("Model persistence", () => {
       beforeEach(() => {
         fetchMock.restore()
 
-        fetchMock.mock({
-          matcher: "http://example.com/api/v1/people/1",
-          response: new Response({ status: 202 } as any)
-        })
+        fetchMock.delete("http://example.com/api/v1/people/1", { status: 202 })
       })
 
       afterEach(() => {
@@ -333,9 +378,39 @@ describe("Model persistence", () => {
 
       it("does not blow up", async () => {
         expect(instance.isPersisted).to.eq(true)
+        const success = await instance.destroy()
+
+        expect(success).to.be.true
+        expect(instance.isPersisted).to.eq(true)
+      })
+    })
+
+    describe("when the server returns 202 and a background job object", () => {
+      beforeEach(() => {
+        fetchMock.restore()
+
+        fetchMock.delete("http://example.com/api/v1/people/1", {
+          status: 202,
+          body: { data: { id: "23", type: "background_jobs", attributes: {} } }
+        })
+      })
+
+      afterEach(() => {
+        resetMocks()
+      })
+
+      it("deserialize the response and return the job object", async () => {
+        let job: BackgroundJob = new BackgroundJob()
+        let populateJobOnResponse = (response: any) => {
+          job = response
+        }
+        instance.onDeferredDestroy = populateJobOnResponse
+        expect(instance.isPersisted).to.eq(true)
         await instance.destroy()
 
-        expect(instance.isPersisted).to.eq(false)
+        expect(instance.isPersisted).to.eq(true)
+        expect(job.id).to.eq("23")
+        expect(job.klass).to.eq(BackgroundJob)
       })
     })
 

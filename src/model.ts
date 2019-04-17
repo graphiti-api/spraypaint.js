@@ -40,6 +40,7 @@ import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
 import { ValidationErrors } from "./validation-errors"
+import { DeferredActionCallback } from "./deferred-action-callback"
 
 export type KeyCaseValue = "dash" | "camel" | "snake"
 
@@ -393,6 +394,8 @@ export class SpraypaintBase {
   temp_id?: string
   stale: boolean = false
   storeKey: string = ""
+  onDeferredDestroy?: DeferredActionCallback
+  onDeferredUpdate?: DeferredActionCallback
 
   @nonenumerable afterSync?: (diff: Record<string, any>) => any | undefined
   @nonenumerable relationships: Record<
@@ -917,6 +920,13 @@ export class SpraypaintBase {
       throw err
     }
 
+    if (response.status === 202) {
+      return await this._handleAcceptedResponse(
+        response,
+        this.onDeferredDestroy
+      )
+    }
+
     let base = this.klass.baseClass as typeof SpraypaintBase
     base.store.destroy(this)
 
@@ -964,6 +974,10 @@ export class SpraypaintBase {
       throw err
     }
 
+    if (response.status === 202) {
+      return await this._handleAcceptedResponse(response, this.onDeferredUpdate)
+    }
+
     return await this._handleResponse(response, () => {
       this.fromJsonapi(
         response.jsonPayload.data,
@@ -972,6 +986,20 @@ export class SpraypaintBase {
       )
       payload.postProcess()
     })
+  }
+
+  private async _handleAcceptedResponse(
+    response: any,
+    callback: DeferredActionCallback | undefined
+  ): Promise<boolean> {
+    if (response.jsonPayload && callback) {
+      const responseObject = this.klass.fromJsonapi(
+        response.jsonPayload.data,
+        response.jsonPayload
+      )
+      callback(responseObject)
+    }
+    return await this._handleResponse(response, () => {})
   }
 
   private async _handleResponse(
