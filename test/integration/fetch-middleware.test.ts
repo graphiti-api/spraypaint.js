@@ -167,6 +167,7 @@ describe("fetch middleware", () => {
         return Author.all().then(({ data }) => {
           expect(before.url).to.eq("http://example.com/api/v1/authors")
           expect(before.options).to.deep.eq({
+            credentials: "same-origin",
             headers: {
               Accept: "application/vnd.api+json",
               "Content-Type": "application/vnd.api+json",
@@ -341,6 +342,7 @@ describe("fetch middleware", () => {
         return author.save().then(() => {
           expect(before.url).to.eq("http://example.com/api/v1/authors")
           expect(before.options).to.deep.eq({
+            credentials: "same-origin",
             headers: {
               Accept: "application/vnd.api+json",
               "CUSTOM-HEADER": "whatever",
