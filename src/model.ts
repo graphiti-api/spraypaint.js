@@ -727,6 +727,11 @@ export class SpraypaintBase {
    */
   static fetchOptions(): RequestInit {
     const options = {
+      credentials: "same-origin" as
+        | "same-origin"
+        | "omit"
+        | "include"
+        | undefined,
       headers: {
         Accept: "application/vnd.api+json",
         ["Content-Type"]: "application/vnd.api+json"
