@@ -1,3 +1,2 @@
 --require test/es6-compatibility/test-setup.js
---watch-extensions mjs
-test/es6-compatibility/**/*.test.{m,}js
+test/es6-compatibility/**/*.test.js

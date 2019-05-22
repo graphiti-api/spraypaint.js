@@ -1,4 +1,4 @@
-import {
+const {
   SpraypaintBase,
   Model,
   Attr,
@@ -6,8 +6,8 @@ import {
   HasOne,
   BelongsTo,
   Link
-} from "../../lib-esm"
-import { expect } from "chai"
+} = require("../../lib-esm")
+const { expect } = require("chai")
 
 describe("Decorators work with ES6/Babel", () => {
   describe("@Model()", () => {
