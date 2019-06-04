@@ -136,6 +136,43 @@ describe("Model finders", () => {
         expect(meta).to.have.nested.property("stats.total.count", 45)
       })
     })
+
+    describe("when browser is IE", () => {
+      beforeEach(() => {
+        global["window"] = { navigator: { userAgent: "Trident" } }
+
+        fetchMock.restore()
+        fetchMock.get(
+          "http://example.com/api/v1/people?filter[name]=%22Jane%22",
+          {
+            data: [
+              {
+                id: "13",
+                type: "people",
+                attributes: { firstName: "iespecial" }
+              }
+            ]
+          }
+        )
+      })
+
+      afterEach(() => {
+        delete global["window"]
+      })
+
+      it("encodes URL", async () => {
+        let people = (await Person.where({ name: '"Jane"' }).all()).data
+        expect(people[0].firstName).to.eq("iespecial")
+      })
+
+      describe("when already encoded", () => {
+        it("does not double-encode", async () => {
+          const name = encodeURIComponent('"Jane"')
+          let people = (await Person.where({ name }).all()).data
+          expect(people[0].firstName).to.eq("iespecial")
+        })
+      })
+    })
   })
 
   describe("#page", () => {
