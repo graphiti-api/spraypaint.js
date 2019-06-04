@@ -23,6 +23,7 @@ export class Person extends ApplicationRecord {
   @Attr firstName!: string | null
   @Attr lastName!: string | null
   @Attr({ type: Number }) age!: number | null
+  @BelongsTo({ type: "person_details" }) personDetail!: PersonDetail
 }
 
 @Model()
@@ -37,6 +38,13 @@ export class PersonWithLinks extends Person {
 
   @Link() self!: string
   @Link() webView!: string
+}
+
+@Model()
+export class PersonDetail extends ApplicationRecord {
+  static jsonapiType = "person_details"
+
+  @Attr address!: string
 }
 
 @Model({ keyCase: { server: "snake", client: "snake" } })
