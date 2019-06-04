@@ -65,7 +65,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
     meta: JsonapiErrorMeta,
     err: JsonapiError
   ) {
-    let relatedObject = model[meta.name]
+    let relatedObject = model[model.klass.deserializeKey(meta.name)]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find(r => {
         return r.id === meta.id || r.temp_id === meta["temp-id"]
