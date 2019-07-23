@@ -20,6 +20,19 @@ describe("Model finders", () => {
       })
     })
 
+    it("allows for overridable fetch options", async () => {
+      const dummyHeaders = { Test: "hi" }
+      const { data } = await Person.extraFetchOptions({
+        headers: dummyHeaders
+      }).find(1)
+
+      const defaultFetchOptions = Person.fetchOptions
+
+      const lastOptions = fetchMock.lastOptions()
+
+      expect(lastOptions.headers).to.deep.eq(dummyHeaders)
+    })
+
     it("returns a promise that resolves the correct instance", async () => {
       const { data } = await Person.find(1)
       expect(data)

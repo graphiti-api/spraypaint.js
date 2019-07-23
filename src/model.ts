@@ -826,6 +826,13 @@ export class SpraypaintBase {
     return this.scope().extraParams(clause)
   }
 
+  static extraFetchOptions<I extends typeof SpraypaintBase>(
+    this: I,
+    options: RequestInit
+  ) {
+    return this.scope().extraFetchOptions(options)
+  }
+
   static order<I extends typeof SpraypaintBase>(
     this: I,
     clause: SortScope | string
