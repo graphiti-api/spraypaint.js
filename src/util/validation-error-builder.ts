@@ -71,7 +71,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
         // For now graphiti is returning the related object id as an integer
         // where the related object's ID is a string
         return (
-          String(r.id) === String(meta.id) ||
+          (r.id && String(r.id) === String(meta.id)) ||
           (r.temp_id && r.temp_id === meta["temp-id"])
         )
       })
