@@ -91,7 +91,7 @@ export class Request {
 
   private async _fetch(url: string, options: RequestInit): Promise<any> {
     try {
-      this.middleware.beforeFetch(url, options)
+      await this.middleware.beforeFetch(url, options)
     } catch (e) {
       throw new RequestError(
         "beforeFetch failed; review middleware.beforeFetch stack",
