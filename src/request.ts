@@ -125,7 +125,7 @@ export class Request {
 
     let json
     try {
-      json = await response.json()
+      json = await response.clone().json()
     } catch (e) {
       if (response.status === 202) return
       throw new ResponseError(response, "invalid json", e)
