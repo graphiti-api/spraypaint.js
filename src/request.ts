@@ -143,7 +143,7 @@ export class Request {
     }
 
     if (response.status >= 500) {
-      throw new ResponseError(response, "Server Error")
+      throw new ResponseError(response, "Server Error", undefined, json)
       // Allow 422 since we specially handle validation errors
     } else if (response.status !== 422 && json.data === undefined) {
       if (response.status === 404) {
@@ -180,14 +180,17 @@ class RequestError extends Error {
 class ResponseError extends Error {
   response: Response | null
   originalError: Error | undefined
+  json: Object | undefined
 
   constructor(
     response: Response | null,
     message?: string,
-    originalError?: Error
+    originalError?: Error,
+    json?: Object
   ) {
     super(message || "Invalid Response")
     this.response = response
     this.originalError = originalError
+    this.json = json
   }
 }
