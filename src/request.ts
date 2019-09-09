@@ -132,7 +132,7 @@ export class Request {
     }
 
     try {
-      this.middleware.afterFetch(response, json)
+      await this.middleware.afterFetch(response, json)
     } catch (e) {
       // afterFetch middleware failed
       throw new ResponseError(
