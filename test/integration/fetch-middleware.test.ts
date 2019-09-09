@@ -217,11 +217,13 @@ describe("fetch middleware", () => {
           .then(({ data }) => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch(async e => {
             expect(e.message).to.eq(
               "afterFetch failed; review middleware.afterFetch stack"
             )
             expect(e.response.status).to.eq(401)
+            // If fetch.clone method is not used, error for getting json is: body used already for: URL
+            expect(await e.response.json()).to.be.an("object")
             expect(e.originalError).to.eq(ABORT_ERR)
           })
       })
@@ -392,11 +394,13 @@ describe("fetch middleware", () => {
           .then(() => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch(async e => {
             expect(e.message).to.eq(
               "afterFetch failed; review middleware.afterFetch stack"
             )
             expect(e.response.status).to.eq(401)
+            // If fetch.clone method is not used, error for getting json is: body used already for: URL
+            expect(await e.response.json()).to.be.an("object")
             expect(e.originalError).to.eq(ABORT_ERR)
           })
       })
