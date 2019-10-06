@@ -4,7 +4,7 @@ import { tempId } from "../../src/util/temp-id"
 import { SpraypaintBase, ModelRecord } from "../../src/model"
 import { ValidationError } from "../../src/validation-errors"
 
-const resetMocks = (mockErrors: any) => {
+const resetMocks = (mockErrors: any, status: number = 422) => {
   fetchMock.restore()
 
   let errors = []
@@ -16,7 +16,7 @@ const resetMocks = (mockErrors: any) => {
   fetchMock.mock({
     matcher: "*",
     response: {
-      status: 422,
+      status: status,
       body: {
         errors
       }
@@ -337,6 +337,157 @@ describe("validations (2/2)", () => {
         message: "some error",
         rawPayload: mockErrors.personDetailBase
       }
+    })
+  })
+})
+
+describe("Errors without graphiti validation (1/2)", () => {
+  const mockErrors = {
+    noMeta: {
+      code: "bad_request",
+      status: "422",
+      title: "Bad request",
+      detail: "Length of attributes is not equal to 42"
+    },
+    notAnAttribute: {
+      code: "bad_request",
+      status: "422",
+      title: "Bad request",
+      detail: "Length of attributes is not equal to 42",
+      meta: {
+        attribute: "not_an_attribute",
+        message: "not_an_attribute does not exist"
+      }
+    }
+  } as any
+
+  let instance: Book
+
+  beforeEach(() => {
+    resetMocks(mockErrors, 422)
+  })
+
+  beforeEach(() => {
+    sinon.stub(tempId, "generate").callsFake(() => {
+      tempIdIndex++
+      return `abc${tempIdIndex}`
+    })
+
+    instance = new Book({ title: "Keep calm" })
+  })
+
+  afterEach(() => {
+    tempIdIndex = 0
+    ;(<any>tempId.generate).restore()
+  })
+
+  it("handles 422 status response without appropriate meta", async () => {
+    let isSuccess = null
+    try {
+      isSuccess = await instance.save()
+    } catch (e) {
+      isSuccess = false
+    }
+    expect(instance.isPersisted).to.eq(false)
+    expect(isSuccess).to.eq(false)
+  })
+
+  it("provides the errors on 4xx response", async () => {
+    let json = null
+    let status = null
+    try {
+      await instance.save({ with: ["person_details"] })
+    } catch (e) {
+      status = e.response.status
+      json = await e.response.clone().json()
+    }
+    expect(status).to.eq(422)
+    expect(instance.isPersisted).to.eq(false)
+    expect(json).to.deep.equal({
+      errors: [
+        {
+          code: "bad_request",
+          status: "422",
+          title: "Bad request",
+          detail: "Length of attributes is not equal to 42"
+        },
+        {
+          code: "bad_request",
+          status: "422",
+          title: "Bad request",
+          detail: "Length of attributes is not equal to 42",
+          meta: {
+            attribute: "not_an_attribute",
+            message: "not_an_attribute does not exist"
+          }
+        }
+      ]
+    })
+  })
+})
+
+describe("Errors without graphiti validation  (2/2)", () => {
+  const mockErrors = {
+    general: {
+      code: "bad_request",
+      status: "400",
+      title: "Bad request",
+      detail: "Length of attributes is not equal to 42"
+    }
+  } as any
+
+  let instance: Book
+
+  beforeEach(() => {
+    resetMocks(mockErrors, 400)
+  })
+
+  beforeEach(() => {
+    sinon.stub(tempId, "generate").callsFake(() => {
+      tempIdIndex++
+      return `abc${tempIdIndex}`
+    })
+
+    instance = new Book({ title: "Keep calm" })
+  })
+
+  afterEach(() => {
+    tempIdIndex = 0
+    ;(<any>tempId.generate).restore()
+  })
+
+  it("handles 400 status response without appropriate meta", async () => {
+    let isSuccess = null
+    try {
+      isSuccess = await instance.save()
+    } catch (e) {
+      isSuccess = false
+    }
+    expect(instance.isPersisted).to.eq(false)
+    expect(isSuccess).to.eq(false)
+  })
+
+  it("provides the errors on 4xx response", async () => {
+    let json = null
+    let status = null
+    try {
+      await instance.save({ with: ["person_details"] })
+    } catch (e) {
+      status = e.response.status
+      json = await e.response.clone().json()
+    }
+
+    expect(status).to.eq(400)
+    expect(instance.isPersisted).to.eq(false)
+    expect(json).to.deep.equal({
+      errors: [
+        {
+          code: "bad_request",
+          status: "400",
+          title: "Bad request",
+          detail: "Length of attributes is not equal to 42"
+        }
+      ]
     })
   })
 })

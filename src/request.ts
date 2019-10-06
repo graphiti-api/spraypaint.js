@@ -177,7 +177,7 @@ class RequestError extends Error {
   }
 }
 
-class ResponseError extends Error {
+export class ResponseError extends Error {
   response: Response | null
   originalError: Error | undefined
 
