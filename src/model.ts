@@ -3,7 +3,12 @@ import { CollectionProxy, RecordProxy, NullProxy } from "./proxies"
 import { ValidationErrorBuilder } from "./util/validation-error-builder"
 import { refreshJWT } from "./util/refresh-jwt"
 import relationshipIdentifiersFor from "./util/relationship-identifiers"
-import { Request, RequestVerbs, JsonapiResponse } from "./request"
+import {
+  Request,
+  RequestVerbs,
+  JsonapiResponse,
+  ResponseError
+} from "./request"
 import { WritePayload } from "./util/write-payload"
 import { flipEnumerable, getNonEnumerables } from "./util/enumerables"
 import {
@@ -1018,7 +1023,11 @@ export class SpraypaintBase {
     refreshJWT(this.klass, response)
 
     if (response.status === 422) {
-      ValidationErrorBuilder.apply(this, response.jsonPayload)
+      try {
+        ValidationErrorBuilder.apply(this, response.jsonPayload)
+      } catch (e) {
+        throw new ResponseError(response, "validation failed", e)
+      }
       return false
     } else {
       callback()

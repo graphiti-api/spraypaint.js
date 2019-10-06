@@ -32,6 +32,9 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
 
     this.payload.errors.forEach(err => {
       const meta = err.meta
+      if (!meta) {
+        throw new Error("invalid json")
+      }
       const metaRelationship = meta.relationship
 
       if (metaRelationship) {
