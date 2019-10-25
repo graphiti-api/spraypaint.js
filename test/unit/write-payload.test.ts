@@ -1,6 +1,6 @@
 import { sinon, expect } from "../test-helper"
 import { WritePayload } from "../../src/util/write-payload"
-import { Person, PersonWithDasherizedKeys } from "../fixtures"
+import { Person, PersonWithDasherizedKeys, Author, Genre } from "../fixtures"
 
 describe("WritePayload", () => {
   it("Does not serialize number attributes as empty string", () => {
@@ -42,6 +42,73 @@ describe("WritePayload", () => {
         attributes: {
           "first-name": "Joe"
         }
+      }
+    })
+  })
+
+  it("sends persisted relationships defined via direct assignment", () => {
+    const genre = new Genre({ name: "Horror", id: "1" })
+    genre.isPersisted = true
+    const author = new Author()
+    author.genre = genre
+    const payload = new WritePayload(author, ["genre"])
+    expect(payload.asJSON()).to.deep.equal({
+      data: {
+        type: "authors",
+        relationships: {
+          genre: {
+            data: {
+              id: "1",
+              type: "genres",
+              method: "update"
+            }
+          }
+        }
+      },
+      included: [
+        {
+          id: "1",
+          type: "genres"
+        }
+      ]
+    })
+  })
+
+  it("sends persisted relationships defined via constructor", () => {
+    const genre = new Genre({ name: "Horror", id: "1" })
+    genre.isPersisted = true
+    const author = new Author({ genre })
+    const payload = new WritePayload(author, ["genre"])
+    expect(payload.asJSON()).to.deep.equal({
+      data: {
+        type: "authors",
+        relationships: {
+          genre: {
+            data: {
+              id: "1",
+              type: "genres",
+              method: "update"
+            }
+          }
+        }
+      },
+      included: [
+        {
+          id: "1",
+          type: "genres"
+        }
+      ]
+    })
+  })
+
+  it("does not send persisted relationships defined via constructor if not included", () => {
+    const genre = new Genre({ name: "Horror", id: "1" })
+    genre.isPersisted = true
+    const author = new Author({ genre })
+    const payload = new WritePayload(author)
+    expect(payload.asJSON()).to.deep.equal({
+      data: {
+        type: "authors"
       }
     })
   })

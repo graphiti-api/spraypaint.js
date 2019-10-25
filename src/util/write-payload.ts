@@ -118,11 +118,13 @@ export class WritePayload<T extends SpraypaintBase> {
         } else {
           // Either the related model is dirty, or it's a dirty relation
           // (maybe the "department" is not dirty, but the employee changed departments
+          // or the model is new
           if (
             !this._isNewAndMarkedForDestruction(relatedModels) &&
             (idOnly ||
               this.model.hasDirtyRelation(key, relatedModels) ||
-              relatedModels.isDirty(nested))
+              relatedModels.isDirty(nested) ||
+              !this.model.isPersisted)
           ) {
             data = this._processRelatedModel(relatedModels, nested, idOnly)
           }
