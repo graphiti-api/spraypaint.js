@@ -118,17 +118,20 @@ export class Request {
     response: Response,
     requestOptions: RequestInit
   ) {
-    let wasDelete =
-      requestOptions.method === "DELETE" &&
-      [204, 200].indexOf(response.status) > -1
-    if (wasDelete) return
+    const possiblyEmptyResponseStatuses = [202, 204]
+    const possiblyEmpty =
+      possiblyEmptyResponseStatuses.indexOf(response.status) > -1
 
-    let json
-    try {
-      json = await response.clone().json()
-    } catch (e) {
-      if (response.status === 202) return
-      throw new ResponseError(response, "invalid json", e)
+    let json = null
+
+    if (204 !== response.status) {
+      try {
+        json = await response.clone().json()
+      } catch (e) {
+        if (!possiblyEmpty) {
+          throw new ResponseError(response, "invalid json", e)
+        }
+      }
     }
 
     try {
@@ -144,13 +147,21 @@ export class Request {
 
     if (response.status >= 500) {
       throw new ResponseError(response, "Server Error")
-      // Allow 422 since we specially handle validation errors
-    } else if (response.status !== 422 && json.data === undefined) {
-      if (response.status === 404) {
-        throw new ResponseError(response, "record not found")
-      } else {
-        // Bad JSON, for instance an errors payload
-        throw new ResponseError(response, "invalid json")
+    }
+
+    // Allow 422 since we specially handle validation errors
+    if (response.status !== 422) {
+      if (
+        (json === null ||
+          (json.data === undefined && json.meta === undefined)) &&
+        !possiblyEmpty
+      ) {
+        if (response.status === 404) {
+          throw new ResponseError(response, "record not found")
+        } else {
+          // Bad JSON, for instance an errors payload
+          throw new ResponseError(response, "invalid json")
+        }
       }
     }
 

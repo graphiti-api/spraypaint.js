@@ -349,7 +349,7 @@ describe("Model persistence", () => {
 
         fetchMock.mock({
           matcher: "http://example.com/api/v1/people/1",
-          response: new Response({ status: 204 } as any)
+          response: { status: 204 }
         })
       })
 

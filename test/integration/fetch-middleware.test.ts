@@ -76,6 +76,15 @@ const mock500 = () => {
   })
 }
 
+const mock204 = () => {
+  fetchMock.restore()
+
+  fetchMock.mock({
+    matcher: "*",
+    response: { status: 204 }
+  })
+}
+
 const mockSuccess = () => {
   fetchMock.restore()
 
@@ -474,6 +483,52 @@ describe("fetch middleware", () => {
 
         expect(before).to.deep.eq({ overridden: true })
         expect(after).to.deep.eq({ overridden: true })
+      })
+    })
+  })
+
+  describe("destroys", () => {
+    describe("on successful response", () => {
+      it("correctly resolves the promise", async () => {
+        const author = new Author()
+        await author.save()
+
+        const success = await author.destroy()
+        expect(success).to.eq(true)
+      })
+
+      it("runs beforeEach hooks", async () => {
+        const author = new Author()
+        await author.save()
+        before = {}
+        expect(before.url).to.eq(undefined)
+
+        const success = await author.destroy()
+        expect(success).to.eq(true)
+        expect(before.url).to.eq("http://example.com/api/v1/authors")
+        expect(before.options).to.deep.eq({
+          credentials: "same-origin",
+          headers: {
+            Accept: "application/vnd.api+json",
+            "CUSTOM-HEADER": "whatever",
+            "Content-Type": "application/vnd.api+json"
+          },
+          method: "DELETE"
+        })
+      })
+
+      it("runs afterEach hooks", async () => {
+        const author = new Author()
+        await author.save()
+        after = {}
+        expect(after.response).to.eq(undefined)
+
+        mock204()
+        const success = await author.destroy()
+        expect(success).to.eq(true)
+
+        expect(after.response).to.not.be.undefined
+        expect(after.response.status).to.eq(204)
       })
     })
   })
