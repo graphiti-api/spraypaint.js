@@ -349,7 +349,12 @@ describe("Model persistence", () => {
 
         fetchMock.mock({
           matcher: "http://example.com/api/v1/people/1",
-          response: new Response({ status: 204 } as any)
+          response: new Response(null, { status: 204 } as any)
+        })
+
+        fetchMock.mock({
+          matcher: "http://example.com/api/v1/people",
+          response: new Response(null, { status: 204 } as any)
         })
       })
 
@@ -358,16 +363,17 @@ describe("Model persistence", () => {
       })
 
       describe("does not blow up", () => {
+        it("when creating", async () => {
+          instance.isPersisted = false
+          instance.lastName = "Richards"
+          await instance.save()
+        })
+
         it("when deleting", async () => {
           expect(instance.isPersisted).to.eq(true)
           await instance.destroy()
 
           expect(instance.isPersisted).to.eq(false)
-        })
-
-        it("when creating", async () => {
-          instance.lastName = "Richards"
-          await instance.save()
         })
       })
     })
