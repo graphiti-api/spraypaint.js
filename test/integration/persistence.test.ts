@@ -322,6 +322,34 @@ describe("Model persistence", () => {
         expect(job.klass).to.eq(BackgroundJob)
       })
     })
+
+    describe("when the server returns 204 (no content)", () => {
+      const lastName = "Richards"
+      beforeEach(() => {
+        fetchMock.restore()
+
+        fetchMock.mock("http://example.com/api/v1/people", {
+          status: 204,
+          body: null
+        })
+      })
+
+      afterEach(resetMocks)
+
+      it("doesn't blow up when posting", async () => {
+        instance.isPersisted = false
+        instance.lastName = lastName
+        await instance.save()
+        expect(instance.lastName).to.eq(lastName)
+      })
+
+      it("doesn't blow up when patching", async () => {
+        instance.isPersisted = true
+        instance.lastName = lastName
+        await instance.save()
+        expect(instance.lastName).to.eq(lastName)
+      })
+    })
   })
 
   describe("#destroy", () => {
@@ -347,15 +375,12 @@ describe("Model persistence", () => {
       beforeEach(() => {
         fetchMock.restore()
 
-        fetchMock.mock({
-          matcher: "http://example.com/api/v1/people/1",
-          response: new Response({ status: 204 } as any)
+        fetchMock.mock("http://example.com/api/v1/people/1", {
+          status: 204
         })
       })
 
-      afterEach(() => {
-        resetMocks()
-      })
+      afterEach(resetMocks)
 
       it("does not blow up", async () => {
         expect(instance.isPersisted).to.eq(true)

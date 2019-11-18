@@ -118,7 +118,7 @@ export class Request {
     response: Response,
     requestOptions: RequestInit
   ) {
-    let wasDelete =
+    const wasDelete =
       requestOptions.method === "DELETE" &&
       [204, 200].indexOf(response.status) > -1
     if (wasDelete) return
@@ -127,7 +127,8 @@ export class Request {
     try {
       json = await response.clone().json()
     } catch (e) {
-      if (response.status === 202) return
+      const isEmptyResponse = [202, 204].indexOf(response.status) > -1
+      if (isEmptyResponse) return
       throw new ResponseError(response, "invalid json", e)
     }
 
