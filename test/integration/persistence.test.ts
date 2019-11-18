@@ -343,7 +343,7 @@ describe("Model persistence", () => {
       expect(instance.isPersisted).to.eq(false)
     })
 
-    describe("when the server returns 204 no content", () => {
+    describe.only("when the server returns 204 no content", () => {
       beforeEach(() => {
         fetchMock.restore()
 
@@ -357,11 +357,18 @@ describe("Model persistence", () => {
         resetMocks()
       })
 
-      it("does not blow up", async () => {
-        expect(instance.isPersisted).to.eq(true)
-        await instance.destroy()
+      describe("does not blow up", () => {
+        it("when deleting", async () => {
+          expect(instance.isPersisted).to.eq(true)
+          await instance.destroy()
 
-        expect(instance.isPersisted).to.eq(false)
+          expect(instance.isPersisted).to.eq(false)
+        })
+
+        it("when creating", async () => {
+          instance.lastName = "Richards"
+          await instance.save()
+        })
       })
     })
 
