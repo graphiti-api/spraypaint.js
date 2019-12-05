@@ -23,7 +23,7 @@
     "test:watch": "yarn run test --watch",
     "test:all-versions": "yarn tav",
     "test:es6-compatibility": "yarn build:es6 && mocha --opts test/es6-compatibility/mocha.opts",
-    "test:ci": "yarn test:all-versions && yarn test:es6-compatibility",
+    "test:ci": "yarn test:all-versions && yarn test:es6-compatibility && yarn test",
     "lint": "yarn run lint:ci --fix",
     "lint:ci": "yarn run eslint {src,test}{,/**}/*.ts",
     "release": "script/release",
