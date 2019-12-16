@@ -71,6 +71,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
     let relatedObject = model[model.klass.deserializeKey(meta.name)]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find(r => {
+        if (meta["temp-id"] === undefined) return r.id === meta.id
         return r.id === meta.id || r.temp_id === meta["temp-id"]
       })
     }
