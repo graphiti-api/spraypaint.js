@@ -123,8 +123,7 @@ export class WritePayload<T extends SpraypaintBase> {
             !this._isNewAndMarkedForDestruction(relatedModels) &&
             (idOnly ||
               this.model.hasDirtyRelation(key, relatedModels) ||
-              relatedModels.isDirty(nested) ||
-              !this.model.isPersisted)
+              relatedModels.isDirty(nested))
           ) {
             data = this._processRelatedModel(relatedModels, nested, idOnly)
           }
