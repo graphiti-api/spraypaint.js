@@ -710,7 +710,7 @@ export class SpraypaintBase {
     relatedModel: SpraypaintBase
   ): boolean {
     const dc = new DirtyChecker(this)
-    return dc.checkRelation(relationName, relatedModel)
+    return !this.isPersisted || dc.checkRelation(relationName, relatedModel)
   }
 
   dup(): this {
