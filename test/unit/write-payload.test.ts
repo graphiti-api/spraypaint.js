@@ -1,6 +1,6 @@
 import { sinon, expect } from "../test-helper"
 import { WritePayload } from "../../src/util/write-payload"
-import { Person, PersonWithDasherizedKeys, Author, Genre } from "../fixtures"
+import { Person, PersonWithDasherizedKeys, Author, Genre, Book } from "../fixtures"
 
 describe("WritePayload", () => {
   it("Does not serialize number attributes as empty string", () => {
@@ -46,13 +46,10 @@ describe("WritePayload", () => {
     })
   })
 
-  it("sends persisted relationships defined via direct assignment", () => {
+  describe("sends persisted singular relationships defined via", () => {
     const genre = new Genre({ name: "Horror", id: "1" })
     genre.isPersisted = true
-    const author = new Author()
-    author.genre = genre
-    const payload = new WritePayload(author, ["genre"])
-    expect(payload.asJSON()).to.deep.equal({
+    const expectedPayload = {
       data: {
         type: "authors",
         relationships: {
@@ -71,33 +68,59 @@ describe("WritePayload", () => {
           type: "genres"
         }
       ]
+    }
+
+    it("constructor", () => {
+      const author = new Author({ genre: genre })
+      const payload = new WritePayload(author, ["genre"])
+      expect(payload.asJSON()).to.deep.equal(expectedPayload)
+    })
+
+    it("direct assignment", () => {
+      const author = new Author()
+      author.genre = genre
+      const payload = new WritePayload(author, ["genre"])
+      expect(payload.asJSON()).to.deep.equal(expectedPayload)
     })
   })
 
-  it("sends persisted relationships defined via constructor", () => {
-    const genre = new Genre({ name: "Horror", id: "1" })
-    genre.isPersisted = true
-    const author = new Author({ genre })
-    const payload = new WritePayload(author, ["genre"])
-    expect(payload.asJSON()).to.deep.equal({
+  describe("sends persisted plural relationships defined via", () => {
+    const book = new Book({ title: "Horror", id: "1" })
+    book.isPersisted = true
+    const expectedPayload = {
       data: {
         type: "authors",
         relationships: {
-          genre: {
-            data: {
-              id: "1",
-              type: "genres",
-              method: "update"
-            }
+          books: {
+            data: [
+              {
+                id: "1",
+                type: "books",
+                method: "update"
+              }
+            ]
           }
         }
       },
       included: [
         {
           id: "1",
-          type: "genres"
+          type: "books"
         }
       ]
+    }
+
+    it("constructor", () => {
+      const author = new Author({ books: [book] })
+      const payload = new WritePayload(author, ["books"])
+      expect(payload.asJSON()).to.deep.equal(expectedPayload)
+    })
+
+    it("direct assignment", () => {
+      const author = new Author()
+      author.books.push(book)
+      const payload = new WritePayload(author, ["books"])
+      expect(payload.asJSON()).to.deep.equal(expectedPayload)
     })
   })
 
