@@ -41,7 +41,7 @@ describe("validations (1/2)", () => {
       detail: "Last Name cannot be blank",
       meta: { attribute: "last-name", message: "cannot be blank" }
     },
-    bookTitle: {
+    secondBookTitle: {
       code: "unprocessable_entity",
       status: "422",
       title: "Validation Error",
@@ -50,7 +50,22 @@ describe("validations (1/2)", () => {
         relationship: {
           name: "books",
           type: "books",
-          ["temp-id"]: "abc1",
+          ["temp-id"]: "abc2",
+          attribute: "title",
+          message: "cannot be blank"
+        }
+      }
+    },
+    fourthBookTitle: {
+      code: "unprocessable_entity",
+      status: "422",
+      title: "Validation Error",
+      detail: "Title cannot be blank",
+      meta: {
+        relationship: {
+          name: "books",
+          type: "books",
+          ["temp-id"]: "abc4",
           attribute: "title",
           message: "cannot be blank"
         }
@@ -69,7 +84,8 @@ describe("validations (1/2)", () => {
           relationship: {
             name: "genre",
             type: "genres",
-            id: "1",
+            // For some reason graphiti is returning these as integers
+            id: 2,
             attribute: "name",
             message: "cannot be blank"
           }
@@ -89,7 +105,8 @@ describe("validations (1/2)", () => {
           relationship: {
             name: "genre",
             type: "genres",
-            id: "1",
+            // For some reason graphiti is returning these as integers
+            id: 2,
             attribute: "base",
             message: "some error"
           }
@@ -110,10 +127,18 @@ describe("validations (1/2)", () => {
       return `abc${tempIdIndex}`
     })
     instance = new Author({ lastName: "King" })
-    const genre = new Genre({ id: "1" })
-    genre.isPersisted = true
-    const book = new Book({ title: "blah", genre })
-    instance.books = [book]
+    const genre1 = new Genre({ id: "1" })
+    genre1.isPersisted = true
+
+    const genre2 = new Genre({ id: "2" })
+    genre2.isPersisted = true
+
+    const book1 = new Book({ title: "blah 1", genre: genre1 })
+    const book2 = new Book({ title: "blah 2", genre: genre2 })
+    const book3 = new Book({ title: "blah 3", genre: genre1 })
+    const book4 = new Book({ title: "blah 4", genre: genre2 })
+    const book5 = new Book({ title: "blah 5", genre: genre1 })
+    instance.books = [book1, book2, book3, book4, book5]
   })
 
   afterEach(() => {
@@ -240,16 +265,33 @@ describe("validations (1/2)", () => {
 
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
-    expect(instance.books[0].errors).to.deep.equal({
+
+    // We have only put errors on the 2nd (index 1) and 4th (index 3) books
+    // This ensures that the correct relationship is found when matching errors
+
+    expect(instance.books[0].errors).to.deep.equal({})
+    expect(instance.books[1].errors).to.deep.equal({
       title: {
         title: "Validation Error",
         attribute: "title",
         code: "unprocessable_entity",
         message: "cannot be blank",
         fullMessage: "Title cannot be blank",
-        rawPayload: mockErrors.bookTitle
+        rawPayload: mockErrors.secondBookTitle
       }
     })
+    expect(instance.books[2].errors).to.deep.equal({})
+    expect(instance.books[3].errors).to.deep.equal({
+      title: {
+        title: "Validation Error",
+        attribute: "title",
+        code: "unprocessable_entity",
+        message: "cannot be blank",
+        fullMessage: "Title cannot be blank",
+        rawPayload: mockErrors.fourthBookTitle
+      }
+    })
+    expect(instance.books[4].errors).to.deep.equal({})
   })
 
   it("applies errors to nested belongsTo relationships", async () => {
@@ -258,8 +300,7 @@ describe("validations (1/2)", () => {
     expect(instance.isPersisted).to.eq(false)
     expect(isSuccess).to.eq(false)
 
-    // note we're validating multiple properties
-    expect(instance.books[0].genre.errors).to.deep.equal({
+    const expectedErrors = {
       name: {
         title: "Validation Error",
         attribute: "name",
@@ -276,7 +317,16 @@ describe("validations (1/2)", () => {
         message: "some error",
         rawPayload: mockErrors.bookGenreBase
       }
-    })
+    }
+
+    // note we're validating multiple properties
+    // note we set errors on the genre with id=2 and that is on
+    // books with index 0, 2, and 4.
+    expect(instance.books[0].genre.errors).to.deep.equal(expectedErrors)
+    expect(instance.books[1].genre.errors).to.deep.equal({})
+    expect(instance.books[2].genre.errors).to.deep.equal(expectedErrors)
+    expect(instance.books[3].genre.errors).to.deep.equal({})
+    expect(instance.books[4].genre.errors).to.deep.equal(expectedErrors)
   })
 })
 
@@ -292,7 +342,8 @@ describe("validations (2/2)", () => {
           name: "person_detail",
           type: "person_details",
           ["temp-id"]: "abc1",
-          id: "1",
+          // For some reason graphiti is returning these as integers
+          id: 1,
           attribute: "base",
           message: "some error"
         }
