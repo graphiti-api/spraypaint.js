@@ -25,7 +25,7 @@ const resetMocks = (mockErrors: any, status: number = 422) => {
 }
 
 let tempIdIndex = 0
-describe("validations (1/2)", () => {
+describe("validations (1/3)", () => {
   const mockErrors = {
     firstName: {
       code: "unprocessable_entity",
@@ -330,7 +330,7 @@ describe("validations (1/2)", () => {
   })
 })
 
-describe("validations (2/2)", () => {
+describe("validations (2/3)", () => {
   const mockErrors = {
     personDetailBase: {
       code: "unprocessable_entity",
@@ -387,6 +387,74 @@ describe("validations (2/2)", () => {
         fullMessage: "some error",
         message: "some error",
         rawPayload: mockErrors.personDetailBase
+      }
+    })
+  })
+})
+
+describe("validations (3/3)", () => {
+  const mockErrors = {
+    bookTitle: {
+      code: "unprocessable_entity",
+      status: "422",
+      title: "Validation Error",
+      detail: "Title cannot be blank",
+      meta: {
+        relationship: {
+          id: "30",
+          // ["temp-id"]: "abc1",
+          name: "books",
+          type: "books",
+          attribute: "title",
+          message: "cannot be blank"
+        }
+      }
+    }
+  } as any
+
+  let instance: Author
+
+  beforeEach(() => {
+    resetMocks(mockErrors)
+  })
+
+  beforeEach(() => {
+    sinon.stub(tempId, "generate").callsFake(() => {
+      tempIdIndex++
+      return `abc${tempIdIndex}`
+    })
+
+    const genre = new Genre({ id: "20", name: "Horror" })
+    genre.isPersisted = true
+    const book1 = new Book({ id: "10", title: "The Shining", genre })
+    book1.isPersisted = true
+    const book2 = new Book({ id: "30", title: "Pet Sematary", genre })
+    book2.isPersisted = true
+    instance = new Author({ firstName: "Stephen", lastName: "King" })
+    instance.id = "1"
+    instance.books = [book1, book2]
+    instance.specialBooks = []
+    instance.isPersisted = true
+  })
+
+  afterEach(() => {
+    tempIdIndex = 0
+    ;(<any>tempId.generate).restore()
+  })
+
+  it("applies errors to objects other than the first in nested hasMany relationships", async () => {
+    instance.books[1].title = ""
+    const isSuccess = await instance.save({ with: { books: "genre" } })
+
+    expect(isSuccess).to.eq(false)
+    expect(instance.books[1].errors).to.deep.equal({
+      title: {
+        title: "Validation Error",
+        attribute: "title",
+        code: "unprocessable_entity",
+        fullMessage: "Title cannot be blank",
+        message: "cannot be blank",
+        rawPayload: mockErrors.bookTitle
       }
     })
   })
