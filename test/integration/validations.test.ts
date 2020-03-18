@@ -401,7 +401,8 @@ describe("validations (3/3)", () => {
       detail: "Title cannot be blank",
       meta: {
         relationship: {
-          id: "30",
+          // For some reason graphiti is returning these as integers
+          id: 30,
           // ["temp-id"]: "abc1",
           name: "books",
           type: "books",

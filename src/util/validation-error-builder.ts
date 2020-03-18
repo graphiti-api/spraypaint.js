@@ -71,8 +71,6 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
     let relatedObject = model[model.klass.deserializeKey(meta.name)]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find(r => {
-        if (meta["temp-id"] === undefined) return r.id === meta.id
-
         // For now graphiti is returning the related object id as an integer
         // where the related object's ID is a string
         return (
