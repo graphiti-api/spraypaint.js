@@ -654,6 +654,10 @@ export class SpraypaintBase {
     this.__meta__ = metaObj
   }
 
+  get meta(): object {
+    return this.__meta__ || {}
+  }
+
   relationshipResourceIdentifiers(relationNames: string[]) {
     return relationshipIdentifiersFor(this, relationNames)
   }

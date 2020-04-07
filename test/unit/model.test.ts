@@ -763,7 +763,7 @@ describe("Model", () => {
 
     it("assigns metadata correctly", () => {
       const instance = ApplicationRecord.fromJsonapi(doc.data, doc)
-      expect(instance.__meta__).to.eql({
+      expect(instance.meta).to.eql({
         big: true
       })
     })
@@ -1567,6 +1567,9 @@ describe("Model", () => {
           links: {
             self: { href: "/api/person/1", meta: { count: 10 } },
             web_view: "/person/1"
+          },
+          meta: {
+            editable: true
           }
         }
       }
@@ -1577,7 +1580,7 @@ describe("Model", () => {
           meta: { count: 10 }
         })
         expect(person.links.webView).to.eq("/person/1")
-        expect(person.links.comments).to
+        expect(person.meta).to.deep.equal({ editable: true })
       }
 
       it("from instance", () => {
