@@ -85,7 +85,8 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     const copy = this.copy()
 
     Object.keys(obj).forEach(k => {
-      copy._associations[k] = (obj as any)[k]
+      const serverCasedKey = this.model.serializeKey(k)
+      copy._associations[serverCasedKey] = (obj as any)[k]
     })
 
     return copy

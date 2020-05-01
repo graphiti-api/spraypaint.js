@@ -253,6 +253,34 @@ describe("Scope", () => {
     })
   })
 
+  describe("#merge()", () => {
+    it("updates the scope", () => {
+      scope = scope
+        .includes(["foo_bar"])
+        .merge({ foo_bar: scope.where({ foo: "bar" }) })
+      const qp = scope.asQueryParams()
+
+      expect(qp.filter).to.eql({
+        foo_bar: {
+          foo: "bar"
+        }
+      })
+    })
+
+    it("respects the server keycase configuration", () => {
+      scope = scope
+        .includes(["foo_bar_baz"])
+        .merge({ fooBarBaz: scope.where({ foo: "bar" }) })
+      const qp = scope.asQueryParams()
+
+      expect(qp.filter).to.eql({
+        foo_bar_baz: {
+          foo: "bar"
+        }
+      })
+    })
+  })
+
   describe("#scope()", () => {
     it("returns itself", () => {
       expect(scope.scope()).to.equal(scope)
