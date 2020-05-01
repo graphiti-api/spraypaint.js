@@ -8,6 +8,8 @@ let scope: Scope<Author>
 beforeEach(() => {
   const model = sinon.stub() as any
   model.jsonapiType = "people"
+  model.serializeKey = SpraypaintBase.serializeKey
+  model.keyCase = { server: "snake", client: "camel" }
   scope = new Scope(model)
 })
 
@@ -55,6 +57,14 @@ describe("Scope", () => {
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
+
+    it("respects the server keycase configuration", () => {
+      scope = scope.where({ fooBar: "baz" }).where({ fooBarBaz: "fooBar" })
+      expect((scope as any)._filter).to.eql({
+        foo_bar: "baz",
+        foo_bar_baz: "fooBar"
+      })
+    })
   })
 
   describe("#stats()", () => {
@@ -72,6 +82,13 @@ describe("Scope", () => {
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
     })
+
+    it("respects the server keycase configuration", () => {
+      scope = scope.stats({ someThing: "someOtherThing" })
+      expect((scope as any)._stats).to.eql({
+        some_thing: "some_other_thing"
+      })
+    })
   })
 
   describe("#order()", () => {
@@ -87,6 +104,14 @@ describe("Scope", () => {
       const newScope = scope.order("foo")
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
+    })
+
+    it("respects the server keycase configuration", () => {
+      scope = scope.order("fooBar").order({ fooBarBaz: "desc" })
+      expect((scope as any)._sort).to.eql({
+        foo_bar: "asc",
+        foo_bar_baz: "desc"
+      })
     })
   })
 
@@ -105,6 +130,13 @@ describe("Scope", () => {
       const newScope = scope.select({ people: ["foo"] })
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
+    })
+
+    it("respects the server keycase configuration", () => {
+      scope = scope.select({ someThing: ["firstThing", "secondThing"] })
+      expect((scope as any)._fields).to.eql({
+        some_thing: ["first_thing", "second_thing"]
+      })
     })
 
     describe("when passed an array of strings", () => {
@@ -134,6 +166,13 @@ describe("Scope", () => {
       expect(newScope).not.to.equal(scope)
     })
 
+    it("respects the server keycase configuration", () => {
+      scope = scope.selectExtra({ someThing: ["firstThing", "secondThing"] })
+      expect((scope as any)._extra_fields).to.eql({
+        some_thing: ["first_thing", "second_thing"]
+      })
+    })
+
     describe("when passed an array of strings", () => {
       it("infers the jsonapi type", () => {
         const newScope = scope.selectExtra(["foo"])
@@ -152,6 +191,13 @@ describe("Scope", () => {
           foo: {}
         })
       })
+
+      it("respects the server keycase configuration", () => {
+        scope = scope.includes("fooBar")
+        expect((scope as any)._include).to.eql({
+          foo_bar: {}
+        })
+      })
     })
 
     describe("when passed an array", () => {
@@ -160,6 +206,14 @@ describe("Scope", () => {
         expect((scope as any)._include).to.eql({
           foo: {},
           bar: {}
+        })
+      })
+
+      it("respects the server keycase configuration", () => {
+        scope = scope.includes(["fooBar", "fooBarBaz"])
+        expect((scope as any)._include).to.eql({
+          foo_bar: {},
+          foo_bar_baz: {}
         })
       })
     })
@@ -176,12 +230,54 @@ describe("Scope", () => {
           }
         })
       })
+
+      it("respects the server keycase configuration", () => {
+        scope = scope.includes({
+          fooBar: ["fooBarBaz", { fizzBuzz: "fizzBuzzBar" }]
+        })
+        expect((scope as any)._include).to.eql({
+          foo_bar: {
+            foo_bar_baz: {},
+            fizz_buzz: {
+              fizz_buzz_bar: {}
+            }
+          }
+        })
+      })
     })
 
     it("returns a new scope", () => {
       const newScope = scope.includes("foo")
       expect(newScope).to.be.instanceof(Scope)
       expect(newScope).not.to.equal(scope)
+    })
+  })
+
+  describe("#merge()", () => {
+    it("updates the scope", () => {
+      scope = scope
+        .includes(["foo_bar"])
+        .merge({ foo_bar: scope.where({ foo: "bar" }) })
+      const qp = scope.asQueryParams()
+
+      expect(qp.filter).to.eql({
+        foo_bar: {
+          foo: "bar"
+        }
+      })
+    })
+
+    it("respects the server keycase configuration", () => {
+      scope = scope
+        .includes(["foo_bar_baz"])
+        .merge({ fooBarBaz: scope.where({ foo: "bar" }) })
+      const qp = scope.asQueryParams()
+
+      expect(qp.filter).to.eql({
+        foo_bar_baz: {
+          foo: "bar"
+        }
+      })
     })
   })
 
@@ -239,14 +335,14 @@ describe("Scope", () => {
       scope = scope
         .page(2)
         .per(10)
-        .where({ foo: "bar" })
+        .where({ fooBar: "baz" })
         .order("foo")
         .order({ bar: "desc" })
         .select({ people: ["name", "age"] })
         .stats({ total: "count" })
         .includes({ a: ["b", { c: "d" }] })
       expect(scope.toQueryParams()).to.eq(
-        "page[number]=2&page[size]=10&filter[foo]=bar&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b,a.c.d"
+        "page[number]=2&page[size]=10&filter[foo_bar]=baz&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b,a.c.d"
       )
     })
 
