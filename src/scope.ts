@@ -107,6 +107,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   where(clause: WhereClause): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedWhereClause(clause)
 
     for (const key in clause) {
       if (clause.hasOwnProperty(key)) {
@@ -129,6 +130,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   stats(clause: StatsScope): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedStatsClause(clause)
 
     for (const key in clause) {
       if (clause.hasOwnProperty(key)) {
@@ -140,6 +142,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   order(clause: SortScope | string): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedOrderClause(clause)
 
     if (typeof clause === "object") {
       for (const key in clause) {
@@ -156,6 +159,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   select(clause: FieldArg) {
     const copy = this.copy()
+    clause = this._serverCasedFieldsClause(clause)
 
     if (Array.isArray(clause)) {
       let _clause = clause as string[]
@@ -174,6 +178,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   selectExtra(clause: FieldArg) {
     const copy = this.copy()
+    clause = this._serverCasedFieldsClause(clause)
 
     if (Array.isArray(clause)) {
       let _clause = clause as string[]
@@ -192,6 +197,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   includes(clause: IncludeScope): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedIncludesClause(clause)
 
     const directive = new IncludeDirective(clause)
     const directiveObject = directive.toScopeObject()
@@ -347,5 +353,54 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     })
 
     return new CollectionProxy(recordArray, jsonResult)
+  }
+
+  private _serverCasedWhereClause(clause: WhereClause) {
+    return this._serverCasedClause(clause, false)
+  }
+
+  private _serverCasedOrderClause(clause: string | SortScope) {
+    if (typeof clause === "string") {
+      return this._serverCasedClause(clause, true)
+    } else {
+      return this._serverCasedClause(clause, false)
+    }
+  }
+
+  private _serverCasedFieldsClause(clause: FieldArg) {
+    return this._serverCasedClause(clause, true)
+  }
+
+  private _serverCasedIncludesClause(clause: IncludeScope) {
+    return this._serverCasedClause(clause, true)
+  }
+
+  private _serverCasedStatsClause(clause: StatsScope): StatsScope {
+    return this._serverCasedClause(clause, true)
+  }
+
+  private _serverCasedClause(thing: any, transformValues: boolean = false) {
+    if (typeof thing === "string") {
+      return transformValues ? this.model.serializeKey(thing) : thing
+    } else if (thing instanceof Array) {
+      return thing.map(
+        (item: any): any => this._serverCasedClause(item, transformValues)
+      )
+    } else if (thing instanceof Object) {
+      let serverCasedThing = {}
+      for (const property in thing) {
+        if (thing.hasOwnProperty(property)) {
+          const serverCasedProperty = this.model.serializeKey(property)
+          const serverCasedPropertyValue = this._serverCasedClause(
+            thing[property],
+            transformValues
+          )
+          serverCasedThing[serverCasedProperty] = serverCasedPropertyValue
+        }
+      }
+      return serverCasedThing
+    } else {
+      return thing
+    }
   }
 }
