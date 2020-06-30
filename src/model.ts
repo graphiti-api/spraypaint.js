@@ -688,7 +688,7 @@ export class SpraypaintBase {
   }
 
   get hasError() {
-    return Object.keys(this._errors).length > 1
+    return !!Object.keys(this._errors).length
   }
 
   clearErrors() {
