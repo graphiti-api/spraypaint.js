@@ -134,7 +134,7 @@ class Deserializer {
     instance.assignLinks(datum.links)
 
     // assign meta
-    instance.setMeta(datum.meta)
+    instance.setMeta(datum.meta, false)
 
     // so we don't double-process the same thing
     // must push before relationships

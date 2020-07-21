@@ -422,6 +422,7 @@ export class SpraypaintBase {
   @nonenumerable private _links!: ModelRecord<this>
   @nonenumerable private _originalLinks!: ModelRecord<this>
   @nonenumerable private __meta__: any
+  @nonenumerable private _metaDirty: boolean = false
   @nonenumerable private _errors: ValidationErrors<this> = {}
 
   constructor(attrs?: Record<string, any>) {
@@ -650,12 +651,19 @@ export class SpraypaintBase {
     }
   }
 
-  setMeta(metaObj: object | undefined) {
+  setMeta(metaObj: object | undefined, markDirty = true) {
     this.__meta__ = metaObj
+    if (markDirty) {
+      this._metaDirty = true
+    }
   }
 
   get meta(): object {
     return this.__meta__ || {}
+  }
+
+  get isMetaDirty(): boolean {
+    return this._metaDirty
   }
 
   relationshipResourceIdentifiers(relationNames: string[]) {

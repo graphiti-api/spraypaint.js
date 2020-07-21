@@ -53,7 +53,7 @@ describe("WritePayload", () => {
   })
 
   describe("metadata", () => {
-    it("sends metadata", () => {
+    it("sends metadata if modified by the user", () => {
       let person = new Person({ first_name: "Joe", age: 23 })
       person.setMeta({ mock: "metadata" })
       let payload = new WritePayload(person)
@@ -66,6 +66,21 @@ describe("WritePayload", () => {
           },
           meta: {
             mock: "metadata"
+          }
+        }
+      })
+    })
+
+    it("does not send unmodified metadata", () => {
+      let person = new Person({ first_name: "Joe", age: 23 })
+      person.setMeta({ mock: "metadata" }, false)
+      let payload = new WritePayload(person)
+      expect(payload.asJSON()).to.deep.equal({
+        data: {
+          type: "people",
+          attributes: {
+            age: 23,
+            first_name: "Joe"
           }
         }
       })

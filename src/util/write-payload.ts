@@ -170,7 +170,7 @@ export class WritePayload<T extends SpraypaintBase> {
     }
 
     const _meta: object = this.model.meta
-    if (Object.keys(_meta).length > 0) {
+    if (this.model.isMetaDirty && Object.keys(_meta).length > 0) {
       data.meta = _meta
     }
 
