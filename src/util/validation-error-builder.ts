@@ -4,7 +4,7 @@ import {
   JsonapiError,
   JsonapiErrorMeta
 } from "../jsonapi-spec"
-import { ValidationErrors, ValidationError } from "../validation-errors"
+import { ValidationErrors } from "../validation-errors"
 
 export class ValidationErrorBuilder<T extends SpraypaintBase> {
   static apply<T extends SpraypaintBase>(

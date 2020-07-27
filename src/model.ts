@@ -32,7 +32,6 @@ import { JsonapiTypeRegistry } from "./jsonapi-type-registry"
 import { camelize, underscore, dasherize } from "inflected"
 import { ILogger, logger as defaultLogger } from "./logger"
 import { MiddlewareStack, BeforeFilter, AfterFilter } from "./middleware-stack"
-import { Omit } from "./util/omit"
 import { EventBus } from "./event-bus"
 
 import {
@@ -123,8 +122,6 @@ export const applyModelConfig = <T extends typeof SpraypaintBase>(
   ModelClass: T,
   config: ModelConfigurationOptions
 ): void => {
-  let k: keyof ModelConfigurationOptions
-
   config = { ...config } // clone since we're going to mutate it
 
   // Handle all JWT configuration at once since it's run-order dependent
@@ -145,7 +142,7 @@ export const applyModelConfig = <T extends typeof SpraypaintBase>(
     delete config.jwt
   }
 
-  for (k in config) {
+  for (const k in config) {
     if (config.hasOwnProperty(k)) {
       ModelClass[k] = config[k]
     }
@@ -475,7 +472,10 @@ export class SpraypaintBase {
       )
 
       if (descriptor) {
-        Object.defineProperty(this, property, descriptor)
+        Object.defineProperty(this, property, {
+          ...descriptor,
+          enumerable: true
+        })
       }
     })
   }

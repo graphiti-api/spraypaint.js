@@ -7,7 +7,7 @@ module.exports = {
     "eslint:recommended",
     "plugin:prettier/recommended"
   ],
-  plugins: ["typescript"],
+  plugins: ["@typescript-eslint"],
   rules: {
     "no-undef": "off",
     "no-unused-vars": "off",
@@ -23,5 +23,5 @@ module.exports = {
     ecmaVersion: 6,
     sourceType: 'module'
   },
-  parser: "typescript-eslint-parser"
+  parser: "@typescript-eslint/parser"
 }
