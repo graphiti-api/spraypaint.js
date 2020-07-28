@@ -45,6 +45,7 @@ import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
 import { ValidationErrors } from "./validation-errors"
 import { DeferredActionCallback } from "./deferred-action-callback"
+import { TOmit } from "./util/omit"
 
 export type KeyCaseValue = "dash" | "camel" | "snake"
 
@@ -78,13 +79,13 @@ export type ModelAttrChanges<T> = { [P in keyof T]?: T[P][] } &
   Partial<Record<ModelIdFields, string[]>>
 
 export type ModelRecord<T extends SpraypaintBase> = ModelAttrs<
-  keyof (Omit<T, keyof SpraypaintBase>),
+  keyof (TOmit<T, keyof SpraypaintBase>),
   T
 >
 
 export type ModelAttributeChangeSet<
   T extends SpraypaintBase
-> = ModelAttrChanges<Omit<T, keyof SpraypaintBase>>
+> = ModelAttrChanges<TOmit<T, keyof SpraypaintBase>>
 
 export interface SaveOptions<T extends SpraypaintBase> {
   with?: IncludeScope

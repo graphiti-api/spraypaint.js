@@ -4,7 +4,11 @@ import {
   JsonapiError,
   JsonapiErrorMeta
 } from "../jsonapi-spec"
-import { ValidationErrors } from "../validation-errors"
+import {
+  GenericErrorAttrs,
+  IValidationError,
+  ValidationErrors
+} from "../validation-errors"
 
 export class ValidationErrorBuilder<T extends SpraypaintBase> {
   static apply<T extends SpraypaintBase>(
@@ -53,7 +57,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
     error: JsonapiError
   ) {
     let attribute = this.model.klass.deserializeKey(meta.attribute)
-    errorsAccumulator[attribute] = {
+    ;(errorsAccumulator as GenericErrorAttrs<R>)[attribute] = {
       title: error.title as string,
       code: error.code as string,
       attribute: meta.attribute,
@@ -89,7 +93,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
       // make sure to assign a new error object, instead of mutating
       // the existing one, otherwise js frameworks with object tracking
       // won't be able to keep up. Validate vue.js when changing this code:
-      const newErrs: ValidationErrors<R> = {}
+      const newErrs: GenericErrorAttrs<R> = {}
       Object.keys(relatedObject.errors).forEach(key => {
         newErrs[key] = relatedObject.errors[key]
       })
@@ -99,7 +103,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
           newErrs[key] = error
         }
       })
-      relatedObject.errors = newErrs
+      relatedObject.errors = newErrs as ValidationErrors<R>
     }
   }
 }
