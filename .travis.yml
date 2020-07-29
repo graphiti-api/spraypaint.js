@@ -4,6 +4,25 @@ node_js:
 - lts/*
 - node
 
+env:
+  - TYPESCRIPT_VERSION=2.8
+  - TYPESCRIPT_VERSION=3.0
+  - TYPESCRIPT_VERSION=3.1
+  - TYPESCRIPT_VERSION=3.3
+  - TYPESCRIPT_VERSION=3.5
+  - TYPESCRIPT_VERSION=3.6
+  - TYPESCRIPT_VERSION=3.7
+  - TYPESCRIPT_VERSION=3.8
+  - TYPESCRIPT_VERSION=latest
+
+cache:
+  yarn: true
+
+install:
+  - yarn install --non-interactive
+  - yarn add -D typescript@$TYPESCRIPT_VERSION
+  - npx tsc --version
+
 script:
   - yarn lint:ci
   - yarn test:ci
