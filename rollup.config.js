@@ -1,7 +1,7 @@
 import { readFileSync } from "fs"
-import uglify from "rollup-plugin-uglify"
-import commonjs from "rollup-plugin-commonjs"
-import resolve from "rollup-plugin-node-resolve"
+import nodeResolve from "@rollup/plugin-node-resolve"
+import commonjs from "@rollup/plugin-commonjs"
+import { uglify } from "rollup-plugin-uglify"
 
 const pkg = require("./package.json")
 
@@ -17,16 +17,14 @@ export default {
   input: pkg.module,
   plugins: [
     isProduction ? uglify({}) : {},
-    resolve(),
+    nodeResolve(),
     commonjs({ include: "./node_modules/**" }),
   ],
-  banner: banner,
-  sourceMap: false,
-  name: pkg.name,
-  output: [
-    {
-      file: `./dist/${pkg.name}.${isProduction ? "min.js" : "js"}`,
-      format: "umd",
-    },
-  ],
+  output: {
+    name: pkg.name,
+    file: `./dist/${pkg.name}.${isProduction ? "min.js" : "js"}`,
+    format: "umd",
+    sourcemap: false,
+    banner: banner,
+  },
 }
