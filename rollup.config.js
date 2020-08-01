@@ -1,7 +1,7 @@
 import { readFileSync } from "fs"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import commonjs from "@rollup/plugin-commonjs"
-import { uglify } from "rollup-plugin-uglify"
+import { terser } from "rollup-plugin-terser"
 
 const pkg = require("./package.json")
 
@@ -16,7 +16,7 @@ const banner = readFileSync("banner.js", "utf-8")
 export default {
   input: pkg.module,
   plugins: [
-    isProduction ? uglify({}) : {},
+    isProduction ? terser({ output: { comments: false } }) : {},
     nodeResolve(),
     commonjs({ include: "./node_modules/**" }),
   ],

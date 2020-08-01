@@ -94,7 +94,7 @@
     "prettier": "2.0.5",
     "rimraf": "^3.0.2",
     "rollup": "^2.23.0",
-    "rollup-plugin-uglify": "^6.0.4",
+    "rollup-plugin-terser": "^6.1.0",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.5.0",
     "test-all-versions": "^5.0.1",
