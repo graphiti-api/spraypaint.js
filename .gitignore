@@ -11,3 +11,5 @@ dist/
 coverage/
 lib/
 lib-esm/
+
+.nyc_output
