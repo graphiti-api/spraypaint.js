@@ -11,14 +11,14 @@ import { JsonapiResourceIdentifier } from "../jsonapi-spec"
 // Used for dirty tracking associations
 export default (model: SpraypaintBase, relationNames: string[]) => {
   const identifiers: Record<string, JsonapiResourceIdentifier[]> = {}
-  relationNames.forEach(relationName => {
+  relationNames.forEach((relationName) => {
     let relatedObjects = model.relationship(relationName)
     if (relatedObjects) {
       if (!Array.isArray(relatedObjects)) {
         relatedObjects = [relatedObjects]
       }
 
-      relatedObjects.forEach(r => {
+      relatedObjects.forEach((r) => {
         if (r.isPersisted) {
           if (!identifiers[relationName]) {
             identifiers[relationName] = []

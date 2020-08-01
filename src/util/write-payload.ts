@@ -48,7 +48,7 @@ export class WritePayload<T extends SpraypaintBase> {
   }
 
   removeDeletions(model: T, includeDirective: IncludeScope) {
-    Object.keys(includeDirective).forEach(key => {
+    Object.keys(includeDirective).forEach((key) => {
       const nested = (<any>includeDirective)[key]
 
       const modelIdx = <any>model
@@ -102,7 +102,7 @@ export class WritePayload<T extends SpraypaintBase> {
       if (relatedModels) {
         if (Array.isArray(relatedModels)) {
           data = []
-          relatedModels.forEach(relatedModel => {
+          relatedModels.forEach((relatedModel) => {
             if (
               !this._isNewAndMarkedForDestruction(relatedModel) &&
               (idOnly ||
@@ -196,7 +196,7 @@ export class WritePayload<T extends SpraypaintBase> {
       this._pushInclude(relatedJSON)
     }
 
-    wp.included.forEach(incl => {
+    wp.included.forEach((incl) => {
       if (!this._isNewAndMarkedForDestruction(model)) {
         this._pushInclude(incl)
       }
@@ -249,7 +249,7 @@ export class WritePayload<T extends SpraypaintBase> {
   }
 
   private _isIncluded(include: any) {
-    this.included.forEach(incl => {
+    this.included.forEach((incl) => {
       if (incl.type === include.type) {
         if (incl.id === include.id || incl["temp-id"] === include["temp-id"]) {
           return true
@@ -264,7 +264,7 @@ export class WritePayload<T extends SpraypaintBase> {
   ): void {
     const modelAttrs = this.model.typedAttributes
 
-    Object.keys(modelAttrs).forEach(key => {
+    Object.keys(modelAttrs).forEach((key) => {
       let attrDef = this.model.klass.attributeList[key]
       if (attrDef.persist) {
         const value = modelAttrs[key]

@@ -3,7 +3,7 @@ import { Author, NonFictionAuthor } from "../fixtures"
 import { IResultProxy } from "../../src/proxies/index"
 
 const resultData = <T>(promise: Promise<IResultProxy<T>>): Promise<any> => {
-  return promise.then(proxyObject => {
+  return promise.then((proxyObject) => {
     return proxyObject.data
   })
 }

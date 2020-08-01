@@ -383,10 +383,7 @@ describe("Scope", () => {
     })
 
     it("should make a copy of scope attributes", () => {
-      const original: any = scope
-        .order({ foo: "asc" })
-        .page(1)
-        .per(20)
+      const original: any = scope.order({ foo: "asc" }).page(1).per(20)
 
       const copy = original.copy()
 

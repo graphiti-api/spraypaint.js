@@ -700,7 +700,10 @@ describe("Model", () => {
           },
           relationships: {
             authors: {
-              data: [{ id: "1", type: "authors" }, { id: "2", type: "authors" }]
+              data: [
+                { id: "1", type: "authors" },
+                { id: "2", type: "authors" }
+              ]
             }
           }
         },

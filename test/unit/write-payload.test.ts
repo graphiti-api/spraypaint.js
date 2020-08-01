@@ -1,6 +1,12 @@
 import { sinon, expect } from "../test-helper"
 import { WritePayload } from "../../src/util/write-payload"
-import { Person, PersonWithDasherizedKeys, Author, Genre, Book } from "../fixtures"
+import {
+  Person,
+  PersonWithDasherizedKeys,
+  Author,
+  Genre,
+  Book
+} from "../fixtures"
 
 describe("WritePayload", () => {
   it("Does not serialize number attributes as empty string", () => {

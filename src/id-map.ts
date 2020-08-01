@@ -17,7 +17,7 @@ export class IDMap {
 
   findAll(models: SpraypaintBase[]) {
     let records: SpraypaintBase[] = []
-    models.forEach(m => {
+    models.forEach((m) => {
       let found = this.find(m)
       if (found) {
         records.push(found)

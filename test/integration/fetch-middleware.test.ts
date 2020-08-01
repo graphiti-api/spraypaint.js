@@ -195,7 +195,7 @@ describe("fetch middleware", () => {
           .then(({ data }) => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch((e) => {
             expect(e.message).to.eq(
               "beforeFetch failed; review middleware.beforeFetch stack"
             )
@@ -217,7 +217,7 @@ describe("fetch middleware", () => {
           .then(({ data }) => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(async e => {
+          .catch(async (e) => {
             expect(e.message).to.eq(
               "afterFetch failed; review middleware.afterFetch stack"
             )
@@ -239,7 +239,7 @@ describe("fetch middleware", () => {
           .then(({ data }) => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch((e) => {
             expect(e.response.statusText).to.eq("Internal Server Error")
           })
       })
@@ -255,7 +255,7 @@ describe("fetch middleware", () => {
           .then(({ data }) => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch((e) => {
             expect(e.message).to.eq("record not found")
             expect(e.response.status).to.eq(404)
           })
@@ -272,7 +272,7 @@ describe("fetch middleware", () => {
           .then(({ data }) => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch((e) => {
             expect(e.response.statusText).to.eq("OK")
             expect(e.originalError.message).to.match(
               /Unexpected end of JSON input/
@@ -334,7 +334,7 @@ describe("fetch middleware", () => {
     describe("on successful response", () => {
       it("correctly resolves the promise", () => {
         const author = new Author()
-        return author.save().then(success => {
+        return author.save().then((success) => {
           expect(success).to.eq(true)
         })
       })
@@ -372,7 +372,7 @@ describe("fetch middleware", () => {
           .then(() => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch((e) => {
             expect(e.message).to.eq(
               "beforeFetch failed; review middleware.beforeFetch stack"
             )
@@ -394,7 +394,7 @@ describe("fetch middleware", () => {
           .then(() => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(async e => {
+          .catch(async (e) => {
             expect(e.message).to.eq(
               "afterFetch failed; review middleware.afterFetch stack"
             )
@@ -418,7 +418,7 @@ describe("fetch middleware", () => {
           .then(() => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch((e) => {
             expect(e.response.statusText).to.eq("Internal Server Error")
           })
       })
@@ -436,7 +436,7 @@ describe("fetch middleware", () => {
           .then(() => {
             expect("dont get here!").to.eq(true)
           })
-          .catch(e => {
+          .catch((e) => {
             expect(e.response.statusText).to.eq("OK")
             expect(e.originalError.message).to.match(
               /Unexpected end of JSON input/

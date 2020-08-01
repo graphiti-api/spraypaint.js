@@ -20,7 +20,7 @@ class DirtyChecker<T extends SpraypaintBase> {
       const identifiers: JsonapiResourceIdentifier[] =
         (<any>this.model)._originalRelationships[relationName] || []
 
-      const found = identifiers.find(ri => {
+      const found = identifiers.find((ri) => {
         return (
           JSON.stringify(ri) === JSON.stringify(relatedModel.resourceIdentifier)
         )
@@ -110,7 +110,7 @@ class DirtyChecker<T extends SpraypaintBase> {
       nested: IncludeScopeHash
     ) => void
   ): void {
-    Object.keys(includeHash).forEach(key => {
+    Object.keys(includeHash).forEach((key) => {
       const nested = includeHash[key]
       let relatedObjects: SpraypaintBase[] | SpraypaintBase = (<any>this.model)[
         key
@@ -120,7 +120,7 @@ class DirtyChecker<T extends SpraypaintBase> {
         relatedObjects = [relatedObjects]
       }
 
-      relatedObjects.forEach(relatedObject => {
+      relatedObjects.forEach((relatedObject) => {
         if (relatedObject) {
           callback(key, relatedObject, nested)
         }
