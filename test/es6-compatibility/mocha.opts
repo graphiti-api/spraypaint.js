@@ -1,2 +1,0 @@
---require test/es6-compatibility/test-setup.js
-test/es6-compatibility/**/*.test.js

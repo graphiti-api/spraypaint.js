@@ -1,3 +1,0 @@
---require test/tshook.js
---watch-extensions ts
-test/**/*.test.ts

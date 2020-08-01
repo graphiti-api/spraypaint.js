@@ -1,0 +1,5 @@
+require: 'test/tshook.js'
+spec:
+  - 'test/**/*.test.ts'
+watch-files:
+  - 'test/**/*.test.ts'
