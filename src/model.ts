@@ -510,7 +510,8 @@ export class SpraypaintBase {
       Object.keys(attrs).forEach(k => {
         let self = this as any
         let changes = this.changes() as any
-        if (self[k] !== attrs[k] && !changes[k]) {
+        let attrDef = this.klass.attributeList[k]
+        if (attrDef.dirtyChecker(self[k], attrs[k]) && !changes[k]) {
           diff[k] = [self[k], attrs[k]]
           self[k] = attrs[k]
 

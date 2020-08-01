@@ -4,10 +4,13 @@ export type Attr<T> = (() => T) | { new (...args: any[]): T & object }
 
 export type AttrType<T> = Attr<T>
 
+export type DirtyChecker<T> = (prior: T, current: T) => boolean
+
 export interface AttrRecord<T> {
   name?: string
   type?: AttrType<T>
   persist?: boolean
+  dirtyChecker?: DirtyChecker<T>
 }
 
 export const attr = <T = any>(options?: AttrRecord<T>): Attribute<T> => {
@@ -26,13 +29,17 @@ export type AttributeOptions = Partial<{
   name: string
   type: () => any
   persist: boolean
+  dirtyChecker?: DirtyChecker<any>
 }>
+
+export const STRICT_EQUALITY_DIRTY_CHECKER: DirtyChecker<any> = (prior, current) => (prior !== current)
 
 export class Attribute<T = any> {
   isRelationship = false
   name!: string
   type?: T = undefined
   persist: boolean = true
+  dirtyChecker: DirtyChecker<T> = STRICT_EQUALITY_DIRTY_CHECKER
   owner!: typeof SpraypaintBase
 
   constructor(options: AttrRecord<T>) {
@@ -50,6 +57,10 @@ export class Attribute<T = any> {
 
     if (options.persist !== undefined) {
       this.persist = !!options.persist
+    }
+
+    if (options.dirtyChecker) {
+      this.dirtyChecker = (options.dirtyChecker)
     }
   }
 

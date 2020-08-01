@@ -2,6 +2,7 @@ import { SpraypaintBase, ModelRecord, ModelAttributeChangeSet } from "../model"
 import { IncludeDirective, IncludeScopeHash } from "./include-directive"
 import { IncludeScope } from "../scope"
 import { JsonapiResourceIdentifier } from "../jsonapi-spec"
+import {isEmpty} from "lodash";
 
 class DirtyChecker<T extends SpraypaintBase> {
   model: T
@@ -58,9 +59,11 @@ class DirtyChecker<T extends SpraypaintBase> {
       const prior = (<any>this.model)._originalAttributes[key]
       const current = this.model.attributes[key]
 
+      let attrDef = this.model.klass.attributeList[key]
+
       if (!this.model.isPersisted) {
         dirty[key] = [null, current]
-      } else if (prior !== current) {
+      } else if (attrDef.dirtyChecker(prior, current)) {
         dirty[key] = [prior, current]
       }
     }
@@ -77,10 +80,7 @@ class DirtyChecker<T extends SpraypaintBase> {
   }
 
   private _hasDirtyAttributes() {
-    const originalAttrs = (<any>this.model)._originalAttributes
-    const currentAttrs = this.model.attributes
-
-    return JSON.stringify(originalAttrs) !== JSON.stringify(currentAttrs)
+    return !isEmpty(this.dirtyAttributes())
   }
 
   private _hasDirtyRelationships(includeHash: IncludeScopeHash): boolean {

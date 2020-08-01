@@ -7,7 +7,8 @@ import {
   hasOne
 } from "../src/index"
 
-import { Attr, BelongsTo, HasMany, HasOne, Link } from "../src/decorators"
+import {Attr, BelongsTo, HasMany, HasOne, Link} from "../src/decorators"
+import {DirtyChecker} from "../src/attribute";
 
 @Model({
   baseUrl: "http://example.com",
@@ -40,11 +41,21 @@ export class PersonWithLinks extends Person {
   @Link() webView!: string
 }
 
+export interface Coordinates{
+  lon: number;
+  lat: number;
+}
+
+const dirtyCoordinatesChecker : DirtyChecker<Coordinates> = (prior: Coordinates, current: Coordinates) => (
+  (prior.lon !== current.lon) || (prior.lat !== current.lat)
+)
+
 @Model()
 export class PersonDetail extends ApplicationRecord {
   static jsonapiType = "person_details"
 
   @Attr address!: string
+  @Attr({dirtyChecker: dirtyCoordinatesChecker}) coordinates!: Coordinates | null
 }
 
 @Model({ keyCase: { server: "snake", client: "snake" } })
