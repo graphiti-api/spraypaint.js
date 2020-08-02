@@ -1,5 +1,5 @@
 import { expect, sinon } from "../test-helper"
-import { attr, Attribute } from "../../src/attribute"
+import { attr, Attribute, STRICT_EQUALITY_DIRTY_CHECKER } from "../../src/attribute"
 
 describe("Attributes", () => {
   describe("Initializing Attribute", () => {
@@ -32,6 +32,17 @@ describe("Attributes", () => {
     it("allows persistence to be overridden", () => {
       const defaultAttr = attr({ persist: false })
       expect(defaultAttr.persist).to.be.false
+    })
+
+    it( "defaults to strict equality", () => {
+      const defaultAttr = attr()
+      expect(defaultAttr.dirtyChecker).to.eq(STRICT_EQUALITY_DIRTY_CHECKER)
+    })
+
+    it( "allows dirty checker function to be overridden", () => {
+      const customChecker = (prior:any, current:any) => (prior != current)
+      const defaultAttr = attr({dirtyChecker: customChecker})
+      expect(defaultAttr.dirtyChecker).to.eq(customChecker)
     })
   })
 })
