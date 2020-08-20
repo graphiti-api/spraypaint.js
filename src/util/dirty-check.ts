@@ -2,7 +2,7 @@ import { SpraypaintBase, ModelRecord, ModelAttributeChangeSet } from "../model"
 import { IncludeDirective, IncludeScopeHash } from "./include-directive"
 import { IncludeScope } from "../scope"
 import { JsonapiResourceIdentifier } from "../jsonapi-spec"
-import {isEmpty} from "lodash";
+import { isEmpty } from "./isempty"
 
 class DirtyChecker<T extends SpraypaintBase> {
   model: T
