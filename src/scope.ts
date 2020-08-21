@@ -51,6 +51,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   private _include: IncludeScopeHash = {}
   private _stats: StatsScope = {}
   private _extraParams: any = {}
+  private _extraFetchOptions: RequestInit = {}
 
   constructor(model: Constructor<T> | typeof SpraypaintBase) {
     this.model = (model as any) as typeof SpraypaintBase
@@ -212,6 +213,18 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     return copy
   }
 
+  extraFetchOptions(options: RequestInit): Scope<T> {
+    const copy = this.copy()
+
+    for (const key in options) {
+      if (options.hasOwnProperty(key)) {
+        copy._extraFetchOptions[key] = options[key]
+      }
+    }
+
+    return copy
+  }
+
   // The `Model` class has a `scope()` method to return the scope for it.
   // This method makes it possible for methods to expect either a model or
   // a scope and reliably cast them to a scope for use via `scope()`
@@ -244,6 +257,13 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
     if (paramString !== "") {
       return paramString
+    }
+  }
+
+  fetchOptions(): RequestInit {
+    return {
+      ...this.model.fetchOptions(),
+      ...this._extraFetchOptions
     }
   }
 
@@ -317,9 +337,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
       url = `${url}?${qp}`
     }
     const request = new Request(this.model.middlewareStack, this.model.logger)
-    const fetchOpts = this.model.fetchOptions()
-
-    const response = await request.get(url, fetchOpts)
+    const response = await request.get(url, this.fetchOptions())
     refreshJWT(this.model, response)
     return response.jsonPayload
   }
