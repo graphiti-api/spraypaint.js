@@ -1,5 +1,5 @@
 {
-  "name": "spraypaint",
+  "name": "@mindfulchefuk/spraypaint.js",
   "description": "Graphiti Client / Javascript ORM",
   "main": "lib/index.js",
   "module": "lib-esm/index.js",
@@ -7,6 +7,7 @@
   "author": "Lee Richmond<richmolj@gmail.com> & Wade Tandy<wade.tandy@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/graphiti-api/spraypaint.js",
+  "version": "0.0.5318008",
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
     "prebuild": "yarn run clean && yarn test:ci && yarn lint:ci",
