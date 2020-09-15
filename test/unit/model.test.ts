@@ -876,6 +876,16 @@ describe("Model", () => {
     })
   })
 
+  describe("hasError", () => {
+    it("returns boolean indicating whether there are errors", () => {
+      const instance = new Author()
+      let errors = { firstName: { title: "asdf" } } as any
+      expect(instance.hasError).to.eq(false)
+      instance.errors = errors
+      expect(instance.hasError).to.eq(true)
+    })
+  })
+
   describe("isDirty", () => {
     describe("when an attribute changes", () => {
       it("is marked as dirty", () => {
