@@ -1,6 +1,12 @@
 import { sinon, expect } from "../test-helper"
 import { WritePayload } from "../../src/util/write-payload"
-import { Person, PersonWithDasherizedKeys, Author, Genre, Book } from "../fixtures"
+import {
+  Person,
+  PersonWithDasherizedKeys,
+  Author,
+  Genre,
+  Book
+} from "../fixtures"
 
 describe("WritePayload", () => {
   it("Does not serialize number attributes as empty string", () => {
@@ -43,6 +49,41 @@ describe("WritePayload", () => {
           "first-name": "Joe"
         }
       }
+    })
+  })
+
+  describe("metadata", () => {
+    it("sends metadata if modified by the user", () => {
+      let person = new Person({ first_name: "Joe", age: 23 })
+      person.setMeta({ mock: "metadata" })
+      let payload = new WritePayload(person)
+      expect(payload.asJSON()).to.deep.equal({
+        data: {
+          type: "people",
+          attributes: {
+            age: 23,
+            first_name: "Joe"
+          },
+          meta: {
+            mock: "metadata"
+          }
+        }
+      })
+    })
+
+    it("does not send unmodified metadata", () => {
+      let person = new Person({ first_name: "Joe", age: 23 })
+      person.setMeta({ mock: "metadata" }, false)
+      let payload = new WritePayload(person)
+      expect(payload.asJSON()).to.deep.equal({
+        data: {
+          type: "people",
+          attributes: {
+            age: 23,
+            first_name: "Joe"
+          }
+        }
+      })
     })
   })
 

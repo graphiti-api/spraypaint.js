@@ -169,6 +169,11 @@ export class WritePayload<T extends SpraypaintBase> {
       json.included = this.included
     }
 
+    const _meta: object = this.model.meta
+    if (this.model.isMetaDirty && Object.keys(_meta).length > 0) {
+      data.meta = _meta
+    }
+
     return json
   }
 
