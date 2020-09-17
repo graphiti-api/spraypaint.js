@@ -77,7 +77,7 @@ describe("authorization headers", () => {
     beforeEach(() => {
       ApplicationRecord.jwt = "cu570m70k3n"
       originalHeaderFn = Author.generateAuthHeader
-      Author.generateAuthHeader = token => {
+      Author.generateAuthHeader = (token) => {
         return `Bearer ${token}`
       }
     })

@@ -38,7 +38,7 @@ type DecoratorDescriptor<T> = T | EcmaDecoratorDescriptor
 function shimDecoratorProposalCompatibility<Decorator, T extends Function>(
   finisher: T
 ): T {
-  return (function(descriptor: DecoratorDescriptor<Decorator>) {
+  return (function (descriptor: DecoratorDescriptor<Decorator>) {
     if (isModernDecoratorDescriptor(descriptor)) {
       return Object.assign(descriptor, {
         finisher
@@ -86,9 +86,7 @@ const modelFactory = <M extends typeof SpraypaintBase>(
 
     if (envConfig.productionTip && inBrowser) {
       logger.warn(
-        `Inferring model jsonapiType as "${
-          ModelClass.jsonapiType
-        }".\nYou should explicitly set this on your model if targeting a minified code bundle.`
+        `Inferring model jsonapiType as "${ModelClass.jsonapiType}".\nYou should explicitly set this on your model if targeting a minified code bundle.`
       )
     }
   }
@@ -165,7 +163,7 @@ const AttrDecoratorFactory: {
   }
 }
 
-const LinkDecoratorFactory = function(
+const LinkDecoratorFactory = function (
   fieldDetail?: FieldDecoratorDescriptor
 ): any {
   const trackLink = (Model: typeof SpraypaintBase, propKey: string) => {

@@ -30,7 +30,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
       return
     }
 
-    this.payload.errors.forEach(err => {
+    this.payload.errors.forEach((err) => {
       const meta = err.meta
       if (!meta) {
         throw new Error("invalid json")
@@ -70,7 +70,7 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
   ) {
     let relatedObject = model[model.klass.deserializeKey(meta.name)]
     if (Array.isArray(relatedObject)) {
-      relatedObject = relatedObject.find(r => {
+      relatedObject = relatedObject.find((r) => {
         // For now graphiti is returning the related object id as an integer
         // where the related object's ID is a string
         return (
@@ -90,10 +90,10 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
       // the existing one, otherwise js frameworks with object tracking
       // won't be able to keep up. Validate vue.js when changing this code:
       const newErrs: ValidationErrors<R> = {}
-      Object.keys(relatedObject.errors).forEach(key => {
+      Object.keys(relatedObject.errors).forEach((key) => {
         newErrs[key] = relatedObject.errors[key]
       })
-      Object.keys(relatedAccumulator).forEach(key => {
+      Object.keys(relatedAccumulator).forEach((key) => {
         let error = relatedAccumulator[key]
         if (error !== undefined) {
           newErrs[key] = error

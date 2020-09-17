@@ -11,7 +11,7 @@ const parameterize = (obj: any, prefix?: string): string => {
         }
 
         if (Array.isArray(value)) {
-          value = value.map(v => {
+          value = value.map((v) => {
             return maybeEncode(v)
           })
           if (value.length > 0) {
@@ -27,7 +27,7 @@ const parameterize = (obj: any, prefix?: string): string => {
   }
 
   // remove blanks
-  str = str.filter(p => {
+  str = str.filter((p) => {
     return !!p
   })
 

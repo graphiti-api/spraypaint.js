@@ -30,7 +30,7 @@ export class ValidationError<T extends SpraypaintBase>
 
 export type ValidationErrors<T extends SpraypaintBase> = ErrorAttrs<
   T,
-  keyof (Omit<T, keyof SpraypaintBase>)
+  keyof Omit<T, keyof SpraypaintBase>
 >
 export type ErrorAttrs<T extends SpraypaintBase, K extends keyof T> = {
   [P in K]?: IValidationError<T> | undefined

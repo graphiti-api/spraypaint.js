@@ -47,7 +47,7 @@ describe("CollectionProxy", () => {
 
     it("should assign the correct models to the data array", () => {
       const collection = new CollectionProxy(recordArray, personData)
-      collection.data.forEach(item => {
+      collection.data.forEach((item) => {
         expect(item).to.be.instanceof(Person)
       })
     })

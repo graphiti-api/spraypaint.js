@@ -5,7 +5,7 @@ export enum LogLevel {
   warn = 3,
   error = 4
 }
-export type LogLevelKey = keyof (typeof LogLevel)
+export type LogLevelKey = keyof typeof LogLevel
 
 const LOG_LEVELS = {
   debug: 1,

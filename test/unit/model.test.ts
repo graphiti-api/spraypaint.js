@@ -700,7 +700,10 @@ describe("Model", () => {
           },
           relationships: {
             authors: {
-              data: [{ id: "1", type: "authors" }, { id: "2", type: "authors" }]
+              data: [
+                { id: "1", type: "authors" },
+                { id: "2", type: "authors" }
+              ]
             }
           }
         },
@@ -1283,7 +1286,7 @@ describe("Model", () => {
 
     beforeEach(() => {
       ApplicationRecord.sync = true
-      removeListenerSpy = sinon.spy(EventBus, "removeEventListener")
+      removeListenerSpy = sinon.spy(<any>EventBus, "removeEventListener")
       book = new Book({ id: 1 })
       book.isPersisted = true
       author = new Author({ id: 1, books: [book] })
@@ -1318,7 +1321,7 @@ describe("Model", () => {
 
     beforeEach(() => {
       ApplicationRecord.sync = true
-      addListenerSpy = sinon.spy(EventBus, "addEventListener")
+      addListenerSpy = sinon.spy(<any>EventBus, "addEventListener")
       author = new Author()
     })
 
@@ -1520,7 +1523,7 @@ describe("Model", () => {
       let stub: SinonStub
 
       beforeEach(() => {
-        stub = sinon.stub(ApplicationRecord, "getJWT")
+        stub = (sinon.stub(ApplicationRecord, "getJWT") as any) as SinonStub
         stub.returns("g3tm3")
       })
 

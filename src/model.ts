@@ -79,7 +79,7 @@ export type ModelAttrChanges<T> = { [P in keyof T]?: T[P][] } &
   Partial<Record<ModelIdFields, string[]>>
 
 export type ModelRecord<T extends SpraypaintBase> = ModelAttrs<
-  keyof (Omit<T, keyof SpraypaintBase>),
+  keyof Omit<T, keyof SpraypaintBase>,
   T
 >
 
@@ -469,7 +469,7 @@ export class SpraypaintBase {
       "isPersisted",
       "isMarkedForDestruction",
       "isMarkedForDisassociation"
-    ].forEach(property => {
+    ].forEach((property) => {
       const descriptor = Object.getOwnPropertyDescriptor(
         SpraypaintBase.prototype,
         property
@@ -508,7 +508,7 @@ export class SpraypaintBase {
     this._onStoreChange = (event, attrs) => {
       let diff = {} as any
       // Update all non-dirty attributes
-      Object.keys(attrs).forEach(k => {
+      Object.keys(attrs).forEach((k) => {
         let self = this as any
         let changes = this.changes() as any
         let attrDef = this.klass.attributeList[k]
@@ -540,12 +540,12 @@ export class SpraypaintBase {
       )
     }
 
-    Object.keys(this.relationships).forEach(k => {
+    Object.keys(this.relationships).forEach((k) => {
       let related = this.relationships[k]
 
       if (related) {
         if (Array.isArray(related)) {
-          related.forEach(r => r.unlisten())
+          related.forEach((r) => r.unlisten())
         } else {
           related.unlisten()
         }

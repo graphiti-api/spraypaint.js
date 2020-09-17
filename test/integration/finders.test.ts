@@ -35,9 +35,7 @@ describe("Model finders", () => {
 
     it("returns a promise that resolves the correct instance", async () => {
       const { data } = await Person.find(1)
-      expect(data)
-        .to.be.instanceof(Person)
-        .and.have.property("id", "1")
+      expect(data).to.be.instanceof(Person).and.have.property("id", "1")
     })
 
     it("assigns attributes correctly", async () => {
@@ -81,9 +79,7 @@ describe("Model finders", () => {
       it("returns a promise that resolves the correct instances", async () => {
         const { data } = await Person.first()
 
-        expect(data)
-          .to.be.instanceof(Person)
-          .have.property("id", "1")
+        expect(data).to.be.instanceof(Person).have.property("id", "1")
       })
     })
 
@@ -269,9 +265,7 @@ describe("Model finders", () => {
     })
 
     it("queries correctly", async () => {
-      const { data } = await Person.order("foo")
-        .order({ bar: "desc" })
-        .all()
+      const { data } = await Person.order("foo").order({ bar: "desc" }).all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -313,9 +307,7 @@ describe("Model finders", () => {
     })
 
     it("queries correctly", async () => {
-      const { data } = await Person.where({ id: 2 })
-        .where({ a: "b" })
-        .all()
+      const { data } = await Person.where({ id: 2 }).where({ a: "b" }).all()
 
       expect(data.length).to.eq(1)
       expect(data[0]).to.be.instanceof(Person)
@@ -369,9 +361,7 @@ describe("Model finders", () => {
       })
 
       it("still queries correctly", async () => {
-        const { data } = await Person.where({ id: 2 })
-          .where({ a: false })
-          .all()
+        const { data } = await Person.where({ id: 2 }).where({ a: false }).all()
 
         expect(data.length).to.eq(1)
         expect(data[0]).to.be.instanceof(Person)

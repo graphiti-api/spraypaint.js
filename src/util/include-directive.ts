@@ -47,7 +47,7 @@ export class IncludeDirective {
           stringArray.push(key)
         } else {
           let split = stringValue.split(",")
-          split = split.map(x => `${key}.${x}`)
+          split = split.map((x) => `${key}.${x}`)
 
           stringArray.push(split.join(","))
         }

@@ -17,18 +17,18 @@ describe("Breaking changes", () => {
       }
     })
 
-    describe("Plain JS class", function() {
-      it("supports instance props", function() {
+    describe("Plain JS class", function () {
+      it("supports instance props", function () {
         let instance = new PlainJsClass()
         expect(instance.foo).to.eq("bar")
       })
 
-      it("supports instance methods", function() {
+      it("supports instance methods", function () {
         let instance = new PlainJsClass()
         expect(instance.bar()).to.eq("baz")
       })
 
-      it("supports class methods", function() {
+      it("supports class methods", function () {
         expect(PlainJsClass.classFunc()).to.eq("from class")
       })
     })

@@ -85,7 +85,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   merge(obj: Record<string, Scope>): Scope<T> {
     const copy = this.copy()
 
-    Object.keys(obj).forEach(k => {
+    Object.keys(obj).forEach((k) => {
       const serverCasedKey = this.model.serializeKey(k)
       copy._associations[serverCasedKey] = (obj as any)[k]
     })
@@ -245,7 +245,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
     this._mergeAssociationQueryParams(qp, this._associations)
 
-    Object.keys(this._extraParams).forEach(k => {
+    Object.keys(this._extraParams).forEach((k) => {
       qp[k] = this._extraParams[k]
     })
 
@@ -294,7 +294,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
           associationQueryParams.extra_fields
         )
 
-        associationQueryParams.sort.forEach(s => {
+        associationQueryParams.sort.forEach((s) => {
           const transformed = this._transformAssociationSortParam(key, s)
           queryParams.sort.push(transformed)
         })
@@ -367,7 +367,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   private _buildCollectionResult(jsonResult: JsonapiCollectionDoc) {
     const recordArray: T[] = []
 
-    jsonResult.data.forEach(record => {
+    jsonResult.data.forEach((record) => {
       recordArray.push(this.model.fromJsonapi(record, jsonResult))
     })
 
@@ -402,8 +402,8 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     if (typeof thing === "string") {
       return transformValues ? this.model.serializeKey(thing) : thing
     } else if (thing instanceof Array) {
-      return thing.map(
-        (item: any): any => this._serverCasedClause(item, transformValues)
+      return thing.map((item: any): any =>
+        this._serverCasedClause(item, transformValues)
       )
     } else if (thing instanceof Object) {
       let serverCasedThing = {}

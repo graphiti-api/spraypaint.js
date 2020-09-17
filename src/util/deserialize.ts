@@ -68,7 +68,7 @@ class Deserializer {
     datum: JsonapiResource,
     records: SpraypaintBase[]
   ): SpraypaintBase {
-    let record = records.find(r => {
+    let record = records.find((r) => {
       return !!(
         r.klass.jsonapiType === datum.type &&
         ((r.id && datum.id && r.id === datum.id) ||
@@ -85,7 +85,7 @@ class Deserializer {
 
   // todo null temp id
   lookupAssociated(recordSet: SpraypaintBase[], record: SpraypaintBase) {
-    return recordSet.find(r => {
+    return recordSet.find((r) => {
       return !!(
         r.klass.jsonapiType === record.klass.jsonapiType &&
         ((r.temp_id && record.temp_id && r.temp_id === record.temp_id) ||
@@ -156,7 +156,7 @@ class Deserializer {
   }
 
   _removeDeletions(model: SpraypaintBase, includeDirective: IncludeScopeHash) {
-    Object.keys(includeDirective).forEach(key => {
+    Object.keys(includeDirective).forEach((key) => {
       const modelIdx = model as any
       const relatedObjects = modelIdx[key]
       if (relatedObjects) {
@@ -252,7 +252,7 @@ class Deserializer {
   }
 
   alreadyDeserialized(resourceIdentifier: JsonapiResource) {
-    return this._deserialized.find(m => {
+    return this._deserialized.find((m) => {
       return !!(
         m.klass.jsonapiType === resourceIdentifier.type &&
         ((m.id && resourceIdentifier.id && m.id === resourceIdentifier.id) ||
@@ -264,17 +264,15 @@ class Deserializer {
   }
 
   findResource(resourceIdentifier: JsonapiResource) {
-    const found = this._resources.find(
-      (r): boolean => {
-        return !!(
-          r.type === resourceIdentifier.type &&
-          ((r.id && resourceIdentifier.id && r.id === resourceIdentifier.id) ||
-            (r["temp-id"] &&
-              resourceIdentifier["temp-id"] &&
-              r["temp-id"] === resourceIdentifier["temp-id"]))
-        )
-      }
-    )
+    const found = this._resources.find((r): boolean => {
+      return !!(
+        r.type === resourceIdentifier.type &&
+        ((r.id && resourceIdentifier.id && r.id === resourceIdentifier.id) ||
+          (r["temp-id"] &&
+            resourceIdentifier["temp-id"] &&
+            r["temp-id"] === resourceIdentifier["temp-id"]))
+      )
+    })
 
     return found || resourceIdentifier
   }
