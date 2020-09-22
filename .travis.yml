@@ -11,12 +11,12 @@ script:
 before_deploy:
   - yarn run release
 
-deploy:
-  provider: npm
-  email: $NPM_EMAIL
-  api_key: $NPM_API_KEY
-  skip_cleanup: true
-  on:
-    tags: true
-    node: node # Only publish with latest node version
-    repo: graphiti-api/spraypaint.js
+# deploy:
+#   provider: npm
+#   email: $NPM_EMAIL
+#   api_key: $NPM_API_KEY
+#   skip_cleanup: true
+#   on:
+#     tags: true
+#     node: node # Only publish with latest node version
+#     repo: graphiti-api/spraypaint.js
