@@ -1,5 +1,5 @@
 import { sinon, expect, fetchMock } from "../test-helper"
-import {Person, Author, Book, PersonDetail} from "../fixtures"
+import { Person, Author, Book, PersonDetail } from "../fixtures"
 import { IResultProxy } from "../../src/proxies/index"
 
 // This is a Vue-specific test. Since isPersisted is already true,
@@ -23,16 +23,25 @@ describe("Dirty tracking", () => {
 
   beforeEach(() => {
     let url = "http://example.com/api"
-    fetchMock.post(`${url}/v1/authors`, responsePayload("people",{firstName: "John"}))
-    fetchMock.patch(`${url}/v1/authors/1`, responsePayload("people",{firstName: "Jake"}))
+    fetchMock.post(
+      `${url}/v1/authors`,
+      responsePayload("people", { firstName: "John" })
+    )
+    fetchMock.patch(
+      `${url}/v1/authors/1`,
+      responsePayload("people", { firstName: "Jake" })
+    )
 
-    fetchMock.post(`${url}/person_details`, responsePayload("person_detail",{
-      address: "157 My Street, London, England",
-      coordinates: {
-        lon : 3,
-        lat : 48,
-      }
-    }))
+    fetchMock.post(
+      `${url}/person_details`,
+      responsePayload("person_detail", {
+        address: "157 My Street, London, England",
+        coordinates: {
+          lon: 3,
+          lat: 48
+        }
+      })
+    )
   })
 
   describe("when persisted, dirty, updated", () => {
@@ -50,14 +59,14 @@ describe("Dirty tracking", () => {
     })
   })
 
-  describe("when custom dirty checker",  () => {
+  describe("when custom dirty checker", () => {
     it("handle custom checker", async () => {
       let instance = new PersonDetail({
         address: "157 My Street, London, England"
       })
       instance.coordinates = {
-        lon : 3,
-        lat : 48,
+        lon: 3,
+        lat: 48
       }
       await instance.save()
       expect(instance.isPersisted).to.eq(true)
@@ -68,8 +77,8 @@ describe("Dirty tracking", () => {
       expect(instance.isDirty()).to.eq(true)
 
       instance.coordinates = {
-        lon : 3,
-        lat : 48,
+        lon: 3,
+        lat: 48
       }
       expect(instance.isDirty()).to.eq(false)
     })

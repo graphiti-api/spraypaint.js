@@ -32,7 +32,10 @@ export type AttributeOptions = Partial<{
   dirtyChecker?: DirtyChecker<any>
 }>
 
-export const STRICT_EQUALITY_DIRTY_CHECKER: DirtyChecker<any> = (prior, current) => (prior !== current)
+export const STRICT_EQUALITY_DIRTY_CHECKER: DirtyChecker<any> = (
+  prior,
+  current
+) => prior !== current
 
 export class Attribute<T = any> {
   isRelationship = false
@@ -60,7 +63,7 @@ export class Attribute<T = any> {
     }
 
     if (options.dirtyChecker) {
-      this.dirtyChecker = (options.dirtyChecker)
+      this.dirtyChecker = options.dirtyChecker
     }
   }
 
