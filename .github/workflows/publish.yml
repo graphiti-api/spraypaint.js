@@ -14,6 +14,6 @@ jobs:
           node-version: 12
           registry-url: https://registry.npmjs.org/
       - run: yarn install
-      - run: npm publish --access public --new-version $GITHUB_REF
+      - run: yarn publish --access public --new-version $GITHUB_REF
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
