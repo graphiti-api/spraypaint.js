@@ -26,7 +26,7 @@
     "test:ci": "yarn test:all-versions && yarn test:es6-compatibility && yarn test",
     "lint": "yarn run lint:ci --fix",
     "lint:ci": "yarn run eslint {src,test}{,/**}/*.ts",
-    "release": "script/release",
+    "prepublish": "yarn build",
     "update:dependencies": "ncu -u"
   },
   "husky": {
