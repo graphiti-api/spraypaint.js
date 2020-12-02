@@ -168,6 +168,7 @@ export class SpraypaintBase {
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
   static sync: boolean = false
+  static credentials: "same-origin" | "omit" | "include" | undefined
   static clientApplication: string | null = null
   static patchAsPost: boolean = false
 
@@ -754,6 +755,10 @@ export class SpraypaintBase {
         Accept: "application/vnd.api+json",
         ["Content-Type"]: "application/vnd.api+json"
       } as any
+    }
+
+    if (this.credentials) {
+      options.credentials = this.credentials
     }
 
     if (this.clientApplication) {
