@@ -9,9 +9,13 @@ export interface JsonapiResponse extends Response {
   jsonPayload: JsonapiResponseDoc
 }
 
-export interface RequestConfig {
+export type Fetcher = typeof fetch
+
+interface RequestConfig {
   patchAsPost: boolean
+  fetcher: Fetcher
 }
+type RequestConfigOptions = Partial<RequestConfig>
 
 export class Request {
   middleware: MiddlewareStack
@@ -21,11 +25,11 @@ export class Request {
   constructor(
     middleware: MiddlewareStack,
     logger: ILogger,
-    config?: RequestConfig
+    config?: RequestConfigOptions
   ) {
     this.middleware = middleware
     this.logger = logger
-    this.config = Object.assign({ patchAsPost: false }, config)
+    this.config = Object.assign({ patchAsPost: false, fetcher: fetch }, config)
   }
 
   get(url: string, options: RequestInit): Promise<any> {
@@ -104,7 +108,7 @@ export class Request {
     let response
 
     try {
-      response = await fetch(url, options)
+      response = await this.config.fetcher(url, options)
     } catch (e) {
       throw new ResponseError(null, e.message, e)
     }

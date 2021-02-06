@@ -7,7 +7,8 @@ import {
   Request,
   RequestVerbs,
   JsonapiResponse,
-  ResponseError
+  ResponseError,
+  Fetcher
 } from "./request"
 import { WritePayload } from "./util/write-payload"
 import { flipEnumerable, getNonEnumerables } from "./util/enumerables"
@@ -171,6 +172,7 @@ export class SpraypaintBase {
   static credentials: "same-origin" | "omit" | "include" | undefined
   static clientApplication: string | null = null
   static patchAsPost: boolean = false
+  static fetcher: Fetcher = fetch
 
   static attributeList: Record<string, Attribute> = {}
   static linkList: Array<string> = []
