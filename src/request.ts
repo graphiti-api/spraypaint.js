@@ -9,7 +9,7 @@ export interface JsonapiResponse extends Response {
   jsonPayload: JsonapiResponseDoc
 }
 
-export type Fetcher = typeof fetch
+export type Fetcher = (url: string, options: RequestInit) => Promise<any>
 
 interface RequestConfig {
   patchAsPost: boolean

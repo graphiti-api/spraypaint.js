@@ -181,7 +181,7 @@ export class SpraypaintBase {
   static currentClass: typeof SpraypaintBase = SpraypaintBase
   static beforeFetch: BeforeFilter | undefined
   static afterFetch: AfterFilter | undefined
-  static fetcher: Fetcher = (input: RequestInfo, init?: RequestInit) =>
+  static fetcher: Fetcher = (input: string, init?: RequestInit) =>
     fetch(input, init)
 
   private static _typeRegistry: JsonapiTypeRegistry
