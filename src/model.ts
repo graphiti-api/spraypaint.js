@@ -66,6 +66,7 @@ export interface ModelConfiguration {
   keyCase: KeyCase
   strictAttributes: boolean
   logger: ILogger
+  fetcher: Fetcher
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration>
 
