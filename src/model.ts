@@ -952,7 +952,9 @@ export class SpraypaintBase {
   async destroy(): Promise<boolean> {
     const url = this.klass.url(this.id)
     const verb = "delete"
-    const request = new Request(this._middleware(), this.klass.logger)
+    const request = new Request(this._middleware(), this.klass.logger, {
+      fetcher: this.klass.fetcher
+    })
     let response: any
 
     try {
@@ -983,7 +985,8 @@ export class SpraypaintBase {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
     const request = new Request(this._middleware(), this.klass.logger, {
-      patchAsPost: this.klass.patchAsPost
+      patchAsPost: this.klass.patchAsPost,
+      fetcher: this.klass.fetcher
     })
     const payload = new WritePayload(this, options.with)
     let response: any
