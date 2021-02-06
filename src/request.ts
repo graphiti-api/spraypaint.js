@@ -13,23 +13,24 @@ export type Fetcher = typeof fetch
 
 interface RequestConfig {
   patchAsPost: boolean
-  fetcher: Fetcher
 }
-type RequestConfigOptions = Partial<RequestConfig>
 
 export class Request {
   middleware: MiddlewareStack
+  fetcher: Fetcher
   config: RequestConfig
   private logger: ILogger
 
   constructor(
     middleware: MiddlewareStack,
+    fetcher: Fetcher,
     logger: ILogger,
-    config?: RequestConfigOptions
+    config?: RequestConfig
   ) {
     this.middleware = middleware
+    this.fetcher = fetcher
     this.logger = logger
-    this.config = Object.assign({ patchAsPost: false, fetcher: fetch }, config)
+    this.config = Object.assign({ patchAsPost: false }, config)
   }
 
   get(url: string, options: RequestInit): Promise<any> {
@@ -108,7 +109,7 @@ export class Request {
     let response
 
     try {
-      response = await this.config.fetcher(url, options)
+      response = await this.fetcher(url, options)
     } catch (e) {
       throw new ResponseError(null, e.message, e)
     }

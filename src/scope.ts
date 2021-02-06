@@ -336,9 +336,11 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     if (qp) {
       url = `${url}?${qp}`
     }
-    const request = new Request(this.model.middlewareStack, this.model.logger, {
-      fetcher: this.model.fetcher
-    })
+    const request = new Request(
+      this.model.middlewareStack,
+      this.model.fetcher,
+      this.model.logger
+    )
     const response = await request.get(url, this.fetchOptions())
     refreshJWT(this.model, response)
     return response.jsonPayload

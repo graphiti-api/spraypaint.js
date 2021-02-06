@@ -172,7 +172,6 @@ export class SpraypaintBase {
   static credentials: "same-origin" | "omit" | "include" | undefined
   static clientApplication: string | null = null
   static patchAsPost: boolean = false
-  static fetcher: Fetcher = fetch
 
   static attributeList: Record<string, Attribute> = {}
   static linkList: Array<string> = []
@@ -181,6 +180,8 @@ export class SpraypaintBase {
   static currentClass: typeof SpraypaintBase = SpraypaintBase
   static beforeFetch: BeforeFilter | undefined
   static afterFetch: AfterFilter | undefined
+  static fetcher: Fetcher = (input: RequestInfo, init?: RequestInit) =>
+    fetch(input, init)
 
   private static _typeRegistry: JsonapiTypeRegistry
   private static _IDMap: IDMap
@@ -689,10 +690,7 @@ export class SpraypaintBase {
       )
     }
 
-    return {
-      id: this.id,
-      type: this.klass.jsonapiType
-    }
+    return { id: this.id, type: this.klass.jsonapiType }
   }
 
   get errors(): ValidationErrors<this> {
@@ -952,9 +950,11 @@ export class SpraypaintBase {
   async destroy(): Promise<boolean> {
     const url = this.klass.url(this.id)
     const verb = "delete"
-    const request = new Request(this._middleware(), this.klass.logger, {
-      fetcher: this.klass.fetcher
-    })
+    const request = new Request(
+      this._middleware(),
+      this.klass.fetcher,
+      this.klass.logger
+    )
     let response: any
 
     try {
@@ -984,10 +984,14 @@ export class SpraypaintBase {
   ): Promise<boolean> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
-    const request = new Request(this._middleware(), this.klass.logger, {
-      patchAsPost: this.klass.patchAsPost,
-      fetcher: this.klass.fetcher
-    })
+    const request = new Request(
+      this._middleware(),
+      this.klass.fetcher,
+      this.klass.logger,
+      {
+        patchAsPost: this.klass.patchAsPost
+      }
+    )
     const payload = new WritePayload(this, options.with)
     let response: any
 
