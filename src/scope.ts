@@ -71,7 +71,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     return this._buildRecordResult(json)
   }
 
-  async first(): Promise<RecordProxy<T> | NullProxy> {
+  async first(): Promise<RecordProxy<T> | NullProxy<T>> {
     const newScope = this.per(1)
     let rawResult
 
@@ -345,7 +345,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   private _buildRecordResult(jsonResult: JsonapiResourceDoc): RecordProxy<T>
   private _buildRecordResult(
     jsonResult: JsonapiCollectionDoc
-  ): RecordProxy<T> | NullProxy
+  ): RecordProxy<T> | NullProxy<T>
   private _buildRecordResult(jsonResult: JsonapiSuccessDoc) {
     let record: PersistedSpraypaintRecord<T>
 
