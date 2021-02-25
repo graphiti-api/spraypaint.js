@@ -1,8 +1,11 @@
 import { expect, fetchMock } from "../test-helper"
 import { Author, NonFictionAuthor } from "../fixtures"
 import { IResultProxy } from "../../src/proxies/index"
+import { SpraypaintBase } from "../../src/index"
 
-const resultData = <T>(promise: Promise<IResultProxy<T>>): Promise<any> => {
+const resultData = <T extends SpraypaintBase>(
+  promise: Promise<IResultProxy<T>>
+): Promise<any> => {
   return promise.then(proxyObject => {
     return proxyObject.data
   })
