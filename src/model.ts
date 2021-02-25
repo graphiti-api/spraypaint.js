@@ -1099,6 +1099,11 @@ export class SpraypaintBase {
   }
 }
 
+export type PersistedSpraypaintRecord<
+  Record extends SpraypaintBase
+> = Record & {
+  id: string
+}
 ;(<any>SpraypaintBase.prototype).klass = SpraypaintBase
 SpraypaintBase.initializeCredentialStorage()
 

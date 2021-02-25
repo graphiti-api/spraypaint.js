@@ -1,4 +1,4 @@
-export { SpraypaintBase } from "./model"
+export { SpraypaintBase, PersistedSpraypaintRecord } from "./model"
 
 export { Attribute, attr } from "./attribute"
 
