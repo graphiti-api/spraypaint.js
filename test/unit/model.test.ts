@@ -107,6 +107,13 @@ describe("Model", () => {
                 localStorageStub
               )
             })
+
+            it("is disabled when jwtStorage is false", () => {
+              SpraypaintBase.jwtStorage = false
+              expect(SpraypaintBase.credentialStorageBackend).to.be.instanceOf(
+                InMemoryStorageBackend
+              )
+            })
           })
 
           context("localStorage API is not defined", () => {

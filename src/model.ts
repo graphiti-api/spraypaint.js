@@ -194,7 +194,7 @@ export class SpraypaintBase {
   static set jwtStorage(val: string | false) {
     if (val !== this._jwtStorage) {
       this._jwtStorage = val
-      this.credentialStorageBackend = this._credentialStorageBackend
+      this.initializeCredentialStorage()
     }
   }
 
