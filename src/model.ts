@@ -65,6 +65,7 @@ export interface ModelConfiguration {
   keyCase: KeyCase
   strictAttributes: boolean
   logger: ILogger
+  singularResource: boolean
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration>
 
@@ -167,6 +168,7 @@ export class SpraypaintBase {
   static keyCase: KeyCase = { server: "snake", client: "camel" }
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
+  static singularResource: boolean = false
   static sync: boolean = false
   static credentials: "same-origin" | "omit" | "include" | undefined
   static clientApplication: string | null = null
@@ -987,7 +989,7 @@ export class SpraypaintBase {
     let response: any
 
     if (this.isPersisted) {
-      url = this.klass.url(this.id)
+      url = this.klass.singularResource ? this.klass.url() : this.klass.url(this.id)
       verb = "patch"
     }
 
