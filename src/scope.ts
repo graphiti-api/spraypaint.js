@@ -65,8 +65,9 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     return this._buildCollectionResult(response)
   }
 
-  async find(id: string | number): Promise<RecordProxy<T>> {
-    const json = (await this._fetch(this.model.url(id))) as JsonapiResourceDoc
+  async find(id?: string | number): Promise<RecordProxy<T>> {
+    const modelUrl = id ? this.model.url(id) : this.model.url()
+    const json = (await this._fetch(modelUrl)) as JsonapiResourceDoc
 
     return this._buildRecordResult(json)
   }
