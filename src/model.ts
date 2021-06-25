@@ -41,6 +41,7 @@ import {
   JsonapiResourceIdentifier
 } from "./jsonapi-spec"
 
+import { singularize } from "inflected"
 import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
@@ -776,11 +777,13 @@ export class SpraypaintBase {
   }
 
   static url(id?: string | number): string {
-    const endpoint = this.endpoint ||
-      this.singularResource ? `/${pluralize.singular(this.jsonapiType)}` : `/${this.jsonapiType}`
+    const endpoint =
+      this.endpoint || this.singularResource
+        ? `/${singularize(this.jsonapiType!)}`
+        : `/${this.jsonapiType}`
     let base = `${this.fullBasePath()}${endpoint}`
 
-    if (id) {
+    if (id && !this.singularResource) {
       base = `${base}/${id}`
     }
 
@@ -990,7 +993,7 @@ export class SpraypaintBase {
     let response: any
 
     if (this.isPersisted) {
-      url = this.klass.singularResource ? this.klass.url() : this.klass.url(this.id)
+      url = this.klass.url(this.id)
       verb = "patch"
     }
 
