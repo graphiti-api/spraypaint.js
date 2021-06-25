@@ -778,9 +778,10 @@ export class SpraypaintBase {
 
   static url(id?: string | number): string {
     const endpoint =
-      this.endpoint || this.singularResource
+      this.endpoint ||
+      (this.singularResource
         ? `/${singularize(this.jsonapiType!)}`
-        : `/${this.jsonapiType}`
+        : `/${this.jsonapiType}`)
     let base = `${this.fullBasePath()}${endpoint}`
 
     if (id && !this.singularResource) {
