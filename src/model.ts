@@ -41,6 +41,7 @@ import {
   JsonapiResourceIdentifier
 } from "./jsonapi-spec"
 
+import { singularize } from "inflected"
 import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
@@ -65,6 +66,7 @@ export interface ModelConfiguration {
   keyCase: KeyCase
   strictAttributes: boolean
   logger: ILogger
+  singularResource: boolean
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration>
 
@@ -167,6 +169,7 @@ export class SpraypaintBase {
   static keyCase: KeyCase = { server: "snake", client: "camel" }
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
+  static singularResource: boolean = false
   static sync: boolean = false
   static credentials: "same-origin" | "omit" | "include" | undefined
   static clientApplication: string | null = null
@@ -774,10 +777,14 @@ export class SpraypaintBase {
   }
 
   static url(id?: string | number): string {
-    const endpoint = this.endpoint || `/${this.jsonapiType}`
+    const endpoint =
+      this.endpoint ||
+      (this.singularResource
+        ? `/${singularize(this.jsonapiType!)}`
+        : `/${this.jsonapiType}`)
     let base = `${this.fullBasePath()}${endpoint}`
 
-    if (id) {
+    if (id && !this.singularResource) {
       base = `${base}/${id}`
     }
 

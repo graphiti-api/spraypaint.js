@@ -71,6 +71,12 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     return this._buildRecordResult(json)
   }
 
+  async findSingle(): Promise<RecordProxy<T>> {
+    const json = (await this._fetch(this.model.url())) as JsonapiResourceDoc
+
+    return this._buildRecordResult(json)
+  }
+
   async first(): Promise<RecordProxy<T> | NullProxy<T>> {
     const newScope = this.per(1)
     let rawResult
