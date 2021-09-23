@@ -1,12 +1,12 @@
 {
-  "name": "spraypaint",
-  "description": "Graphiti Client / Javascript ORM",
+  "name": "spraypaint-mt",
+  "description": "Graphiti Client / Javascript ORM (Updated by MachineTools Developers)",
   "main": "lib/index.js",
   "module": "lib-esm/index.js",
   "types": "lib-esm/index.d.ts",
-  "author": "Lee Richmond<richmolj@gmail.com> & Wade Tandy<wade.tandy@gmail.com>",
+  "author": "Fahad Idrees<fahad@machinetools.com> & Lonnie Warpup<lonnie@machinetools.com>",
   "license": "MIT",
-  "homepage": "https://github.com/graphiti-api/spraypaint.js",
+  "homepage": "https://github.com/MachineTools/spraypaint-mt.js",
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
     "prebuild": "yarn run clean && yarn test:ci && yarn lint:ci",
@@ -106,5 +106,5 @@
     "typescript-eslint-parser": "21.0.2",
     "winston": "^2.3.1"
   },
-  "version": "0.10.22"
+  "version": "0.10.24"
 }
