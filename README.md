@@ -1,6 +1,7 @@
 # Spraypaint
 
-JS Client for [Graphiti](https://graphiti-api.github.io/graphiti) similar to ActiveRecord.
+A fork of the JS Client for [Graphiti](https://graphiti-api.github.io/graphiti) similar to ActiveRecord, made compatible with React-Native.
+This repository will be deleted if the compatibility-focused changes are merged into the main project. 
 
 Written in [Typescript](https://www.typescriptlang.org) but works in plain old ES5 as well. This library is isomorphic - use it from the browser, or from the server with NodeJS.
 
