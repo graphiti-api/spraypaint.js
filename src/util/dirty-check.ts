@@ -61,10 +61,12 @@ class DirtyChecker<T extends SpraypaintBase> {
 
       let attrDef = this.model.klass.attributeList[key]
 
-      if (!this.model.isPersisted) {
-        dirty[key] = [null, current]
-      } else if (attrDef.dirtyChecker(prior, current)) {
-        dirty[key] = [prior, current]
+      if (attrDef.persist) {
+        if (!this.model.isPersisted) {
+          dirty[key] = [null, current]
+        } else if (attrDef.dirtyChecker(prior, current)) {
+          dirty[key] = [prior, current]
+        }
       }
     }
 
