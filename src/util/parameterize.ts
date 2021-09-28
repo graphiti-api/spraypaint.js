@@ -36,7 +36,9 @@ const parameterize = (obj: any, prefix?: string): string => {
 
 // IE does not encode by default like other browsers
 const maybeEncode = (value: string): string => {
-  const isBrowser = typeof window !== "undefined"
+  var isBrowser =
+    typeof window !== "undefined" &&
+    typeof window.navigator.userAgent !== "undefined"
   const isIE = isBrowser && window.navigator.userAgent.match(/(MSIE|Trident)/)
   const isEncoded = typeof value === "string" && value.indexOf("%") !== -1
   const shouldEncode = isBrowser && isIE && !isEncoded
