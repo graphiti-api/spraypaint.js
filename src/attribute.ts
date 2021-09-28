@@ -35,7 +35,7 @@ export type AttributeOptions = Partial<{
 export const STRICT_EQUALITY_DIRTY_CHECKER: DirtyChecker<any> = (
   prior,
   current
-) => JSON.stringify(prior) !== JSON.stringify(current)
+) => prior !== current
 
 export class Attribute<T = any> {
   isRelationship = false

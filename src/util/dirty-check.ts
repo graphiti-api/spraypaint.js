@@ -56,12 +56,16 @@ class DirtyChecker<T extends SpraypaintBase> {
     const dirty: ModelAttributeChangeSet<T> = {}
 
     for (const key of Object.keys(this.model.attributes)) {
-      const prior = (<any>this.model)._originalAttributes[key]
-      const current = this.model.attributes[key]
+      let prior = (<any>this.model)._originalAttributes[key]
+      let current = this.model.attributes[key]
 
       let attrDef = this.model.klass.attributeList[key]
 
       if (attrDef.persist) {
+        if (attrDef.type === Array) {
+          prior = JSON.stringify(prior)
+          current = JSON.stringify(current)
+        }
         if (!this.model.isPersisted) {
           dirty[key] = [null, current]
         } else if (attrDef.dirtyChecker(prior, current)) {
