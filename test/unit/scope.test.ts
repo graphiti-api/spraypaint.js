@@ -342,7 +342,7 @@ describe("Scope", () => {
         .stats({ total: "count" })
         .includes({ a: ["b", { c: "d" }] })
       expect(scope.toQueryParams()).to.eq(
-        "page[number]=2&page[size]=10&filter[foo_bar]=baz&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b,a.c.d"
+        "page[number]=2&page[size]=10&filter[foo_bar]=baz&sort=foo,-bar&fields[people]=name,age&stats[total]=count&include=a.b%2Ca.c.d"
       )
     })
 
@@ -366,7 +366,7 @@ describe("Scope", () => {
       })
 
       it("casts arrays correctly", () => {
-        scope = scope.extraParams({ foo: "bar,baz" })
+        scope = scope.extraParams({ foo: ["bar", "baz"] })
         expect(<string>scope.toQueryParams()).to.eq("foo=bar,baz")
       })
 
