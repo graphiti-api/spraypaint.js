@@ -82,7 +82,8 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
 
     if (meta.relationship) {
       this._processRelationship(relatedObject, meta.relationship, err)
-    } else {
+    }
+    else if (relatedObject) {
       const relatedAccumulator: ValidationErrors<R> = {}
       this._processResource(relatedAccumulator, meta, err)
 
