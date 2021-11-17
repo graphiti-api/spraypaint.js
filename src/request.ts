@@ -9,21 +9,26 @@ export interface JsonapiResponse extends Response {
   jsonPayload: JsonapiResponseDoc
 }
 
-export interface RequestConfig {
+export type Fetcher = (url: string, options: RequestInit) => Promise<any>
+
+interface RequestConfig {
   patchAsPost: boolean
 }
 
 export class Request {
   middleware: MiddlewareStack
+  fetcher: Fetcher
   config: RequestConfig
   private logger: ILogger
 
   constructor(
     middleware: MiddlewareStack,
+    fetcher: Fetcher,
     logger: ILogger,
     config?: RequestConfig
   ) {
     this.middleware = middleware
+    this.fetcher = fetcher
     this.logger = logger
     this.config = Object.assign({ patchAsPost: false }, config)
   }
@@ -104,7 +109,7 @@ export class Request {
     let response
 
     try {
-      response = await fetch(url, options)
+      response = await this.fetcher(url, options)
     } catch (e) {
       throw new ResponseError(null, e.message, e)
     }

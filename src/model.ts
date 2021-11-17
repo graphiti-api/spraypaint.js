@@ -7,7 +7,8 @@ import {
   Request,
   RequestVerbs,
   JsonapiResponse,
-  ResponseError
+  ResponseError,
+  Fetcher
 } from "./request"
 import { WritePayload } from "./util/write-payload"
 import { flipEnumerable, getNonEnumerables } from "./util/enumerables"
@@ -65,6 +66,7 @@ export interface ModelConfiguration {
   keyCase: KeyCase
   strictAttributes: boolean
   logger: ILogger
+  fetcher: Fetcher
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration>
 
@@ -147,7 +149,7 @@ export const applyModelConfig = <T extends typeof SpraypaintBase>(
 
   for (k in config) {
     if (config.hasOwnProperty(k)) {
-      ModelClass[k] = config[k]
+      ;(ModelClass[k] as any) = config[k]
     }
   }
 
@@ -179,6 +181,8 @@ export class SpraypaintBase {
   static currentClass: typeof SpraypaintBase = SpraypaintBase
   static beforeFetch: BeforeFilter | undefined
   static afterFetch: AfterFilter | undefined
+  static fetcher: Fetcher = (input: string, init?: RequestInit) =>
+    fetch(input, init)
 
   private static _typeRegistry: JsonapiTypeRegistry
   private static _IDMap: IDMap
@@ -687,10 +691,7 @@ export class SpraypaintBase {
       )
     }
 
-    return {
-      id: this.id,
-      type: this.klass.jsonapiType
-    }
+    return { id: this.id, type: this.klass.jsonapiType }
   }
 
   get errors(): ValidationErrors<this> {
@@ -950,7 +951,11 @@ export class SpraypaintBase {
   async destroy(): Promise<boolean> {
     const url = this.klass.url(this.id)
     const verb = "delete"
-    const request = new Request(this._middleware(), this.klass.logger)
+    const request = new Request(
+      this._middleware(),
+      this.klass.fetcher,
+      this.klass.logger
+    )
     let response: any
 
     try {
@@ -980,9 +985,14 @@ export class SpraypaintBase {
   ): Promise<boolean> {
     let url = this.klass.url()
     let verb: RequestVerbs = "post"
-    const request = new Request(this._middleware(), this.klass.logger, {
-      patchAsPost: this.klass.patchAsPost
-    })
+    const request = new Request(
+      this._middleware(),
+      this.klass.fetcher,
+      this.klass.logger,
+      {
+        patchAsPost: this.klass.patchAsPost
+      }
+    )
     const payload = new WritePayload(this, options.with)
     let response: any
 
