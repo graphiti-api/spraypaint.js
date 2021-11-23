@@ -1,5 +1,9 @@
 export type BeforeFilter = (requestUrl: string, options: RequestInit) => void
-export type AfterFilter = (response: Response, json: JSON) => void
+export type AfterFilter = (
+  response: Response,
+  json: JSON,
+  requestOptions: RequestInit
+) => void
 
 async function asyncForEach(array: Array<Function>, callback: Function) {
   for (let index = 0; index < array.length; index += 1) {
@@ -10,10 +14,12 @@ async function asyncForEach(array: Array<Function>, callback: Function) {
 export class MiddlewareStack {
   private _beforeFilters: BeforeFilter[] = []
   private _afterFilters: AfterFilter[] = []
+  public newResponse: Response | null = null
 
   constructor(before: BeforeFilter[] = [], after: AfterFilter[] = []) {
     this._beforeFilters = before
     this._afterFilters = after
+    this.newResponse = null
   }
 
   get beforeFilters() {
@@ -30,9 +36,13 @@ export class MiddlewareStack {
     })
   }
 
-  async afterFetch(response: Response, json: JSON) {
+  async afterFetch(
+    response: Response,
+    json: JSON,
+    requestOptions: RequestInit
+  ) {
     await asyncForEach(this._afterFilters, async (filter: Function) => {
-      await filter(response, json)
+      await filter(response, json, requestOptions)
     })
   }
 }
