@@ -36,7 +36,7 @@ const parameterize = (obj: any, prefix?: string): string => {
 
 // IE does not encode by default like other browsers
 const maybeEncode = (value: string): string => {
-  var isEncoded = typeof value === "string" && value.indexOf("%") !== -1
+  var isEncoded = typeof value === "string" && decodeURI(value) !== value
 
   return isEncoded ? value : encodeURIComponent(value)
 }
