@@ -69,6 +69,11 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
     err: JsonapiError
   ) {
     let relatedObject = model[model.klass.deserializeKey(meta.name)]
+
+    if (!relatedObject) {
+      relatedObject = this._processNestedRelationship(model, meta).flat(2)
+    }
+
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find(r => {
         // For now graphiti is returning the related object id as an integer
@@ -101,5 +106,36 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
       })
       relatedObject.errors = newErrs
     }
+  }
+
+  private _processNestedRelationship<R extends SpraypaintBase>(
+    model: T,
+    meta: JsonapiErrorMeta,
+    relatedObjects: Array<SpraypaintBase> = []
+  ): Array<SpraypaintBase> {
+    let relationships = model.relationships
+    let relatedObject = relationships[model.klass.deserializeKey(meta.name)]
+    let self = this
+
+    if (relatedObject) {
+      ;[relatedObject].flat(2).forEach(function(object) {
+        relatedObjects.push(object)
+      })
+      return relatedObjects
+    }
+
+    relatedObject = Object.values(relationships)
+      .flat(2)
+      .filter(function(object) {
+        return self._processNestedRelationship(object, meta, relatedObjects)
+      })
+
+    if (relatedObject) {
+      ;[relatedObject].flat(2).forEach(function(object) {
+        relatedObjects.push(object)
+      })
+    }
+
+    return relatedObjects
   }
 }

@@ -62,7 +62,7 @@ class DirtyChecker<T extends SpraypaintBase> {
       let attrDef = this.model.klass.attributeList[key]
 
       if (attrDef.persist) {
-        if (attrDef.type === Array) {
+        if (attrDef.type === Array || attrDef.type === Object) {
           prior = JSON.stringify(prior)
           current = JSON.stringify(current)
         }

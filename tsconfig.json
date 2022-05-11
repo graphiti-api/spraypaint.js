@@ -7,7 +7,7 @@
     "moduleResolution": "node",
     "target": "es5",
     "module": "commonjs",
-    "lib": ["es2015", "dom"],
+    "lib": ["esnext.array", "es2015", "dom"],
     "outDir": "build/",
     "noEmitHelpers": false,
     "importHelpers": true,
