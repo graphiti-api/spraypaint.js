@@ -1,5 +1,5 @@
 import { expect, sinon } from "../test-helper"
-import { Author, Genre } from "../fixtures"
+import { Author, Book, Genre } from "../fixtures"
 
 describe("Model relationships", () => {
   it("supports direct assignment of models", () => {
@@ -27,6 +27,15 @@ describe("Model relationships", () => {
     const author = new Author({ genre: { name: "Horror" } })
     expect(author.genre).to.be.instanceof(Genre)
     expect(author.genre.name).to.eq("Horror")
+  })
+
+  it("supports constructor assignment of collections", () => {
+    const author = new Author({
+      books: [{ title: "The Shining" }, { title: "The Darkening" }]
+    })
+    expect(author.books.length).to.eq(2)
+    expect(author.books[0]).to.be.instanceof(Book)
+    expect(author.books[1]).to.be.instanceof(Book)
   })
 
   it("defaults hasMany to empty collection", () => {
