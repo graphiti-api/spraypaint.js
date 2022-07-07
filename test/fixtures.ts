@@ -119,6 +119,8 @@ export class Genre extends ApplicationRecord {
 
   @Attr name!: string
   @HasMany("authors") authors: any
+
+  @BelongsTo({ type: "genres" }) parentGenre?: Genre
 }
 
 @Model()
