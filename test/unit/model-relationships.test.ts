@@ -41,4 +41,16 @@ describe("Model relationships", () => {
 
     expect(keys).to.include("genre")
   })
+
+  it("supports self-referential relationships", () => {
+    const genre = new Genre({ name: "Fantasy" })
+    const subgenre = new Genre({
+      name: "Sword and Sourcery",
+      parentGenre: genre
+    })
+
+    expect(genre).to.be.instanceof(Genre)
+    expect(subgenre).to.be.instanceof(Genre)
+    expect(subgenre.parentGenre).to.be.instanceof(Genre)
+  })
 })
