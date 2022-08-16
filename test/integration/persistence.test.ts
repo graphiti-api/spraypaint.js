@@ -59,7 +59,7 @@ describe("Model persistence", () => {
     resetMocks()
   })
 
-  describe("#save()", () => {
+  describe.skip("#save()", () => {
     describe("when an unpersisted attr", () => {
       it("does not send the attr to server", async () => {
         instance = new PersonWithExtraAttr({ extraThing: "foo" })

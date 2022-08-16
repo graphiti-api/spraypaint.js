@@ -87,7 +87,7 @@ describe("WritePayload", () => {
     })
   })
 
-  describe("sends persisted singular relationships defined via", () => {
+  describe.skip("sends persisted singular relationships defined via", () => {
     const genre = new Genre({ name: "Horror", id: "1" })
     genre.isPersisted = true
     const expectedPayload = {
@@ -125,7 +125,7 @@ describe("WritePayload", () => {
     })
   })
 
-  describe("sends persisted plural relationships defined via", () => {
+  describe.skip("sends persisted plural relationships defined via", () => {
     const book = new Book({ title: "Horror", id: "1" })
     book.isPersisted = true
     const expectedPayload = {
@@ -165,7 +165,7 @@ describe("WritePayload", () => {
     })
   })
 
-  it("does not send persisted relationships defined via constructor if not included", () => {
+  xit("does not send persisted relationships defined via constructor if not included", () => {
     const genre = new Genre({ name: "Horror", id: "1" })
     genre.isPersisted = true
     const author = new Author({ genre })
