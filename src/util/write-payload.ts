@@ -109,9 +109,6 @@ export class WritePayload<T extends SpraypaintBase> {
           relatedModels.forEach(relatedModel => {
             data.push(this._processRelatedModel(relatedModel, nested, idOnly))
           })
-          if (data.length === 0) {
-            data = null
-          }
         } else {
           data = this._processRelatedModel(relatedModels, nested, idOnly)
         }
