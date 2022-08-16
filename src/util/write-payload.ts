@@ -33,14 +33,12 @@ export class WritePayload<T extends SpraypaintBase> {
     const attrs: ModelRecord<T> = {}
 
     this._eachAttribute((key, value, attrDef) => {
-      if (!this.model.isPersisted || (<any>this.model.changes())[key]) {
-        let writeKey = this.model.klass.serializeKey(key)
+      let writeKey = this.model.klass.serializeKey(key)
 
-        if (attrDef.type === Number && (value as any) === "") {
-          attrs[writeKey] = null
-        } else {
-          attrs[writeKey] = value
-        }
+      if (attrDef.type === Number && (value as any) === "") {
+        attrs[writeKey] = null
+      } else {
+        attrs[writeKey] = value
       }
     })
 
@@ -88,9 +86,15 @@ export class WritePayload<T extends SpraypaintBase> {
   relationships(): object {
     const _relationships: any = {}
 
-    Object.keys(this.includeDirective).forEach((key: any) => {
-      const nested = (<any>this.includeDirective)[key]
+    Object.keys(this.model.klass.attributeList).forEach((key: string) => {
+      let attribute: Attribute = this.model.klass.attributeList[key]
+      let attributeName = attribute.name
+      if (!attribute.isRelationship) {
+        // Don't process attributes that are not relations
+        return
+      }
 
+      const nested = (<any>this.includeDirective)[key]
       let idOnly = false
       if (key.indexOf(".") > -1) {
         key = key.split(".")[0]
@@ -98,39 +102,24 @@ export class WritePayload<T extends SpraypaintBase> {
       }
 
       let data: any
-      const relatedModels = (<any>this.model)[key]
+      const relatedModels = (<any>this.model)[attributeName]
       if (relatedModels) {
         if (Array.isArray(relatedModels)) {
           data = []
           relatedModels.forEach(relatedModel => {
-            if (
-              !this._isNewAndMarkedForDestruction(relatedModel) &&
-              (idOnly ||
-                this.model.hasDirtyRelation(key, relatedModel) ||
-                relatedModel.isDirty(nested))
-            ) {
-              data.push(this._processRelatedModel(relatedModel, nested, idOnly))
-            }
+            data.push(this._processRelatedModel(relatedModel, nested, idOnly))
           })
           if (data.length === 0) {
             data = null
           }
         } else {
-          // Either the related model is dirty, or it's a dirty relation
-          // (maybe the "department" is not dirty, but the employee changed departments
-          // or the model is new
-          if (
-            !this._isNewAndMarkedForDestruction(relatedModels) &&
-            (idOnly ||
-              this.model.hasDirtyRelation(key, relatedModels) ||
-              relatedModels.isDirty(nested))
-          ) {
-            data = this._processRelatedModel(relatedModels, nested, idOnly)
-          }
+          data = this._processRelatedModel(relatedModels, nested, idOnly)
         }
 
         if (data) {
-          _relationships[this.model.klass.serializeKey(key)] = { data }
+          _relationships[this.model.klass.serializeKey(attributeName)] = {
+            data
+          }
         }
       }
     })
@@ -230,26 +219,13 @@ export class WritePayload<T extends SpraypaintBase> {
       identifier["temp-id"] = model.temp_id
     }
 
-    let method: JsonapiResourceMethod
-    if (model.isPersisted) {
-      if (model.isMarkedForDestruction) {
-        method = "destroy"
-      } else if (model.isMarkedForDisassociation) {
-        method = "disassociate"
-      } else {
-        method = "update"
-      }
-    } else {
-      method = "create"
-    }
-    identifier.method = method
-
     return identifier
   }
 
   private _pushInclude(include: any) {
     if (!this._isIncluded(include)) {
-      this.included.push(include)
+      // We don't want the included part in the json-payload for writing
+      // this.included.push(include)
     }
   }
 
