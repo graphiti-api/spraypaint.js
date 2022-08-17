@@ -1,3 +1,7 @@
+This fork basically changes the way relationships are updated, to be compliant with json:api format. Original Spraypaint library has some added functionality, that might not be compatible with all backends.
+
+---
+
 # Spraypaint
 
 JS Client for [Graphiti](https://graphiti-api.github.io/graphiti) similar to ActiveRecord.
@@ -9,44 +13,46 @@ Written in [Typescript](https://www.typescriptlang.org) but works in plain old E
 Please see [our documentation page](https://graphiti-api.github.io/graphiti/js) for full usage. Below is a Typescript sample:
 
 ```ts
-import { SpraypaintBase, Model, Attr, HasMany } from "spraypaint"
+import { SpraypaintBase, Model, Attr, HasMany } from "spraypaint";
 
 @Model()
 class ApplicationRecord extends SpraypaintBase {
-  static baseUrl = "http://localhost:3000"
-  static apiNamespace = "/api/v1"
+  static baseUrl = "http://localhost:3000";
+  static apiNamespace = "/api/v1";
 }
 
 @Model()
 class Person extends ApplicationRecord {
-  static jsonapiType = "people"
+  static jsonapiType = "people";
 
-  @Attr() firstName: string
-  @Attr() lastName: string
+  @Attr() firstName: string;
+  @Attr() lastName: string;
 
-  @HasMany() pets: Pet[]
+  @HasMany() pets: Pet[];
 
   get fullName() {
-    return `${this.firstName} ${this.lastName}`
+    return `${this.firstName} ${this.lastName}`;
   }
 }
 
 @Model()
 class Pet extends ApplicationRecord {
-  static jsonapiType = "pets"
+  static jsonapiType = "pets";
 
-  @Attr() name: string
+  @Attr() name: string;
 }
 
-let { data } = await Person
-  .where({ name: 'Joe' })
-  .page(2).per(10)
-  .sort('name')
+let { data } = await Person.where({ name: "Joe" })
+  .page(2)
+  .per(10)
+  .sort("name")
   .includes("pets")
-  .all()
+  .all();
 
-let names = data.map((p) => { return p.fullName })
-console.log(names) // ['Joe Blow', 'Joe DiMaggio', ...]
+let names = data.map((p) => {
+  return p.fullName;
+});
+console.log(names); // ['Joe Blow', 'Joe DiMaggio', ...]
 
-console.log(data[0].pets[0].name) // "Fido"
+console.log(data[0].pets[0].name); // "Fido"
 ```
