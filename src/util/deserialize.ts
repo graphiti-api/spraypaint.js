@@ -152,6 +152,13 @@ class Deserializer {
     instance.isPersisted = true
     instance.reset()
 
+    const instanceType: string = instance.klass.jsonapiType || ""
+    if (instanceType) {
+      if (!this.registry.get(instanceType)) {
+        this.registry.register(instanceType, instance.klass)
+      }
+    }
+
     return instance
   }
 
