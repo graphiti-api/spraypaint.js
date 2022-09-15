@@ -80,7 +80,7 @@ export class WritePayload<T extends SpraypaintBase> {
 
   postProcess() {
     this.removeDeletions(this.model, this.includeDirective)
-    this.model.resetRelationTracking(this.includeDirective)
+    this.model.resetRelationTracking()
   }
 
   relationships(): object {

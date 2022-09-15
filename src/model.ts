@@ -1073,9 +1073,9 @@ export class SpraypaintBase {
   // * remove the corresponding code from isPersisted and handle here (likely
   // only an issue with test setup)
   // * Make all calls go through resetRelationTracking();
-  resetRelationTracking(includeDirective: object) {
+  resetRelationTracking() {
     this._originalRelationships = this.relationshipResourceIdentifiers(
-      Object.keys(includeDirective)
+      Object.keys(this.relationships)
     )
   }
 
