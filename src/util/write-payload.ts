@@ -101,7 +101,7 @@ export class WritePayload<T extends SpraypaintBase> {
         idOnly = true
       }
 
-      let data: any
+      let data: any = null
       const relatedModels = (<any>this.model)[attributeName]
       if (relatedModels) {
         if (Array.isArray(relatedModels)) {
@@ -112,13 +112,9 @@ export class WritePayload<T extends SpraypaintBase> {
         } else {
           data = this._processRelatedModel(relatedModels, nested, idOnly)
         }
-
-        if (data) {
-          _relationships[this.model.klass.serializeKey(attributeName)] = {
-            data
-          }
-        }
       }
+
+      _relationships[this.model.klass.serializeKey(attributeName)] = { data }
     })
 
     return _relationships
