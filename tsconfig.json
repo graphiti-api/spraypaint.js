@@ -5,9 +5,9 @@
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "moduleResolution": "node",
-    "target": "ES2018",
+    "target": "es5",
     "module": "commonjs",
-    "lib": ["es2018", "dom"],
+    "lib": ["es2015", "dom"],
     "outDir": "build/",
     "noEmitHelpers": false,
     "importHelpers": true,
@@ -25,12 +25,6 @@
     "indentSize": 2,
     "tabSize": 2
   },
-  "include": [
-    "src/**/*.ts",
-    "test/**/*.ts",
-    "types/**/*.d.ts"
-  ],
-  "exclude": [
-    "test/backwards-breaking-test.ts"
-  ]
+  "include": ["src/**/*.ts", "test/**/*.ts", "types/**/*.d.ts"],
+  "exclude": ["test/backwards-breaking-test.ts"]
 }
