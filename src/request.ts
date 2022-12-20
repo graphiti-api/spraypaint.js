@@ -1,7 +1,11 @@
 import colorize from "./util/colorize"
 import { MiddlewareStack } from "./middleware-stack"
 import { ILogger, logger as defaultLogger } from "./logger"
-import { JsonapiResponseDoc, JsonapiRequestDoc } from "./jsonapi-spec"
+import {
+  JsonapiResponseDoc,
+  JsonapiRequestDoc,
+  JsonapiBulkRequestDoc
+} from "./jsonapi-spec"
 
 export type RequestVerbs = keyof Request
 
@@ -35,7 +39,7 @@ export class Request {
 
   post(
     url: string,
-    payload: JsonapiRequestDoc,
+    payload: JsonapiRequestDoc | JsonapiBulkRequestDoc,
     options: RequestInit
   ): Promise<any> {
     options.method = "POST"

@@ -38,7 +38,8 @@ import { EventBus } from "./event-bus"
 import {
   JsonapiResource,
   JsonapiResponseDoc,
-  JsonapiResourceIdentifier
+  JsonapiResourceIdentifier,
+  JsonapiResourceBulkRequest
 } from "./jsonapi-spec"
 
 import { cloneDeep } from "./util/clonedeep"
@@ -1024,6 +1025,63 @@ export class SpraypaintBase {
         payload.includeDirective
       )
       payload.postProcess()
+    })
+  }
+
+  static async bulkSave<I extends SpraypaintBase>(
+    models: Array<I>
+  ): Promise<boolean> {
+    if (!models || models.length === 0) {
+      return false
+    }
+
+    let firstModel = models[0]
+    let bulkJson: JsonapiResourceBulkRequest = { data: [] }
+
+    if (models.length === 1) {
+      return firstModel.save()
+    }
+
+    for (const m of models) {
+      if (m.klass.jsonapiType !== firstModel.klass.jsonapiType) {
+        throw new Error(
+          `Cannot bulk save different model types: received <${
+            firstModel.klass.jsonapiType
+          }> and <${m.klass.jsonapiType}>`
+        )
+      }
+
+      if (m.isPersisted) {
+        throw new Error(
+          `Cannot bulk save already persisted models: received model with id <${
+            m.id
+          }>`
+        )
+      }
+
+      const payload = new WritePayload(m)
+      bulkJson.data.push(payload.asJSON().data)
+    }
+
+    let url = firstModel.klass.url()
+    let verb: RequestVerbs = "post"
+    const request = new Request(
+      firstModel._middleware(),
+      firstModel.klass.logger
+    )
+    let response: any
+
+    try {
+      response = await request[verb](url, bulkJson, firstModel._fetchOptions())
+    } catch (err) {
+      throw err
+    }
+
+    return await firstModel._handleResponse(response, () => {
+      for (let i = 0; i < models.length; i++) {
+        const json = response.jsonPayload.data[i]
+        models[i].fromJsonapi(json, response.jsonPayload)
+      }
     })
   }
 
