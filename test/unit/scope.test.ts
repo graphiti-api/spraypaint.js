@@ -346,6 +346,16 @@ describe("Scope", () => {
       )
     })
 
+    it("correctly encodes special characters", () => {
+      scope = scope.where({
+        octothorp: "one # two",
+        ampersand: "three & four"
+      })
+      expect(scope.toQueryParams()).to.eq(
+        "filter[octothorp]=one%20%23%20two&filter[ampersand]=three%20%26%20four"
+      )
+    })
+
     it("does not include empty objects", () => {
       scope = scope.page(2)
       expect((<string>scope.toQueryParams()).match(/field/) === null).to.eq(
