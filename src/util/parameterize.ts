@@ -34,15 +34,9 @@ const parameterize = (obj: any, prefix?: string): string => {
   return str.join("&")
 }
 
-// IE does not encode by default like other browsers
 const maybeEncode = (value: string): string => {
-  var isBrowser =
-    typeof window !== "undefined" &&
-    typeof window.navigator.userAgent !== "undefined"
-  const isIE = isBrowser && window.navigator.userAgent.match(/(MSIE|Trident)/)
-  const isEncoded = typeof value === "string" && value.indexOf("%") !== -1
-  const shouldEncode = isBrowser && isIE && !isEncoded
-  return shouldEncode ? encodeURIComponent(value) : value
+  var isEncoded = typeof value === "string" && decodeURI(value) !== value
+  return isEncoded ? value : encodeURIComponent(value)
 }
 
 export { parameterize as default }
