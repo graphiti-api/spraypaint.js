@@ -1,4 +1,4 @@
-import { SpraypaintBase } from "./model"
+import { SpraypaintBase, PersistedSpraypaintRecord } from "./model"
 import parameterize from "./util/parameterize"
 import {
   IncludeDirective,
@@ -71,7 +71,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     return this._buildRecordResult(json)
   }
 
-  async first(): Promise<RecordProxy<T> | NullProxy> {
+  async first(): Promise<RecordProxy<T> | NullProxy<T>> {
     const newScope = this.per(1)
     let rawResult
 
@@ -345,9 +345,9 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   private _buildRecordResult(jsonResult: JsonapiResourceDoc): RecordProxy<T>
   private _buildRecordResult(
     jsonResult: JsonapiCollectionDoc
-  ): RecordProxy<T> | NullProxy
+  ): RecordProxy<T> | NullProxy<T>
   private _buildRecordResult(jsonResult: JsonapiSuccessDoc) {
-    let record: T
+    let record: PersistedSpraypaintRecord<T>
 
     let rawRecord: JsonapiResource
     if (jsonResult.data instanceof Array) {
@@ -365,7 +365,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   }
 
   private _buildCollectionResult(jsonResult: JsonapiCollectionDoc) {
-    const recordArray: T[] = []
+    const recordArray: PersistedSpraypaintRecord<T>[] = []
 
     jsonResult.data.forEach(record => {
       recordArray.push(this.model.fromJsonapi(record, jsonResult))

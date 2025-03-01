@@ -1493,6 +1493,26 @@ describe("Model", () => {
   })
 
   describe("#fetchOptions", () => {
+    context("credentials is set", () => {
+      beforeEach(() => {
+        Author.credentials = "include"
+      })
+
+      afterEach(() => {
+        Author.credentials = "same-origin"
+      })
+
+      it("sets the credentials header", () => {
+        expect(<any>Author.fetchOptions().credentials).to.eq("include")
+      })
+    })
+
+    context("credentials is NOT set", () => {
+      it("sets the credentials header", () => {
+        expect(<any>Author.fetchOptions().credentials).to.eq("same-origin")
+      })
+    })
+
     context("clientApplication is set", () => {
       beforeEach(() => {
         Author.clientApplication = "test-app"

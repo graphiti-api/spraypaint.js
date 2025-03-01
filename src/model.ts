@@ -168,6 +168,7 @@ export class SpraypaintBase {
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
   static sync: boolean = false
+  static credentials: "same-origin" | "omit" | "include" | undefined
   static clientApplication: string | null = null
   static patchAsPost: boolean = false
 
@@ -757,6 +758,10 @@ export class SpraypaintBase {
       } as any
     }
 
+    if (this.credentials) {
+      options.credentials = this.credentials
+    }
+
     if (this.clientApplication) {
       options.headers["Client-Application"] = this.clientApplication
     }
@@ -1095,6 +1100,11 @@ export class SpraypaintBase {
   }
 }
 
+export type PersistedSpraypaintRecord<
+  Record extends SpraypaintBase
+> = Record & {
+  id: string
+}
 ;(<any>SpraypaintBase.prototype).klass = SpraypaintBase
 SpraypaintBase.initializeCredentialStorage()
 
