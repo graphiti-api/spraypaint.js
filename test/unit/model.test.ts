@@ -1457,6 +1457,27 @@ describe("Model", () => {
       expect(author.errors.firstName).to.deep.eq({ title: "asdf" })
     })
 
+    it("duplicates the original attributes for dirty tracking", () => {
+      let author = new Author({ firstName: "Stephen" })
+      author.isPersisted = true
+      author.firstName = "Stephen Modified"
+
+      let duped = author.dup()
+      expect(duped.firstName).to.eq("Stephen Modified")
+      expect(duped.changes()).to.deep.equal({
+        firstName: ["Stephen", "Stephen Modified"]
+      })
+
+      // Ensure that editing the clone does not affect the original model's dirty state
+      duped.firstName = "Stephen Dup Modified"
+      expect(author.changes()).to.deep.equal({
+        firstName: ["Stephen", "Stephen Modified"]
+      })
+      expect(duped.changes()).to.deep.equal({
+        firstName: ["Stephen", "Stephen Dup Modified"]
+      })
+    })
+
     it("does not recast nonenumerables to enumerable", () => {
       let author = new Author({ firstName: "Stephen" })
       let duped = author.dup()
