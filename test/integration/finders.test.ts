@@ -574,7 +574,7 @@ describe("Model finders", () => {
 
   describe("#includes", () => {
     beforeEach(() => {
-      fetchMock.get("http://example.com/api/v1/people?include=a.b,a.c.d", {
+      fetchMock.get("http://example.com/api/v1/people?include=a.b%2Ca.c.d", {
         data: [
           {
             id: "2",

@@ -107,7 +107,7 @@ describe("Relations", () => {
   describe("#find()", () => {
     beforeEach(() => {
       fetchMock.get(
-        "http://example.com/api/v1/authors/1?include=books,multi_words",
+        "http://example.com/api/v1/authors/1?include=books%2Cmulti_words",
         generateMockResponse("authors")
       )
     })
@@ -168,7 +168,7 @@ describe("Relations", () => {
   describe("when keyCase is snake_case", () => {
     beforeEach(() => {
       fetchMock.get(
-        "http://example.com/api/v1/non_fiction_authors/1?include=books,multi_words",
+        "http://example.com/api/v1/non_fiction_authors/1?include=books%2Cmulti_words",
         generateMockResponse("non_fiction_authors")
       )
     })
