@@ -41,6 +41,7 @@ import {
   JsonapiResourceIdentifier
 } from "./jsonapi-spec"
 
+import { singularize } from "inflected"
 import { cloneDeep } from "./util/clonedeep"
 import { nonenumerable } from "./util/decorators"
 import { IncludeScopeHash } from "./util/include-directive"
@@ -65,6 +66,7 @@ export interface ModelConfiguration {
   keyCase: KeyCase
   strictAttributes: boolean
   logger: ILogger
+  singularResource: boolean
 }
 export type ModelConfigurationOptions = Partial<ModelConfiguration>
 
@@ -167,7 +169,9 @@ export class SpraypaintBase {
   static keyCase: KeyCase = { server: "snake", client: "camel" }
   static strictAttributes: boolean = false
   static logger: ILogger = defaultLogger
+  static singularResource: boolean = false
   static sync: boolean = false
+  static credentials: "same-origin" | "omit" | "include" | undefined
   static clientApplication: string | null = null
   static patchAsPost: boolean = false
 
@@ -422,6 +426,7 @@ export class SpraypaintBase {
   @nonenumerable private _links!: ModelRecord<this>
   @nonenumerable private _originalLinks!: ModelRecord<this>
   @nonenumerable private __meta__: any
+  @nonenumerable private _metaDirty: boolean = false
   @nonenumerable private _errors: ValidationErrors<this> = {}
 
   constructor(attrs?: Record<string, any>) {
@@ -510,7 +515,8 @@ export class SpraypaintBase {
       Object.keys(attrs).forEach(k => {
         let self = this as any
         let changes = this.changes() as any
-        if (self[k] !== attrs[k] && !changes[k]) {
+        let attrDef = this.klass.attributeList[k]
+        if (attrDef.dirtyChecker(self[k], attrs[k]) && !changes[k]) {
           diff[k] = [self[k], attrs[k]]
           self[k] = attrs[k]
 
@@ -650,8 +656,19 @@ export class SpraypaintBase {
     }
   }
 
-  setMeta(metaObj: object | undefined) {
+  setMeta(metaObj: object | undefined, markDirty = true) {
     this.__meta__ = metaObj
+    if (markDirty) {
+      this._metaDirty = true
+    }
+  }
+
+  get meta(): object {
+    return this.__meta__ || {}
+  }
+
+  get isMetaDirty(): boolean {
+    return this._metaDirty
   }
 
   relationshipResourceIdentifiers(relationNames: string[]) {
@@ -688,7 +705,7 @@ export class SpraypaintBase {
   }
 
   get hasError() {
-    return Object.keys(this._errors).length > 1
+    return !!Object.keys(this._errors).length
   }
 
   clearErrors() {
@@ -710,7 +727,7 @@ export class SpraypaintBase {
     relatedModel: SpraypaintBase
   ): boolean {
     const dc = new DirtyChecker(this)
-    return dc.checkRelation(relationName, relatedModel)
+    return !this.isPersisted || dc.checkRelation(relationName, relatedModel)
   }
 
   dup(): this {
@@ -720,6 +737,7 @@ export class SpraypaintBase {
     cloned.isPersisted = this.isPersisted
     cloned.isMarkedForDestruction = this.isMarkedForDestruction
     cloned.isMarkedForDisassociation = this.isMarkedForDisassociation
+    cloned._originalAttributes = Object.assign({}, this._originalAttributes)
     cloned.errors = Object.assign({}, this.errors)
     cloned.links = Object.assign({}, this.links)
     return cloned
@@ -743,6 +761,10 @@ export class SpraypaintBase {
       } as any
     }
 
+    if (this.credentials) {
+      options.credentials = this.credentials
+    }
+
     if (this.clientApplication) {
       options.headers["Client-Application"] = this.clientApplication
     }
@@ -756,10 +778,14 @@ export class SpraypaintBase {
   }
 
   static url(id?: string | number): string {
-    const endpoint = this.endpoint || `/${this.jsonapiType}`
+    const endpoint =
+      this.endpoint ||
+      (this.singularResource
+        ? `/${singularize(this.jsonapiType!)}`
+        : `/${this.jsonapiType}`)
     let base = `${this.fullBasePath()}${endpoint}`
 
-    if (id) {
+    if (id && !this.singularResource) {
       base = `${base}/${id}`
     }
 
@@ -829,6 +855,13 @@ export class SpraypaintBase {
 
   static extraParams<I extends typeof SpraypaintBase>(this: I, clause: any) {
     return this.scope().extraParams(clause)
+  }
+
+  static extraFetchOptions<I extends typeof SpraypaintBase>(
+    this: I,
+    options: RequestInit
+  ) {
+    return this.scope().extraFetchOptions(options)
   }
 
   static order<I extends typeof SpraypaintBase>(
@@ -988,7 +1021,7 @@ export class SpraypaintBase {
       throw err
     }
 
-    if (response.status === 202) {
+    if (response.status === 202 || response.status === 204) {
       return await this._handleAcceptedResponse(response, this.onDeferredUpdate)
     }
 
@@ -1074,6 +1107,11 @@ export class SpraypaintBase {
   }
 }
 
+export type PersistedSpraypaintRecord<
+  Record extends SpraypaintBase
+> = Record & {
+  id: string
+}
 ;(<any>SpraypaintBase.prototype).klass = SpraypaintBase
 SpraypaintBase.initializeCredentialStorage()
 

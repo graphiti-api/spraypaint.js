@@ -100,11 +100,14 @@ class Deserializer {
     record: SpraypaintBase
   ): void {
     const modelIdx = model as any
-    const associationRecords = modelIdx[associationName]
+    const associationRecords = modelIdx[associationName] || []
     const existingInstance = this.lookupAssociated(associationRecords, record)
 
-    if (!existingInstance) {
+    if (existingInstance) return
+    if (Array.isArray(modelIdx[associationName])) {
       modelIdx[associationName].push(record)
+    } else {
+      modelIdx[associationName] = record
     }
   }
 
@@ -134,7 +137,7 @@ class Deserializer {
     instance.assignLinks(datum.links)
 
     // assign meta
-    instance.setMeta(datum.meta)
+    instance.setMeta(datum.meta, false)
 
     // so we don't double-process the same thing
     // must push before relationships
@@ -199,7 +202,7 @@ class Deserializer {
         if (Array.isArray(relationData)) {
           for (const datum of relationData) {
             const hydratedDatum = this.findResource(datum)
-            const associationRecords = instanceIdx[relationName]
+            const associationRecords = instanceIdx[relationName] || []
             let relatedInstance = this.relationshipInstanceFor(
               hydratedDatum,
               associationRecords

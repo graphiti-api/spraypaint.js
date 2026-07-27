@@ -1,12 +1,16 @@
 import { SpraypaintBase } from "../model"
 import { IResultProxy } from "./index"
 import { JsonapiResponseDoc } from "../jsonapi-spec"
+import { PersistedSpraypaintRecord } from "../model"
 
 export class RecordProxy<T extends SpraypaintBase> implements IResultProxy<T> {
   private _raw_json: JsonapiResponseDoc
-  private _record: T
+  private _record: PersistedSpraypaintRecord<T>
 
-  constructor(record: T, raw_json: JsonapiResponseDoc) {
+  constructor(
+    record: PersistedSpraypaintRecord<T>,
+    raw_json: JsonapiResponseDoc
+  ) {
     this._record = record
     this._raw_json = raw_json
   }
@@ -15,7 +19,7 @@ export class RecordProxy<T extends SpraypaintBase> implements IResultProxy<T> {
     return this._raw_json
   }
 
-  get data(): T {
+  get data(): PersistedSpraypaintRecord<T> {
     return this._record
   }
 

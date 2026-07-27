@@ -1,12 +1,13 @@
 import { expect } from "../test-helper"
 import { Person } from "../fixtures"
 import { JsonapiCollectionDoc, JsonapiResource } from "../../src/index"
+import { PersistedSpraypaintRecord } from "../../src/index"
 
 import { CollectionProxy } from "../../src/proxies/collection-proxy"
 
 describe("CollectionProxy", () => {
   let personData: JsonapiCollectionDoc
-  let recordArray: Person[]
+  let recordArray: PersistedSpraypaintRecord<Person>[]
 
   beforeEach(() => {
     personData = {

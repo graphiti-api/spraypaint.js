@@ -55,7 +55,6 @@ describe("Associations", () => {
             const jsonapiTypeAssoc = assoc({ type: "type_strings" })
 
             expect(jsonapiTypeAssoc.jsonapiType).to.eq("type_strings")
-            it
           })
 
           it("accepts a bare spraypaint type string", () => {

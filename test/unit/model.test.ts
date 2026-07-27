@@ -763,7 +763,7 @@ describe("Model", () => {
 
     it("assigns metadata correctly", () => {
       const instance = ApplicationRecord.fromJsonapi(doc.data, doc)
-      expect(instance.__meta__).to.eql({
+      expect(instance.meta).to.eql({
         big: true
       })
     })
@@ -873,6 +873,16 @@ describe("Model", () => {
         instance.isPersisted = true
         expect(instance.changes()).to.deep.equal({})
       })
+    })
+  })
+
+  describe("hasError", () => {
+    it("returns boolean indicating whether there are errors", () => {
+      const instance = new Author()
+      let errors = { firstName: { title: "asdf" } } as any
+      expect(instance.hasError).to.eq(false)
+      instance.errors = errors
+      expect(instance.hasError).to.eq(true)
     })
   })
 
@@ -1447,6 +1457,27 @@ describe("Model", () => {
       expect(author.errors.firstName).to.deep.eq({ title: "asdf" })
     })
 
+    it("duplicates the original attributes for dirty tracking", () => {
+      let author = new Author({ firstName: "Stephen" })
+      author.isPersisted = true
+      author.firstName = "Stephen Modified"
+
+      let duped = author.dup()
+      expect(duped.firstName).to.eq("Stephen Modified")
+      expect(duped.changes()).to.deep.equal({
+        firstName: ["Stephen", "Stephen Modified"]
+      })
+
+      // Ensure that editing the clone does not affect the original model's dirty state
+      duped.firstName = "Stephen Dup Modified"
+      expect(author.changes()).to.deep.equal({
+        firstName: ["Stephen", "Stephen Modified"]
+      })
+      expect(duped.changes()).to.deep.equal({
+        firstName: ["Stephen", "Stephen Dup Modified"]
+      })
+    })
+
     it("does not recast nonenumerables to enumerable", () => {
       let author = new Author({ firstName: "Stephen" })
       let duped = author.dup()
@@ -1483,6 +1514,26 @@ describe("Model", () => {
   })
 
   describe("#fetchOptions", () => {
+    context("credentials is set", () => {
+      beforeEach(() => {
+        Author.credentials = "include"
+      })
+
+      afterEach(() => {
+        Author.credentials = "same-origin"
+      })
+
+      it("sets the credentials header", () => {
+        expect(<any>Author.fetchOptions().credentials).to.eq("include")
+      })
+    })
+
+    context("credentials is NOT set", () => {
+      it("sets the credentials header", () => {
+        expect(<any>Author.fetchOptions().credentials).to.eq("same-origin")
+      })
+    })
+
     context("clientApplication is set", () => {
       beforeEach(() => {
         Author.clientApplication = "test-app"
@@ -1567,6 +1618,9 @@ describe("Model", () => {
           links: {
             self: { href: "/api/person/1", meta: { count: 10 } },
             web_view: "/person/1"
+          },
+          meta: {
+            editable: true
           }
         }
       }
@@ -1577,7 +1631,7 @@ describe("Model", () => {
           meta: { count: 10 }
         })
         expect(person.links.webView).to.eq("/person/1")
-        expect(person.links.comments).to
+        expect(person.meta).to.deep.equal({ editable: true })
       }
 
       it("from instance", () => {

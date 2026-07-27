@@ -1,4 +1,4 @@
-import { SpraypaintBase } from "./model"
+import { SpraypaintBase, PersistedSpraypaintRecord } from "./model"
 import parameterize from "./util/parameterize"
 import {
   IncludeDirective,
@@ -51,6 +51,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   private _include: IncludeScopeHash = {}
   private _stats: StatsScope = {}
   private _extraParams: any = {}
+  private _extraFetchOptions: RequestInit = {}
 
   constructor(model: Constructor<T> | typeof SpraypaintBase) {
     this.model = (model as any) as typeof SpraypaintBase
@@ -70,7 +71,13 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     return this._buildRecordResult(json)
   }
 
-  async first(): Promise<RecordProxy<T> | NullProxy> {
+  async findSingle(): Promise<RecordProxy<T>> {
+    const json = (await this._fetch(this.model.url())) as JsonapiResourceDoc
+
+    return this._buildRecordResult(json)
+  }
+
+  async first(): Promise<RecordProxy<T> | NullProxy<T>> {
     const newScope = this.per(1)
     let rawResult
 
@@ -85,7 +92,8 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     const copy = this.copy()
 
     Object.keys(obj).forEach(k => {
-      copy._associations[k] = (obj as any)[k]
+      const serverCasedKey = this.model.serializeKey(k)
+      copy._associations[serverCasedKey] = (obj as any)[k]
     })
 
     return copy
@@ -107,6 +115,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   where(clause: WhereClause): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedWhereClause(clause)
 
     for (const key in clause) {
       if (clause.hasOwnProperty(key)) {
@@ -129,6 +138,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   stats(clause: StatsScope): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedStatsClause(clause)
 
     for (const key in clause) {
       if (clause.hasOwnProperty(key)) {
@@ -140,6 +150,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   order(clause: SortScope | string): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedOrderClause(clause)
 
     if (typeof clause === "object") {
       for (const key in clause) {
@@ -156,6 +167,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   select(clause: FieldArg) {
     const copy = this.copy()
+    clause = this._serverCasedFieldsClause(clause)
 
     if (Array.isArray(clause)) {
       let _clause = clause as string[]
@@ -174,6 +186,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   selectExtra(clause: FieldArg) {
     const copy = this.copy()
+    clause = this._serverCasedFieldsClause(clause)
 
     if (Array.isArray(clause)) {
       let _clause = clause as string[]
@@ -192,6 +205,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
   includes(clause: IncludeScope): Scope<T> {
     const copy = this.copy()
+    clause = this._serverCasedIncludesClause(clause)
 
     const directive = new IncludeDirective(clause)
     const directiveObject = directive.toScopeObject()
@@ -199,6 +213,18 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
     for (const key in directiveObject) {
       if (directiveObject.hasOwnProperty(key)) {
         copy._include[key] = directiveObject[key]
+      }
+    }
+
+    return copy
+  }
+
+  extraFetchOptions(options: RequestInit): Scope<T> {
+    const copy = this.copy()
+
+    for (const key in options) {
+      if (options.hasOwnProperty(key)) {
+        copy._extraFetchOptions[key] = options[key]
       }
     }
 
@@ -237,6 +263,13 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
 
     if (paramString !== "") {
       return paramString
+    }
+  }
+
+  fetchOptions(): RequestInit {
+    return {
+      ...this.model.fetchOptions(),
+      ...this._extraFetchOptions
     }
   }
 
@@ -310,9 +343,7 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
       url = `${url}?${qp}`
     }
     const request = new Request(this.model.middlewareStack, this.model.logger)
-    const fetchOpts = this.model.fetchOptions()
-
-    const response = await request.get(url, fetchOpts)
+    const response = await request.get(url, this.fetchOptions())
     refreshJWT(this.model, response)
     return response.jsonPayload
   }
@@ -320,9 +351,9 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   private _buildRecordResult(jsonResult: JsonapiResourceDoc): RecordProxy<T>
   private _buildRecordResult(
     jsonResult: JsonapiCollectionDoc
-  ): RecordProxy<T> | NullProxy
+  ): RecordProxy<T> | NullProxy<T>
   private _buildRecordResult(jsonResult: JsonapiSuccessDoc) {
-    let record: T
+    let record: PersistedSpraypaintRecord<T>
 
     let rawRecord: JsonapiResource
     if (jsonResult.data instanceof Array) {
@@ -340,12 +371,61 @@ export class Scope<T extends SpraypaintBase = SpraypaintBase> {
   }
 
   private _buildCollectionResult(jsonResult: JsonapiCollectionDoc) {
-    const recordArray: T[] = []
+    const recordArray: PersistedSpraypaintRecord<T>[] = []
 
     jsonResult.data.forEach(record => {
       recordArray.push(this.model.fromJsonapi(record, jsonResult))
     })
 
     return new CollectionProxy(recordArray, jsonResult)
+  }
+
+  private _serverCasedWhereClause(clause: WhereClause) {
+    return this._serverCasedClause(clause, false)
+  }
+
+  private _serverCasedOrderClause(clause: string | SortScope) {
+    if (typeof clause === "string") {
+      return this._serverCasedClause(clause, true)
+    } else {
+      return this._serverCasedClause(clause, false)
+    }
+  }
+
+  private _serverCasedFieldsClause(clause: FieldArg) {
+    return this._serverCasedClause(clause, true)
+  }
+
+  private _serverCasedIncludesClause(clause: IncludeScope) {
+    return this._serverCasedClause(clause, true)
+  }
+
+  private _serverCasedStatsClause(clause: StatsScope): StatsScope {
+    return this._serverCasedClause(clause, true)
+  }
+
+  private _serverCasedClause(thing: any, transformValues: boolean = false) {
+    if (typeof thing === "string") {
+      return transformValues ? this.model.serializeKey(thing) : thing
+    } else if (thing instanceof Array) {
+      return thing.map(
+        (item: any): any => this._serverCasedClause(item, transformValues)
+      )
+    } else if (thing instanceof Object) {
+      let serverCasedThing = {}
+      for (const property in thing) {
+        if (thing.hasOwnProperty(property)) {
+          const serverCasedProperty = this.model.serializeKey(property)
+          const serverCasedPropertyValue = this._serverCasedClause(
+            thing[property],
+            transformValues
+          )
+          serverCasedThing[serverCasedProperty] = serverCasedPropertyValue
+        }
+      }
+      return serverCasedThing
+    } else {
+      return thing
+    }
   }
 }

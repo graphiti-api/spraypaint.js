@@ -109,9 +109,9 @@ export class Request {
       throw new ResponseError(null, e.message, e)
     }
 
-    await this._handleResponse(response, options)
+    const middlewareResponse = await this._handleResponse(response, options)
 
-    return response
+    return middlewareResponse || response
   }
 
   private async _handleResponse(
@@ -120,7 +120,8 @@ export class Request {
   ) {
     const possiblyEmptyResponseStatuses = [202, 204]
     const possiblyEmpty =
-      possiblyEmptyResponseStatuses.indexOf(response.status) > -1
+      possiblyEmptyResponseStatuses.indexOf(response.status) > -1 ||
+      (requestOptions.method === "DELETE" && response.status === 200)
 
     let json = null
 
@@ -135,7 +136,13 @@ export class Request {
     }
 
     try {
-      await this.middleware.afterFetch(response, json)
+      await this.middleware.afterFetch(response, json, requestOptions)
+
+      if (this.middleware.newResponse) {
+        response = this.middleware.newResponse.clone()
+        json = await response.json()
+        this.middleware.newResponse = null
+      }
     } catch (e) {
       // afterFetch middleware failed
       throw new ResponseError(
@@ -166,6 +173,8 @@ export class Request {
     }
 
     ;(<any>response).jsonPayload = json
+
+    return response
   }
 }
 

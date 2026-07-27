@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]    # test main; release is gated below
+  pull_request:         # test every PR against its merge result (incl. forks)
+  workflow_dispatch:    # cut a release on demand (Actions → CI → Run workflow)
+  schedule:
+    - cron: '0 15 * * 1' # weekly, Mondays 15:00 UTC — bundle the week's merges
+
+concurrency:
+  # supersede stale runs on the same PR; never cancel a main/release run
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write # OIDC for npm trusted publishing (release job)
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+    - name: Install
+      # --ignore-engines: semantic-release@25 requires Node >=22.14 but never
+      # runs in this job; the test toolchain (TS 3.2.4) targets Node 18.
+      run: yarn install --frozen-lockfile --ignore-engines
+    - name: Lint
+      run: yarn lint:ci
+    - name: Test
+      run: yarn test:ci
+
+  release:
+    name: Release
+    needs: test
+    # never on a plain push — only the weekly cron or a manual dispatch,
+    # so merges accumulate and release once per run (bundled since last tag)
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Upgrade npm for OIDC trusted publishing
+      # >=11.5.1 for OIDC; pinned to 11.x
+      run: npm install -g 'npm@^11.5.1'
+    - name: Install
+      run: yarn install --frozen-lockfile
+    - name: Release
+      run: yarn release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

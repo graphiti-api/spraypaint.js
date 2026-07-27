@@ -1,10 +1,11 @@
 import { expect } from "../test-helper"
 import { Person } from "../fixtures"
 import { RecordProxy } from "../../src/proxies"
+import { PersistedSpraypaintRecord } from "../../src/index"
 import { JsonapiResourceDoc, JsonapiResource } from "../../src/index"
 
 describe("RecordProxy", () => {
-  let modelRecord: Person
+  let modelRecord: PersistedSpraypaintRecord<Person>
   let personData: JsonapiResourceDoc
 
   beforeEach(() => {

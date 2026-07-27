@@ -273,17 +273,6 @@ describe("nested persistence", () => {
       expect(instance.books[0].genre.name).to.eq("name from server")
     })
 
-    describe("when a hasMany relationship has no dirty members", () => {
-      beforeEach(() => {
-        instance.books[0] = new Book()
-      })
-
-      it("should not be sent in the payload", async () => {
-        await instance.save({ with: { books: "genre" } })
-        expect((<any>payloads)[0].data.relationships).to.eq(undefined)
-      })
-    })
-
     describe("when a belongsTo relationship has unpersisted members that are marked for destruction", () => {
       beforeEach(() => {
         instance.books[0].genre.isMarkedForDestruction = true

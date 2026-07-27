@@ -1,4 +1,4 @@
-export { SpraypaintBase } from "./model"
+export { SpraypaintBase, PersistedSpraypaintRecord } from "./model"
 
 export { Attribute, attr } from "./attribute"
 
@@ -16,5 +16,7 @@ export {
   StatsScope,
   IncludeScope
 } from "./scope"
+
+export { Request } from "./request"
 
 export * from "./jsonapi-spec"

@@ -1,7 +1,9 @@
 import { JsonapiResponseDoc } from "../jsonapi-spec"
 import { IResultProxy } from "./index"
+import { PersistedSpraypaintRecord, SpraypaintBase } from "../model"
 
-export class NullProxy implements IResultProxy<null> {
+export class NullProxy<T extends SpraypaintBase = SpraypaintBase>
+  implements IResultProxy<T> {
   private _raw_json: JsonapiResponseDoc
 
   constructor(raw_json: JsonapiResponseDoc) {

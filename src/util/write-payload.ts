@@ -118,6 +118,7 @@ export class WritePayload<T extends SpraypaintBase> {
         } else {
           // Either the related model is dirty, or it's a dirty relation
           // (maybe the "department" is not dirty, but the employee changed departments
+          // or the model is new
           if (
             !this._isNewAndMarkedForDestruction(relatedModels) &&
             (idOnly ||
@@ -166,6 +167,11 @@ export class WritePayload<T extends SpraypaintBase> {
 
     if (this.included.length > 0) {
       json.included = this.included
+    }
+
+    const _meta: object = this.model.meta
+    if (this.model.isMetaDirty && Object.keys(_meta).length > 0) {
+      data.meta = _meta
     }
 
     return json

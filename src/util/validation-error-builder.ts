@@ -71,13 +71,19 @@ export class ValidationErrorBuilder<T extends SpraypaintBase> {
     let relatedObject = model[model.klass.deserializeKey(meta.name)]
     if (Array.isArray(relatedObject)) {
       relatedObject = relatedObject.find(r => {
-        return r.id === meta.id || r.temp_id === meta["temp-id"]
+        // For now graphiti is returning the related object id as an integer
+        // where the related object's ID is a string
+        return (
+          (r.id && String(r.id) === String(meta.id)) ||
+          (r.temp_id && r.temp_id === meta["temp-id"])
+        )
       })
     }
 
     if (meta.relationship) {
       this._processRelationship(relatedObject, meta.relationship, err)
-    } else {
+    } 
+    else if (relatedObject) {
       const relatedAccumulator: ValidationErrors<R> = {}
       this._processResource(relatedAccumulator, meta, err)
 
