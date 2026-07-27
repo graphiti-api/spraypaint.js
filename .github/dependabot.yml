@@ -1,0 +1,49 @@
+version: 2
+
+# Routine bumps (minor/patch) batch into one PR per group so they can be
+# reviewed and merged in a single pass. Majors match no group, so Dependabot
+# still opens them individually — a breaking change should not ride along
+# with a pile of harmless ones.
+#
+# Both yarn.lock and package-lock.json are tracked, so ungrouped PRs conflict
+# with each other; keeping the routine ones batched avoids a rebase storm.
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      production-dependencies:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # TS 3.2.4 is what the build targets; a major bump is a deliberate
+      # migration, not a dependency chore. See tsconfig.json.
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        update-types:
+          - minor
+          - patch
