@@ -1,5 +1,6 @@
 import { expect, fetchMock, sinon } from "../test-helper"
-import { Author, Person } from "../fixtures"
+import { Author, Person, Book } from "../fixtures"
+import { WritePayload } from "../../src/util/write-payload"
 
 const resetMocks = () => {
   fetchMock.restore()
@@ -9,8 +10,10 @@ after(() => {
   resetMocks()
 })
 
-function generateMockResponse() {
-  return {
+const titles = ["The Shining", "Alice In Wonderland", "Great Expectations"]
+
+function generateMockResponse(bookCount = 2) {
+  let payload = {
     data: {
       id: "1",
       type: "authors",
@@ -20,36 +23,28 @@ function generateMockResponse() {
       },
       relationships: {
         books: {
-          data: [
-            {
-              id: "book1",
-              type: "books"
-            },
-            {
-              id: "book3",
-              type: "books"
-            }
-          ]
+          data: []
         }
       }
     },
-    included: [
-      {
-        id: "book1",
-        type: "books",
-        attributes: {
-          title: "The Shining"
-        }
-      },
-      {
-        id: "book3",
-        type: "books",
-        attributes: {
-          title: "Alice in Wonderland"
-        }
-      }
-    ]
+    included: []
   } as any
+  let count = 0
+  for (let title of titles.slice(0, bookCount)) {
+    count += 1
+    payload.data.relationships.books.data.push({
+      id: `book${count}`,
+      type: "books"
+    })
+    payload.included.push({
+      id: `book${count}`,
+      type: "books",
+      attributes: {
+        title: title
+      }
+    })
+  }
+  return payload
 }
 
 describe("Lookup additional data during persistence operation", () => {
@@ -77,7 +72,7 @@ describe("Lookup additional data during persistence operation", () => {
 
         expect(author.nilly).to.eq("Foobar")
         expect(author.books.length).to.eq(2)
-        expect(author.books[0].title).to.eq("The Shining")
+        expect(author.books[0].title).to.eq(titles[0])
       })
 
       it("raises an error if a scope for a different model is passed", async () => {
@@ -120,7 +115,41 @@ describe("Lookup additional data during persistence operation", () => {
 
         expect(author.nilly).to.eq("Foobar")
         expect(author.books.length).to.eq(2)
-        expect(author.books[0].title).to.eq("The Shining")
+        expect(author.books[0].title).to.eq(titles[0])
+      })
+    })
+
+    describe("when updating an existing record with relation deletions", () => {
+      beforeEach(() => {
+        fetchMock.patch(
+          "http://example.com/api/v1/authors/1?include=books",
+          generateMockResponse(1)
+        )
+      })
+
+      it("accepts a scope for looking up resulting additional items", async () => {
+        let author = new Author({
+          id: "1",
+          firstName: "Steven"
+        })
+        author.isPersisted = true
+
+        let book2 = new Book({ id: "book2" })
+        book2.isPersisted = true
+        book2.isMarkedForDestruction = true
+        author.books.push(book2)
+
+        let book3 = new Book({ id: "book3" })
+        book3.isPersisted = true
+        book3.isMarkedForDestruction = true
+        author.books.push(book3)
+
+        let returnScope = Author.includes("books")
+
+        await author.save({ with: "books", returnScope })
+
+        expect(author.books.length).to.eq(1)
+        expect(author.books[0].title).to.eq(titles[0])
       })
     })
   })

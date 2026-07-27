@@ -55,7 +55,10 @@ export class WritePayload<T extends SpraypaintBase> {
       const relatedObjects = modelIdx[key]
       if (relatedObjects) {
         if (Array.isArray(relatedObjects)) {
-          relatedObjects.forEach((relatedObject, index) => {
+          // Iterate backwards: splicing during a forward pass shifts every
+          // later element down an index, so consecutive deletions get skipped.
+          for (let index = relatedObjects.length - 1; index >= 0; index--) {
+            const relatedObject = relatedObjects[index]
             if (
               relatedObject.isMarkedForDestruction ||
               relatedObject.isMarkedForDisassociation
@@ -64,7 +67,7 @@ export class WritePayload<T extends SpraypaintBase> {
             } else {
               this.removeDeletions(relatedObject, nested)
             }
-          })
+          }
         } else {
           const relatedObject = relatedObjects
           if (
