@@ -120,5 +120,5 @@
     "typescript-eslint-parser": "21.0.2",
     "winston": "^2.3.1"
   },
-  "version": "0.10.24"
+  "version": "0.10.25"
 }
