@@ -1,10 +1,17 @@
 name: CI
 
 on:
-  push:                 # run tests on every push
+  push:
+    branches: [main]    # test main; release is gated below
+  pull_request:         # test every PR against its merge result (incl. forks)
   workflow_dispatch:    # cut a release on demand (Actions → CI → Run workflow)
   schedule:
     - cron: '0 15 * * 1' # weekly, Mondays 15:00 UTC — bundle the week's merges
+
+concurrency:
+  # supersede stale runs on the same PR; never cancel a main/release run
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: write
