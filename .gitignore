@@ -4,6 +4,8 @@ node_modules
 
 _bundles
 yarn-error.log
+# this project uses yarn; a stray npm install must not commit a second lockfile
+package-lock.json
 build/
 test-old/
 dist/

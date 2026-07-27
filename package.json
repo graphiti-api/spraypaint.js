@@ -6,6 +6,7 @@
   "types": "lib-esm/index.d.ts",
   "author": "Lee Richmond<richmolj@gmail.com> & Wade Tandy<wade.tandy@gmail.com>",
   "license": "MIT",
+  "packageManager": "yarn@1.22.19",
   "homepage": "https://github.com/graphiti-api/spraypaint.js",
   "repository": {
     "type": "git",
