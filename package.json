@@ -116,7 +116,7 @@
     "sinon": "^4.0.2",
     "sinon-chai": "2.14.0",
     "test-all-versions": "3.3.3",
-    "ts-node": "4.0.1",
+    "ts-node": "10.9.2",
     "typescript": "3.2.4",
     "typescript-eslint-parser": "21.0.2",
     "winston": "^2.3.1"
