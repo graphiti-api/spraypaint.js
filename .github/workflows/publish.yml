@@ -8,6 +8,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  id-token: write # enable OIDC for npm trusted publishing
 
 jobs:
   release:
@@ -22,12 +23,13 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
-        registry-url: https://registry.npmjs.org/
+        node-version: lts/*
+    - name: Upgrade npm for OIDC trusted publishing
+      # >=11.5.1 for OIDC; pinned to 11.x 
+      run: npm install -g 'npm@^11.5.1'
     - name: Install
       run: yarn install --frozen-lockfile
     - name: Release
       run: yarn release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
