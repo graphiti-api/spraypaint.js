@@ -7,6 +7,10 @@
   "author": "Lee Richmond<richmolj@gmail.com> & Wade Tandy<wade.tandy@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/graphiti-api/spraypaint.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/graphiti-api/spraypaint.js.git"
+  },
   "scripts": {
     "clean": "rimraf ./dist ./build ./coverage ./lib ./lib-esm",
     "prebuild": "yarn run clean && yarn test:ci && yarn lint:ci",
@@ -26,7 +30,8 @@
     "test:ci": "yarn test:all-versions && yarn test:es6-compatibility && yarn test",
     "lint": "yarn run lint:ci --fix",
     "lint:ci": "yarn run eslint {src,test}{,/**}/*.ts",
-    "prepublish": "yarn build",
+    "prepublishOnly": "yarn build",
+    "release": "semantic-release",
     "update:dependencies": "ncu -u"
   },
   "husky": {
@@ -55,6 +60,11 @@
     "lodash-es": "^4.17.5",
     "tslib": "^1.8.1"
   },
+  "resolutions": {
+    "@types/chai": "4.3.0",
+    "@types/lodash": "4.14.92",
+    "@types/sinon": "4.3.3"
+  },
   "devDependencies": {
     "@babel/cli": "7.2.3",
     "@babel/core": "7.2.2",
@@ -63,7 +73,9 @@
     "@babel/plugin-transform-modules-commonjs": "7.2.0",
     "@babel/preset-env": "7.3.1",
     "@babel/register": "7.0.0",
-    "@types/chai": "^4.0.4",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/chai": "4.3.0",
     "@types/chai-as-promised": "^7.1.0",
     "@types/chai-things": "^0.0.32",
     "@types/fetch-mock": "5.12.2",
@@ -79,6 +91,7 @@
     "@types/winston": "2.3.7",
     "chai": "^4.1.2",
     "chai-things": "^0.2.0",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
     "es6-promise": "4.2.4",
     "eslint": "5.12.0",
     "eslint-config-prettier": "3.5.0",
@@ -98,6 +111,7 @@
     "rollup-plugin-commonjs": "8.2.6",
     "rollup-plugin-node-resolve": "3.0.0",
     "rollup-plugin-uglify": "2.0.1",
+    "semantic-release": "^25.0.0",
     "sinon": "^4.0.2",
     "sinon-chai": "2.14.0",
     "test-all-versions": "3.3.3",
@@ -106,5 +120,5 @@
     "typescript-eslint-parser": "21.0.2",
     "winston": "^2.3.1"
   },
-  "version": "0.10.22"
+  "version": "0.10.25"
 }

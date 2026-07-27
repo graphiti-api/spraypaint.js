@@ -114,7 +114,12 @@ export class HasMany<T extends SpraypaintBase> extends Attribute<T[]>
     if (val && !val.hasOwnProperty("isRelationship")) {
       if (!(val instanceof SpraypaintBase) && !Array.isArray(val)) {
         val = new this.klass(val)
+      } else if (Array.isArray(val)) {
+        val = val.map(v =>
+          v instanceof SpraypaintBase ? v : new this.klass(v)
+        )
       }
+
       context.relationships[this.name] = val
     } else if (val === null || val === undefined) {
       context.relationships[this.name] = val

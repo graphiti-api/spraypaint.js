@@ -10,6 +10,8 @@ export interface IEventBus {
   dispatch: IDispatch
 }
 
-import * as EventBusAny from "eventbusjs"
-const EventBus: IEventBus = EventBusAny
+import * as EventBus from "eventbusjs"
+declare module "eventbusjs" {
+  interface EventBus extends IEventBus {}
+}
 export { EventBus }

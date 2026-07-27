@@ -1,5 +1,5 @@
 import { expect, fetchMock } from "../test-helper"
-import { Author, NonFictionAuthor } from "../fixtures"
+import { Author, Book, Genre, NonFictionAuthor } from "../fixtures"
 import { IResultProxy } from "../../src/proxies/index"
 import { SpraypaintBase } from "../../src/index"
 
@@ -55,11 +55,59 @@ const generateMockResponse = (type: string) => {
   } as any
 }
 
+const generateMockGenreResponse = () => {
+  return {
+    data: {
+      id: "1",
+      type: "books",
+      attributes: {
+        title: "A Song of Ice and Fire"
+      },
+      relationships: {
+        genre: {
+          data: [
+            {
+              id: "genre1",
+              type: "genres"
+            }
+          ]
+        }
+      }
+    },
+    included: [
+      {
+        id: "genre1",
+        type: "genres",
+        attributes: {
+          title: "Sword and Sourcery"
+        },
+        relationships: {
+          parentGenre: {
+            data: [
+              {
+                id: "genre2",
+                type: "genres"
+              }
+            ]
+          }
+        }
+      },
+      {
+        id: "genre2",
+        type: "genres",
+        attributes: {
+          title: "Fantasy"
+        }
+      }
+    ]
+  } as any
+}
+
 describe("Relations", () => {
   describe("#find()", () => {
     beforeEach(() => {
       fetchMock.get(
-        "http://example.com/api/v1/authors/1?include=books,multi_words",
+        "http://example.com/api/v1/authors/1?include=books%2Cmulti_words",
         generateMockResponse("authors")
       )
     })
@@ -98,12 +146,29 @@ describe("Relations", () => {
         expect(data.genre).to.eq(undefined)
       })
     })
+
+    describe("when there's a self-referential relationship", () => {
+      beforeEach(() => {
+        const response = generateMockGenreResponse()
+        fetchMock.get(
+          "http://example.com/api/books/1?include=genre.parent_genre",
+          response
+        )
+      })
+
+      it("does not blow up", async () => {
+        const { data } = await Book.includes({ genre: "parentGenre" }).find(1)
+        expect(data.klass).to.eq(Book)
+        expect(data.genre).to.be.instanceOf(Genre)
+        expect(data.genre.parentGenre).to.be.instanceOf(Genre)
+      })
+    })
   })
 
   describe("when keyCase is snake_case", () => {
     beforeEach(() => {
       fetchMock.get(
-        "http://example.com/api/v1/non_fiction_authors/1?include=books,multi_words",
+        "http://example.com/api/v1/non_fiction_authors/1?include=books%2Cmulti_words",
         generateMockResponse("non_fiction_authors")
       )
     })
