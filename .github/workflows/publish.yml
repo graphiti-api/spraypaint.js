@@ -38,6 +38,10 @@ jobs:
       run: yarn lint:ci
     - name: Test
       run: yarn test:ci
+    - name: Build
+      # the same chain prepublishOnly runs, minus the prebuild hook that would
+      # re-run the steps above — catches bundler breakage before release time
+      run: yarn build:dist
 
   release:
     name: Release
