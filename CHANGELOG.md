@@ -1,3 +1,9 @@
+## [0.11.1](https://github.com/graphiti-api/spraypaint.js/compare/v0.11.0...v0.11.1) (2026-08-03)
+
+### Bug Fixes
+
+* **build:** repair rollup config and plugins for rollup 2 ([#139](https://github.com/graphiti-api/spraypaint.js/issues/139)) ([5e71378](https://github.com/graphiti-api/spraypaint.js/commit/5e71378cef026ca790c72117bcffce0f10881b5a))
+
 ## [0.11.0](https://github.com/graphiti-api/spraypaint.js/compare/v0.10.25...v0.11.0) (2026-07-27)
 
 ### Features
